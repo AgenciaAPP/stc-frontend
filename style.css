@@ -38,37 +38,61 @@ body {
 }
 
 /* ==========================================
-   2. HEADER INSTITUCIONAL (LOGO PROTEGIDO)
+   2. HEADER INSTITUCIONAL (DISEÑO HORIZONTAL)
    ========================================== */
 .main-header {
   background-color: var(--card-bg);
   border-bottom: 5px solid var(--primary-color);
-  padding: 25px 20px;
-  text-align: center;
+  padding: 15px 0; /* Reducimos el acolchado vertical */
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 30px; /* Espacio entre el logo y el texto */
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .header-logo {
   display: block;
-  margin: 0 auto 15px auto;
   width: 100%;
-  max-width: 240px !important;
+  max-width: 180px !important; /* Compactamos un poco el logo en horizontal */
   height: auto !important;
+}
+
+.header-text {
+  text-align: left; /* Alineamos el texto a la izquierda para flujo horizontal */
 }
 
 .main-header h1 {
   font-weight: 700;
-  font-size: 1.5rem;
+  font-size: 1.35rem; /* Compactamos ligeramente el tamaño de la fuente */
   color: var(--accent-blue);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
 }
 
 .main-header h2 {
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
+}
+
+/* Ajuste responsivo para celulares (se vuelve a apilar si la pantalla es muy pequeña) */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  .header-text {
+    text-align: center;
+  }
 }
 
 /* ==========================================
