@@ -193,7 +193,7 @@
         </div>
       </section>
 
-      <!-- PESTAÑA 3: ASUNTOS PENDIENTES (CAMPOS ACTUALIZADOS REALES) -->
+      <!-- PESTAÑA 3: ASUNTOS PENDIENTES -->
       <section id="tab-asuntos" class="tab-panel">
         <div class="card scale-up">
           <div class="table-section-header">
@@ -222,7 +222,7 @@
         </div>
       </section>
 
-      <!-- PESTAÑA 4: SISTEMAS E INFORMACIÓN -->
+      <!-- PESTAÑA 4: SISTEMAS E INFORMACIÓN (CAMPOS ACTUALIZADOS REALES) -->
       <section id="tab-sistemas" class="tab-panel">
         <div class="card scale-up">
           <div class="table-section-header">
@@ -236,10 +236,10 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Plataforma / Sistema</th>
-                  <th>Tipo de Acceso</th>
-                  <th>Uso o Rol en el Sistema</th>
-                  <th>Estado de la Credencial</th>
+                  <th>Sistema / aplicativo</th>
+                  <th>Usuario</th>
+                  <th>Contraseña</th>
+                  <th>Observaciones</th>
                 </tr>
               </thead>
               <tbody id="table-sistemas-body">
@@ -341,9 +341,7 @@
 
   </main>
 
-  <!-- ==========================================
-       MODALES EMERGENTES (ESTILO POP-UP)
-       ========================================== -->
+  <!-- MODALES POP-UP -->
   <div id="modal-acciones" class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
@@ -388,7 +386,6 @@
     </div>
   </div>
 
-  <!-- POPUP ASUNTOS ACTUALIZADO -->
   <div id="modal-asuntos" class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
@@ -428,6 +425,7 @@
     </div>
   </div>
 
+  <!-- POPUP SISTEMAS ACTUALIZADO REAL CON BOTÓN TIPO PASSWORD -->
   <div id="modal-sistemas" class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
@@ -436,23 +434,20 @@
       </div>
       <form id="form-modal-sistemas" class="modal-body">
         <div class="form-group">
-          <label>Plataforma / Sistema administrado</label>
-          <input type="text" id="modal-sis-nombre" required placeholder="Ej: ArcGIS Online / Sagicc">
+          <label>Sistema / aplicativo</label>
+          <input type="text" id="modal-sis-nombre" required placeholder="Ej: ArcGIS Online, Sagicc, Power BI">
         </div>
         <div class="form-group">
-          <label>Tipo de Acceso</label>
-          <input type="text" id="modal-sis-tipo" required placeholder="Ej: Credencial / Token / API Key">
+          <label>Usuario</label>
+          <input type="text" id="modal-sis-usuario" required placeholder="Ingresa el usuario de acceso">
         </div>
         <div class="form-group">
-          <label>Uso o Rol en el sistema</label>
-          <input type="text" id="modal-sis-rol" required placeholder="Ej: Administrador de capas / Analista de datos">
+          <label>Contraseña</label>
+          <input type="password" id="modal-sis-pass" required placeholder="••••••••">
         </div>
         <div class="form-group">
-          <label>Estado de la Credencial</label>
-          <select id="modal-sis-estado" required>
-            <option value="Pendiente por revocar">Pendiente por revocar</option>
-            <option value="Credencial devuelta">Credencial devuelta / desactivada</option>
-          </select>
+          <label>Observaciones</label>
+          <textarea id="modal-sis-obs" rows="3" placeholder="Detalles de la cuenta o estado del acceso..."></textarea>
         </div>
         <button type="submit" class="btn-primary w-full spacing-top-md">💾 Guardar Sistema</button>
       </form>
