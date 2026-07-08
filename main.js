@@ -1,3 +1,5 @@
+// CONFIGURACIÓN: Reemplaza esta URL por la de tu backend real desplegado en Vercel
+// Asegúrate de NO dejar una barra diagonal (/) al final de la URL
 const BACKEND_URL = 'https://stc-backend-nine.vercel.app';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -40,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Mostrar cargando y limpiar errores previos
+    // Mostrar cargando y deshabilitar botón
     secopLoader.classList.remove('hidden');
     btnBuscarSecop.disabled = true;
 
@@ -50,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const resultado = await response.json();
 
       if (resultado.status === 'success') {
-        // ¡Éxito! Rellenamos los campos protegidos con la data oficial de SECOP II
+        // ¡Éxito! Rellenamos los campos protegidos con la data oficial blindada por NIT
         const datos = resultado.datos;
         
         txtCedula.value = datos.documentoContratista || '';
@@ -58,12 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
         txtNumeroContrato.value = datos.numeroContrato || '';
         txtObjeto.value = datos.objetoContrato || '';
         
-        // Si SECOP trae supervisor o dependencia, los sugerimos
         if (datos.supervisor) {
           txtSupervisor.value = datos.supervisor;
         }
 
-        alert('¡Contrato encontrado! La información oficial ha sido cargada automáticamente.');
+        alert('¡Contrato encontrado! La información oficial de la Agencia APP ha sido cargada automáticamente.');
       } else {
         alert(`Atención: ${resultado.message}`);
       }
@@ -82,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const formGeneral = document.getElementById('form-general');
 
   formGeneral.addEventListener('submit', async (e) => {
-    e.preventDefault(); // Evitar que la página se recargue
+    e.preventDefault();
 
     const camposFormulario = {
       cedula: txtCedula.value,
@@ -109,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Habilitar la siguiente pestaña de manera dinámica
         const btnAcciones = document.querySelector('[data-tab="acciones"]');
         btnAcciones.disabled = false;
-        btnAcciones.click(); // Mover automáticamente al usuario a la Pestaña 2
+        btnAcciones.click();
       } else {
         alert(`Error al guardar: ${resultado.message}`);
       }
