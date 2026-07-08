@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Transferencia de Conocimiento - Agencia APP</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Encabezado Institucional -->
+  <header class="app-header">
+    <div class="header-container">
+      <h1>Sistema de Transferencia de Conocimiento</h1>
+      <p class="subtitle">Agencia para la Gestión del Paisaje, el Patrimonio y Alianzas Público Privadas</p>
+    </div>
+  </header>
+
+  <main class="app-container">
+    <!-- Barra de Navegación por Pestañas -->
+    <nav class="tabs-navigation">
+      <button class="tab-btn active" data-tab="general">1. Datos Generales</button>
+      <button class="tab-btn" data-tab="acciones" disabled>2. Acciones Realizadas</button>
+      <button class="tab-btn" data-tab="asuntos" disabled>3. Asuntos Pendientes</button>
+      <button class="tab-btn" data-tab="sistemas" disabled>4. Sistemas e Información</button>
+    </nav>
+
+    <!-- Contenido de las Pestañas -->
+    <div class="tabs-content">
+      
+      <!-- PESTAÑA 1: DATOS GENERALES -->
+      <section id="tab-general" class="tab-panel active">
+        <div class="card">
+          <h3>Consulta de Contrato (SECOP II)</h3>
+          <p class="instruction">Digita tu número de contrato asignado por la Agencia APP para autocompletar la información oficial.</p>
+          
+          <div class="search-box">
+            <input type="text" id="search-contrato" placeholder="Ej. APP-045-2026">
+            <button id="btn-buscar-secop" class="btn-primary">Consultar SECOP</button>
+          </div>
+          <div id="secop-loader" class="loader hidden">Buscando contrato en Datos Abiertos...</div>
+        </div>
+
+        <form id="form-general" class="card grid-form">
+          <h3>Información General del Contrato</h3>
+          
+          <div class="form-group">
+            <label for="cedula">Documento de Identidad / Cédula</label>
+            <input type="text" id="cedula" required readonly placeholder="Cargando...">
+          </div>
+
+          <div class="form-group">
+            <label for="nombreContratista">Nombre Completo del Contratista</label>
+            <input type="text" id="nombreContratista" required readonly placeholder="Cargando...">
+          </div>
+
+          <div class="form-group">
+            <label for="correoContratista">Correo Electrónico Corporativo</label>
+            <input type="email" id="correoContratista" required>
+          </div>
+
+          <div class="form-group">
+            <label for="numeroContrato">Número de Contrato</label>
+            <input type="text" id="numeroContrato" required readonly>
+          </div>
+
+          <div class="form-group colspan-2">
+            <label for="objetoContrato">Objeto Contractual Oficial</label>
+            <textarea id="objetoContrato" rows="3" required readonly></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="supervisor">Nombre del Supervisor</label>
+            <input type="text" id="supervisor" required>
+          </div>
+
+          <div class="form-group">
+            <label for="dependencia">Subdirección / Dependencia</label>
+            <select id="dependencia" required>
+              <option value="">Seleccione una opción...</option>
+              <option value="Subdirección de Gestión del Paisaje">Subdirección de Gestión del Paisaje</option>
+              <option value="Subdirección de Patrimonio">Subdirección de Patrimonio</option>
+              <option value="Subdirección de APP">Subdirección de APP</option>
+              <option value="Dirección General">Dirección General</option>
+              <option value="Apoyo Administrativo">Apoyo Administrativo (Talento Humano / Jurídica)</option>
+            </select>
+          </div>
+
+          <div class="form-actions colspan-2">
+            <button type="submit" class="btn-success">Guardar y Continuar</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Las secciones de las pestañas 2, 3 y 4 las inyectaremos dinámicamente o estructuraremos a continuación -->
+
+    </div>
+  </main>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
