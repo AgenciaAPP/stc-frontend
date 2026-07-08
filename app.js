@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Ajuste Punto 2: Guardar preliminar y regresar al Dashboard Principal
+  // Guardar preliminar y regresar al Dashboard Principal
   btnSavePreliminary.addEventListener('click', () => {
     alert('💾 ¡Progreso guardado preliminarmente!\n\nLos datos ingresados en las tablas y campos se han congelado en el estado actual del servidor. Puedes reanudar el diligenciamiento cuando desees.');
     switchView(viewContratistaDashboard);
@@ -103,13 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
         currentUserData = {
           cedula: cedula,
           nombre: "Cynthia Giraldo Gil",
-          contrato: "PS2026001",
+          contract: "PS2026001",
           objeto: "Prestación de servicios profesionales para el apoyo en la planeación, gestión, control y seguimiento del sistema presupuestal de la Agencia APP",
           estado: "En Diligenciamiento"
         };
 
         document.getElementById('welcome-contratista').innerText = `BIENVENIDO(A), ${currentUserData.nombre.toUpperCase()}`;
-        document.getElementById('dash-num-contrato').innerText = currentUserData.contrato;
+        document.getElementById('dash-num-contrato').innerText = currentUserData.contract;
         document.getElementById('dash-objeto-contrato').innerText = currentUserData.objeto;
         
         const labelEstado = document.getElementById('dash-estado-acta');
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         poblarTablaSeguimientoFuncionarios();
         switchView(viewFuncionarioDashboard);
       }
-    }, 1200); // Pequeño delay para apreciar la animación del spinner circular
+    }, 1200);
   });
 
   // ==========================================
@@ -143,20 +143,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Autocompletar datos protegidos fijos
     document.getElementById('cedula').value = currentUserData.cedula;
     document.getElementById('nombreContratista').value = currentUserData.nombre;
-    document.getElementById('numeroContrato').value = currentUserData.contrato;
+    document.getElementById('numeroContrato').value = currentUserData.contract;
     document.getElementById('objetoContrato').value = currentUserData.objeto;
     document.getElementById('supervisor').value = "EDISON ALEXANDER MONTOYA VELEZ";
 
     // Activación de la primera pestaña por defecto
     tabButtons.forEach(btn => btn.classList.remove('active'));
-    tabPanels.forEach(pnl => panel.classList.remove('active'));
+    tabPanels.forEach(pnl => pnl.classList.remove('active'));
     tabButtons[0].classList.add('active');
     document.getElementById('tab-general').classList.add('active');
 
     switchView(viewFormularioTransferencia);
   });
 
-  // Ajuste Punto 2: Permitir repaso libre entre pestañas haciendo clic en los botones
+  // Permitir repaso libre entre pestañas haciendo clic en los botones
   tabButtons.forEach(button => {
     button.addEventListener('click', () => {
       const targetTab = button.getAttribute('data-tab');
@@ -268,9 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <td><strong>${item.proceso}</strong></td>
         <td><span class="badge ${item.prioridad === 'Alta' ? 'badge-danger' : 'badge-alert'}">${item.prioridad}</span></td>
         <td>${item.productos}</td>
-        <td><small>${item.ejecucion || 'Registrado'}</small></td>
-        <td><a href="${item.repositoriosCloud}" target="_blank" class="btn-link">Ver repositorio</a></td>
-        <td><small>${item.recomendaciones || 'N/A'}</small></td>
+        <td><small>${item.ejecucion}</small></td>
+        <td><a href="${item.ruta}" target="_blank" class="btn-link">Ver repositorio</a></td>
+        <td><small>${item.obs}</small></td>
       `;
       tbody.appendChild(tr);
     });
