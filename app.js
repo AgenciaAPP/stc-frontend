@@ -217,14 +217,13 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal('modal-asuntos');
   });
 
-  // ENVÍO DE FORMULARIO: POP-UP SISTEMAS (CAPTURADO COMPLETO EN TEXTO PLANO VISIBLE)
+  // ENVÍO DE FORMULARIO: POP-UP SISTEMAS
   document.getElementById('form-modal-sistemas').addEventListener('submit', (e) => {
     e.preventDefault();
-
     const nuevoSistema = {
       nombre: document.getElementById('modal-sis-nombre').value,
       usuario: document.getElementById('modal-sis-usuario').value,
-      contrasena: document.getElementById('modal-sis-pass').value, // Almacena y procesa directamente el texto plano para el PDF
+      contrasena: document.getElementById('modal-sis-pass').value,
       obs: document.getElementById('modal-sis-obs').value || 'Ninguna'
     };
     listadoSistemas.push(nuevoSistema);
@@ -233,15 +232,17 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal('modal-sistemas');
   });
 
-  // ENVÍO DE FORMULARIO: POP-UP DIRECTORIO
+  // ENVÍO DE FORMULARIO: POP-UP DIRECTORIO (CAMPOS REORDENADOS REALES)
   document.getElementById('form-modal-directorio').addEventListener('submit', (e) => {
     e.preventDefault();
+
     const nuevoContacto = {
       nombre: document.getElementById('modal-dir-nombre').value,
-      entidad: document.getElementById('modal-dir-entidad').value,
       tel: document.getElementById('modal-dir-tel').value,
       correo: document.getElementById('modal-dir-correo').value,
-      asunto: document.getElementById('modal-dir-asunto').value
+      tipo: document.getElementById('modal-dir-tipo').value,
+      entidad: document.getElementById('modal-dir-entidad').value,
+      reco: document.getElementById('modal-dir-reco').value || 'Ninguna'
     };
     listadoDirectorio.push(nuevoContacto);
     renderTableDirectorio();
@@ -293,7 +294,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderTableAsuntos() { renderTableGeneric('table-asuntos-body', listadoAsuntos, ['tramite', 'estado', 'entidad', 'accionesPendientes', 'fecha']); }
   function renderTableSistemas() { renderTableGeneric('table-sistemas-body', listadoSistemas, ['nombre', 'usuario', 'contrasena', 'obs']); }
-  function renderTableDirectorio() { renderTableGeneric('table-directorio-body', listadoDirectorio, ['nombre', 'entidad', 'tel', 'correo', 'asunto']); }
+  
+  // Actualizado para reflejar las columnas semánticas de Directorio
+  function renderTableDirectorio() { renderTableGeneric('table-directorio-body', listadoDirectorio, ['nombre', 'tel', 'correo', 'tipo', 'entidad', 'reco']); }
 
   // CONSOLIDAR TODO Y FINALIZAR
   document.getElementById('btn-submit-final').addEventListener('click', () => {
