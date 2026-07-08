@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>STC - Agencia APP</title>
+  <!-- Inyección segura de la tipografía Metropolis sin romper el CSS -->
   <link href="https://fonts.cdnfonts.com/css/metropolis" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -22,7 +23,9 @@
 
   <main class="container">
 
-    <!-- VISTA 1: PORTAL DE BIENVENIDA -->
+    <!-- ==========================================
+         VISTA 1: PORTAL DE BIENVENIDA (SELECCIÓN DE ROL)
+         ========================================== -->
     <section id="view-welcome" class="view-panel active">
       <div class="card text-center scale-up">
         <h3>BIENVENIDO AL APLICATIVO STC</h3>
@@ -42,7 +45,9 @@
       </div>
     </section>
 
-    <!-- VISTA 2: LOGIN DINÁMICO -->
+    <!-- ==========================================
+         VISTA 2: LOGIN DINÁMICO CON SPINNER MODERNO
+         ========================================== -->
     <section id="view-login" class="view-panel">
       <div class="card max-w-md mx-auto scale-up">
         <button id="btn-back-to-welcome" class="btn-link">← Volver al inicio</button>
@@ -56,6 +61,7 @@
 
         <button id="btn-submit-login" class="btn-primary w-full">Ingresar y Verificar</button>
         
+        <!-- Spinner circular animado moderno -->
         <div id="login-loader" class="loader-container hidden">
           <div class="spinner"></div>
           <span>Buscando autorización en registros oficiales...</span>
@@ -63,7 +69,9 @@
       </div>
     </section>
 
-    <!-- VISTA 3: DASHBOARD DEL CONTRATISTA -->
+    <!-- ==========================================
+         VISTA 3: DASHBOARD DEL CONTRATISTA
+         ========================================== -->
     <section id="view-contratista-dashboard" class="view-panel">
       <div class="card text-center scale-up">
         <div class="dashboard-header">
@@ -83,7 +91,9 @@
       </div>
     </section>
 
-    <!-- VISTA 4: MÓDULO FORMULARIO CONTRATISTA -->
+    <!-- ==========================================
+         VISTA 4: MÓDULO FORMULARIO CONTRATISTA
+         ========================================== -->
     <section id="view-formulario-transferencia" class="view-panel">
       
       <div class="form-sticky-header">
@@ -183,7 +193,7 @@
         </div>
       </section>
 
-      <!-- PESTAÑA 3: ASUNTOS PENDIENTES -->
+      <!-- PESTAÑA 3: ASUNTOS PENDIENTES (CAMPOS ACTUALIZADOS REALES) -->
       <section id="tab-asuntos" class="tab-panel">
         <div class="card scale-up">
           <div class="table-section-header">
@@ -197,14 +207,15 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Aspecto / Trámite</th>
+                  <th>Asunto pendiente o en trámite</th>
                   <th>Estado Actual</th>
-                  <th>Impacto / Riesgo</th>
-                  <th>Acción Requerida</th>
+                  <th>Entidad / Dependencia</th>
+                  <th>Acciones pendientes por realizar</th>
+                  <th>Fecha Límite</th>
                 </tr>
               </thead>
               <tbody id="table-asuntos-body">
-                <tr><td colspan="4" class="text-muted text-center">No se han agregado registros.</td></tr>
+                <tr><td colspan="5" class="text-muted text-center">No se han agregado registros.</td></tr>
               </tbody>
             </table>
           </div>
@@ -239,7 +250,7 @@
         </div>
       </section>
 
-      <!-- PESTAÑA 5: DIRECTORIO Y FINALIZAR (CORREGIDO EL AISLAMIENTO) -->
+      <!-- PESTAÑA 5: DIRECTORIO Y FINALIZAR -->
       <section id="tab-directorio" class="tab-panel">
         <div class="card scale-up">
           <div class="table-section-header">
@@ -267,7 +278,6 @@
           </div>
         </div>
 
-        <!-- Sacamos la sección de cierre a su propia tarjeta para obligar la separación visual física -->
         <div class="final-closure-card scale-up">
           <h4>¿Has finalizado por completo tu Acta de Transferencia?</h4>
           <p class="instruction">Al enviar el acta oficial se bloqueará tu edición de forma definitiva y se notificará formalmente a Talento Humano y a tu Supervisor asignado para proceder con las firmas.</p>
@@ -279,7 +289,9 @@
 
     </section>
 
-    <!-- VISTA 5: DASHBOARD DE FUNCIONARIOS -->
+    <!-- ==========================================
+         VISTA 5: DASHBOARD DE FUNCIONARIOS
+         ========================================== -->
     <section id="view-funcionario-dashboard" class="view-panel">
       <div class="card scale-up">
         <div class="dashboard-header">
@@ -329,7 +341,9 @@
 
   </main>
 
-  <!-- MODALES POP-UP -->
+  <!-- ==========================================
+       MODALES EMERGENTES (ESTILO POP-UP)
+       ========================================== -->
   <div id="modal-acciones" class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
@@ -374,6 +388,7 @@
     </div>
   </div>
 
+  <!-- POPUP ASUNTOS ACTUALIZADO -->
   <div id="modal-asuntos" class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
@@ -382,24 +397,31 @@
       </div>
       <form id="form-modal-asuntos" class="modal-body">
         <div class="form-group">
-          <label>Aspecto / Trámite pendiente</label>
-          <input type="text" id="modal-asu-tramite" required>
+          <label>Asunto pendiente de trámite o en trámite</label>
+          <textarea id="modal-asu-tramite" rows="3" required placeholder="Describe el asunto o trámite..."></textarea>
         </div>
         <div class="form-group">
-          <label>Estado Actual</label>
-          <input type="text" id="modal-asu-estado" required placeholder="Ej: En revisión jurídica">
-        </div>
-        <div class="form-group">
-          <label>Impacto / Riesgo de no gestionarse</label>
-          <select id="modal-asu-riesgo" required>
-            <option value="Alto">Alto</option>
-            <option value="Medio">Medio</option>
-            <option value="Bajo">Baja</option>
+          <label>Estado actual</label>
+          <select id="modal-asu-estado" required>
+            <option value="">Seleccione un estado...</option>
+            <option value="Atrasada">Atrasada</option>
+            <option value="Falta menos del 20%">Falta menos del 20%</option>
+            <option value="Falta entre el 30% y 50%">Falta entre el 30% y 50%</option>
+            <option value="Falta entre el 60% y 80%">Falta entre el 60% y 80%</option>
+            <option value="Falta mas del 80%">Falta mas del 80%</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Acción requerida por el empalme</label>
-          <textarea id="modal-asu-accion" rows="3" required placeholder="¿Qué debe hacer la persona que recibe?"></textarea>
+          <label>Entidad / Dependencia</label>
+          <input type="text" id="modal-asu-entidad" required placeholder="Ej: Subdirección de APP / Secretaría de Hacienda">
+        </div>
+        <div class="form-group">
+          <label>Acciones pendientes por realizar</label>
+          <textarea id="modal-asu-acciones-pendientes" rows="3" required placeholder="Describe los pasos que debe seguir la persona que recibe..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Fecha límite</label>
+          <input type="date" id="modal-asu-fecha" required>
         </div>
         <button type="submit" class="btn-primary w-full spacing-top-md">💾 Guardar Asunto</button>
       </form>
