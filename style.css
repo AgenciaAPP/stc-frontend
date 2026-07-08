@@ -98,7 +98,6 @@ body {
   display: none !important;
 }
 
-/* Header fijo para el formulario con el botón de salir */
 .form-sticky-header {
   display: flex;
   justify-content: space-between;
@@ -110,7 +109,7 @@ body {
 }
 
 /* ==========================================
-   4. COMPONENTES Y TARJETAS
+   4. TARJETAS Y CONTENEDORES
    ========================================== */
 .card {
   background: var(--card-bg);
@@ -149,7 +148,6 @@ body {
   margin: 20px 0;
 }
 
-/* Perfiles de Selección */
 .role-selection-container {
   display: flex;
   gap: 24px;
@@ -252,7 +250,7 @@ body {
 }
 
 /* ==========================================
-   6. FORMULARIOS E INPUTS (CON ESPACIADO CORREGIDO)
+   6. FORMULARIOS E INPUTS
    ========================================== */
 .grid-form {
   display: grid;
@@ -266,14 +264,9 @@ body {
   gap: 8px;
 }
 
-/* Corrección del punto 1: Espacio entre input cédula y botón ingresar */
-.spacing-bottom {
-  margin-bottom: 25px;
-}
-
-.spacing-top {
-  margin-top: 20px;
-}
+.colspan-2 { grid-column: span 2; }
+.spacing-bottom { margin-bottom: 25px; }
+.spacing-top { margin-top: 24px; }
 
 label {
   font-weight: 600;
@@ -281,7 +274,7 @@ label {
   color: var(--real-black);
 }
 
-input[type="text"], input[type="email"], input[type="date"], select, textarea {
+input[type="text"], input[type="email"], input[type="date"], select {
   width: 100%;
   padding: 12px 16px;
   border: 1px solid var(--border-color);
@@ -289,6 +282,18 @@ input[type="text"], input[type="email"], input[type="date"], select, textarea {
   font-size: 0.95rem;
   font-family: inherit;
   outline: none;
+}
+
+/* Ajuste Punto 1: Bloquear expansión horizontal en cuadros de texto largo */
+textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  resize: vertical !important; /* Fuerza solo movimiento hacia abajo */
 }
 
 input:focus, select:focus, textarea:focus {
@@ -300,6 +305,11 @@ input:focus, select:focus, textarea:focus {
   background-color: var(--readonly-bg) !important;
   color: var(--text-muted);
   cursor: not-allowed;
+}
+
+.instruction {
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 /* ==========================================
@@ -329,7 +339,38 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================
-   8. MODAL EMULADOR POP-UP (ESTILO POWER APPS)
+   8. AJUSTE PUNTO 3: RESPIRACIÓN BLOQUE DE CIERRE (PESTAÑA 5)
+   ========================================== */
+.final-closure-section {
+  margin-top: 45px; /* Espacio amplio debajo de la tabla */
+  padding: 30px 24px;
+  background-color: #fffbeb; /* Contenedor sutil tintado de amarillo */
+  border: 1px solid #fef3c7;
+  border-radius: 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px; /* Espacio cómodo entre títulos, textos y botón */
+}
+
+.final-closure-section h4 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #92400e; /* Marrón oscuro jerárquico */
+  text-transform: uppercase;
+}
+
+.final-closure-section .instruction {
+  max-width: 750px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #b45309;
+  margin-bottom: 10px;
+}
+
+/* ==========================================
+   9. MODAL EMULADOR POP-UP (ESTILO POWER APPS)
    ========================================== */
 .modal-overlay {
   position: fixed;
@@ -337,7 +378,7 @@ input:focus, select:focus, textarea:focus {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(30, 41, 59, 0.6); /* Fondo traslúcido oscuro */
+  background-color: rgba(30, 41, 59, 0.6); 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -384,7 +425,6 @@ input:focus, select:focus, textarea:focus {
   cursor: pointer;
   color: var(--text-muted);
 }
-.btn-close-modal:hover { color: var(--accent-coral); }
 
 .modal-body {
   padding: 24px;
@@ -399,38 +439,15 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================
-   9. SPINNER DE CARGA MODERNO (CIRCULAR)
+   10. SPINNER DE CARGA MODERNO
    ========================================== */
-.loader-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.spinner {
-  width: 35px;
-  height: 35px;
-  border: 4px solid rgba(24, 120, 186, 0.1);
-  border-left-color: var(--accent-blue);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.loader-container span {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  font-weight: 500;
-}
+.loader-container { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 20px; }
+.spinner { width: 35px; height: 35px; border: 4px solid rgba(24, 120, 186, 0.1); border-left-color: var(--accent-blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.loader-container span { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
 
 /* ==========================================
-   10. TABLAS Y BADGES
+   11. TABLAS Y BADGES
    ========================================== */
 .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
 .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
@@ -440,12 +457,21 @@ input:focus, select:focus, textarea:focus {
 .badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
 .badge-alert { background-color: #fffbeb; color: #b45309; border: 1px solid #fef3c7; }
 .badge-success { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.badge-danger { background-color: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; }
 .badge-role-title { background-color: var(--text-muted) !important; color: white; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; }
 
 .contract-info-box { background-color: #fffdeb; border-left: 5px solid var(--primary-color); padding: 20px; border-radius: 0 6px 6px 0; margin: 25px auto; max-width: 650px; text-align: left; }
 .management-box { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 6px; padding: 20px; margin-top: 25px; }
 .search-container { display: flex; gap: 12px; margin-top: 12px; }
 .hidden-result-box { background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 20px; margin-top: 20px; }
+
+.btn-action-view { background-color: #e2e8f0; color: var(--real-black); border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: 600; }
+.btn-action-pdf { background-color: #fee2e2; color: #991b1b; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: 600; }
+
+.mx-auto { margin-left: auto; margin-right: auto; }
+.max-w-md { max-width: 30rem; }
+.text-center { text-align: center; }
+.w-full { width: 100%; }
 
 @media (max-width: 768px) {
   .grid-form { grid-template-columns: 1fr; }
