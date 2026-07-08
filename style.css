@@ -1,31 +1,33 @@
 /* ==========================================
-   1. VARIABLES Y CONFIGURACIÓN GENERAL
+   1. TIPOGRAFÍA (METROPOLIS) Y VARIABLES
    ========================================== */
+@import url('https://fonts.cdnfonts.com/css/metropolis');
+
 :root {
-  --primary-color: #0f766e;    /* Verde institucional principal */
-  --primary-dark: #115e59;     /* Verde oscuro para hovers */
-  --secondary-color: #1e3a8a;  /* Azul institucional (TH) */
-  --success-color: #10b981;    /* Verde para botones de guardar */
-  --danger-color: #ef4444;     /* Rojo para alertas o cerrar sesión */
-  --text-color: #334155;       /* Gris oscuro para lectura */
-  --bg-color: #f8fafc;         /* Fondo gris claro de la app */
-  --card-bg: #ffffff;          /* Blanco para contenedores */
-  --border-color: #e2e8f0;     /* Gris para líneas de división */
-  --readonly-bg: #f1f5f9;      /* Fondo para campos bloqueados de SECOP */
+  --primary-color: #ffd500;    /* Amarillo institucional */
+  --text-dark: #1e293b;        /* Gris casi negro para contraste */
+  --text-muted: #6a6a6a;       /* Gris secundario para descripciones */
+  --accent-blue: #1878ba;      /* Azul secundario para enlaces/acciones */
+  --accent-coral: #cb6c59;     /* Coral secundario para alertas/badges */
+  --bg-color: #f8fafc;         /* Fondo de la aplicación */
+  --card-bg: #ffffff;          /* Fondo de tarjetas */
+  --border-color: #cbd5e1;     /* Gris de bordes */
+  --readonly-bg: #f1f5f9;      /* Fondo para campos de SECOP II */
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
   background-color: var(--bg-color);
-  color: var(--text-color);
+  color: var(--text-dark);
+  font-family: 'Metropolis', 'Segoe UI', sans-serif;
+  font-weight: 400; /* Regular */
   line-height: 1.6;
-  padding-bottom: 40px;
+  padding-bottom: 60px;
 }
 
 .container {
@@ -36,38 +38,44 @@ body {
 }
 
 /* ==========================================
-   2. ENCABEZADO PRINCIPAL (HEADER)
+   2. ENCABEZADO INSTITUTIONAL CON LOGO
    ========================================== */
 .main-header {
   background-color: var(--card-bg);
-  border-bottom: 3px solid var(--primary-color);
-  padding: 20px;
+  border-bottom: 5px solid var(--primary-color);
+  padding: 25px 20px;
   text-align: center;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
+.header-logo {
+  max-width: 240px;
+  height: auto;
+  margin-bottom: 15px;
+}
+
 .main-header h1 {
-  color: var(--primary-color);
-  font-size: 1.8rem;
-  font-weight: 700;
+  font-weight: 700; /* Bold */
+  font-size: 1.6rem;
+  color: var(--text-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   margin-bottom: 5px;
 }
 
 .main-header h2 {
-  color: #64748b;
-  font-size: 1rem;
-  font-weight: 400;
+  font-weight: 500; /* Medium */
+  font-size: 0.95rem;
+  color: var(--text-muted);
 }
 
 /* ==========================================
    3. ARQUITECTURA DE PANTALLA ÚNICA (SPA CONTROL)
    ========================================== */
-/* Oculta por defecto todas las vistas y paneles de pestañas */
 .view-panel, .tab-panel {
   display: none !important;
 }
 
-/* Muestra únicamente el elemento que tenga la clase active */
 .view-panel.active, .tab-panel.active {
   display: block !important;
 }
@@ -77,23 +85,40 @@ body {
 }
 
 /* ==========================================
-   4. COMPONENTES REUTILIZABLES (TARJETAS Y BOTONES)
+   4. TARJETAS Y COMPONENTES
    ========================================== */
 .card {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  padding: 24px;
-  margin-top: 20px;
+  padding: 30px;
+  margin-top: 25px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
 }
 
-/* Botones Principales de Roles (Vista Bienvenida) */
+.card h3 {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 1.25rem;
+  color: var(--text-dark);
+  margin-bottom: 15px;
+  border-left: 4px solid var(--accent-blue);
+  padding-left: 10px;
+}
+
+.card h4 {
+  font-weight: 500;
+  font-size: 1.1rem;
+  color: var(--text-dark);
+  margin-bottom: 10px;
+}
+
+/* Botones de Selección de Perfil */
 .role-selection-container {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   justify-content: center;
-  margin-top: 30px;
+  margin-top: 35px;
   flex-wrap: wrap;
 }
 
@@ -101,52 +126,44 @@ body {
   background: var(--card-bg);
   border: 2px solid var(--border-color);
   border-radius: 8px;
-  padding: 20px;
-  width: 280px;
+  padding: 25px 20px;
+  width: 290px;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.25s ease;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .btn-role:hover {
-  border-color: var(--primary-color);
-  transform: translateY(-3px);
-  box-shadow: 0 10px 15px -3px rgba(15, 118, 110, 0.1);
+  border-color: var(--text-dark);
+  background-color: #fffdec;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px -5px rgba(255, 213, 0, 0.25);
 }
 
 .btn-role .icon {
-  font-size: 2.5rem;
+  font-size: 2.8rem;
 }
 
 .btn-role strong {
-  font-size: 1.1rem;
-  color: var(--text-color);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--text-dark);
+  text-transform: uppercase;
 }
 
 .btn-role small {
-  color: #64748b;
+  font-weight: 400;
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 
-/* Botonera de Acción Estándar */
+/* Botonera Global */
 .btn-primary {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-primary:hover { background-color: var(--primary-dark); }
-
-.btn-success {
-  background-color: var(--success-color);
+  background-color: var(--accent-blue);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -155,10 +172,22 @@ body {
   cursor: pointer;
   transition: opacity 0.2s;
 }
-.btn-success:hover { opacity: 0.9; }
+.btn-primary:hover { opacity: 0.9; }
+
+.btn-success {
+  background-color: var(--text-dark);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn-success:hover { background-color: #0f172a; }
 
 .btn-danger {
-  background-color: var(--danger-color);
+  background-color: var(--accent-coral);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -166,11 +195,12 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
+.btn-danger:hover { opacity: 0.9; }
 
 .btn-link {
   background: none;
   border: none;
-  color: var(--primary-color);
+  color: var(--accent-blue);
   cursor: pointer;
   font-weight: 600;
   margin-bottom: 15px;
@@ -179,51 +209,18 @@ body {
 .btn-link:hover { text-decoration: underline; }
 
 /* ==========================================
-   5. NAVEGACIÓN POR PESTAÑAS (TABS NAV)
-   ========================================== */
-.tabs-nav {
-  display: flex;
-  gap: 8px;
-  margin-top: 25px;
-  border-bottom: 2px solid var(--border-color);
-  overflow-x: auto;
-}
-
-.tab-btn {
-  background: none;
-  border: none;
-  padding: 12px 20px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #64748b;
-  cursor: pointer;
-  border-bottom: 3px solid transparent;
-  white-space: nowrap;
-}
-
-.tab-btn.active {
-  color: var(--primary-color);
-  border-bottom-color: var(--primary-color);
-}
-
-.tab-btn:disabled {
-  color: #cbd5e1;
-  cursor: not-allowed;
-}
-
-/* ==========================================
-   6. FORMULARIOS E INPUTS
+   5. INTERFAZ DE FORMULARIOS
    ========================================== */
 .grid-form {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: 24px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .colspan-2 {
@@ -233,47 +230,73 @@ body {
 label {
   font-weight: 600;
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--text-dark);
 }
 
 input[type="text"], input[type="email"], select, textarea {
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 16px;
   border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 0.95rem;
   background-color: #ffffff;
-  color: var(--text-color);
+  color: var(--text-dark);
   outline: none;
 }
 
 input:focus, select:focus, textarea:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(24, 120, 186, 0.15);
 }
 
-/* Estilo para los campos que vienen inmutables de SECOP II */
 .readonly-field {
   background-color: var(--readonly-bg) !important;
-  color: #475569;
+  color: var(--text-muted);
   cursor: not-allowed;
-  font-weight: 500;
 }
 
 .instruction {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.9rem;
   margin-bottom: 10px;
 }
 
-.form-actions {
+/* ==========================================
+   6. PESTAÑAS DE NAVEGACIÓN (TABS)
+   ========================================== */
+.tabs-nav {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
+  gap: 6px;
+  margin-top: 30px;
+  border-bottom: 2px solid var(--border-color);
+  overflow-x: auto;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 14px 22px;
+  font-size: 0.95rem;
+  font-weight: 500; /* Medium */
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+}
+
+.tab-btn.active {
+  font-weight: 700; /* Bold */
+  color: var(--accent-blue);
+  border-bottom-color: var(--accent-blue);
+}
+
+.tab-btn:disabled {
+  color: #cbd5e1;
+  cursor: not-allowed;
 }
 
 /* ==========================================
-   7. DASHBOARDS Y PLATAFORMA DE MONITOREO
+   7. DASHBOARDS Y MONITOREO
    ========================================== */
 .dashboard-header {
   display: flex;
@@ -281,53 +304,51 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   flex-wrap: wrap;
   gap: 15px;
-  margin-bottom: 15px;
 }
 
 .contract-info-box {
-  background-color: #f1f5f9;
+  background-color: #fffdeb;
   border-left: 4px solid var(--primary-color);
-  padding: 16px;
+  padding: 20px;
   border-radius: 0 6px 6px 0;
-  margin: 20px auto;
-  max-width: 600px;
+  margin: 25px auto;
+  max-width: 650px;
   text-align: left;
 }
 
 .contract-info-box p {
-  margin-bottom: 6px;
-  font-size: 0.95rem;
+  margin-bottom: 8px;
 }
 
 .management-box {
   background: #f8fafc;
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  padding: 16px;
-  margin-top: 20px;
+  padding: 20px;
+  margin-top: 25px;
 }
 
 .search-container {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 12px;
+  margin-top: 12px;
 }
 
 .hidden-result-box {
   background-color: #f0fdf4;
   border: 1px solid #bbf7d0;
   border-radius: 6px;
-  padding: 16px;
-  margin-top: 15px;
+  padding: 20px;
+  margin-top: 20px;
 }
 
 /* ==========================================
-   8. TABLAS DE DATOS (DATA TABLES)
+   8. TABLAS DE SEGUIMIENTO (DATA TABLES)
    ========================================== */
 .table-responsive {
   width: 100%;
   overflow-x: auto;
-  margin-top: 15px;
+  margin-top: 20px;
 }
 
 .data-table {
@@ -339,44 +360,41 @@ input:focus, select:focus, textarea:focus {
 
 .data-table th {
   background-color: #f1f5f9;
-  color: #475569;
+  color: var(--text-dark);
   font-weight: 600;
-  padding: 12px;
+  padding: 14px;
   border-bottom: 2px solid var(--border-color);
 }
 
 .data-table td {
-  padding: 12px;
+  padding: 14px;
   border-bottom: 1px solid var(--border-color);
-  vertical-align: middle;
 }
 
 /* Badges de Estado */
 .badge {
   display: inline-block;
-  padding: 4px 8px;
-  border-radius: 9999px;
+  padding: 4px 10px;
+  border-radius: 4px;
   font-size: 0.75rem;
   font-weight: 700;
-  text-transform: uppercase;
 }
-.badge-alert { background-color: #fef3c7; color: #d97706; }
-.badge-success { background-color: #d1fae5; color: #065f46; }
+.badge-alert { background-color: #fffbeb; color: #b45309; border: 1px solid #fef3c7; }
+.badge-success { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
 
 .badge-role-title {
   color: white;
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 4px;
   font-size: 0.8rem;
   font-weight: 600;
 }
 
-/* Botones de acción dentro de la tabla */
 .btn-action-view {
   background-color: #e2e8f0;
-  color: #334155;
+  color: var(--text-dark);
   border: none;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 600;
@@ -387,7 +405,7 @@ input:focus, select:focus, textarea:focus {
   background-color: #fee2e2;
   color: #991b1b;
   border: none;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 600;
@@ -395,27 +413,22 @@ input:focus, select:focus, textarea:focus {
 .btn-action-pdf:hover { background-color: #fca5a5; }
 
 /* ==========================================
-   9. UTILERÍAS / DIAGNÓSTICO (LOADERS & ALIGN)
+   9. ELEMENTOS AUXILIARES
    ========================================== */
 .loader {
-  margin-top: 10px;
+  margin-top: 12px;
   font-size: 0.85rem;
-  color: var(--primary-color);
+  color: var(--accent-blue);
   font-weight: 600;
   font-style: italic;
 }
 
 .mx-auto { margin-left: auto; margin-right: auto; }
-.max-w-md { max-width: 28rem; }
+.max-w-md { max-width: 30rem; }
 .text-center { text-align: center; }
 .w-full { width: 100%; }
 
-/* Adaptación responsiva básica */
 @media (max-width: 768px) {
-  .grid-form {
-    grid-template-columns: 1fr;
-  }
-  .colspan-2 {
-    grid-column: span 1;
-  }
+  .grid-form { grid-template-columns: 1fr; }
+  .colspan-2 { grid-column: span 1; }
 }
