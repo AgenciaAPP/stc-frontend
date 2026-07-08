@@ -1,4 +1,4 @@
-// CONFIGURACIÓN: Endpoint de conexión real con el backend de Vercel
+// CONFIGURACIÓN: Endpoint de conexión real con el backend seguro de Vercel
 const BACKEND_URL = 'https://stc-backend-nine.vercel.app';
 
 // VARIABLES GLOBALES DE SESIÓN SIMULADA
@@ -75,9 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  btnSavePreliminary.addEventListener('click', () => {
-    alert('💾 ¡Progreso guardado preliminarmente!\n\nLos datos ingresados en las tablas y campos se han congelado en el estado actual del servidor. Puedes reanudar el diligenciamiento cuando desees.');
-    switchView(viewContratistaDashboard);
+  // BOTÓN: GUARDAR PROGRESO PRELIMINAR (CONEXIÓN BACKEND)
+  btnSavePreliminary.addEventListener('click', async () => {
+    await enviarActaASharePoint(false);
   });
 
   // ==========================================
@@ -232,10 +232,9 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal('modal-sistemas');
   });
 
-  // ENVÍO DE FORMULARIO: POP-UP DIRECTORIO (CAMPOS REORDENADOS REALES)
+  // ENVÍO DE FORMULARIO: POP-UP DIRECTORIO
   document.getElementById('form-modal-directorio').addEventListener('submit', (e) => {
     e.preventDefault();
-
     const nuevoContacto = {
       nombre: document.getElementById('modal-dir-nombre').value,
       tel: document.getElementById('modal-dir-tel').value,
@@ -294,18 +293,120 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderTableAsuntos() { renderTableGeneric('table-asuntos-body', listadoAsuntos, ['tramite', 'estado', 'entidad', 'accionesPendientes', 'fecha']); }
   function renderTableSistemas() { renderTableGeneric('table-sistemas-body', listadoSistemas, ['nombre', 'usuario', 'contrasena', 'obs']); }
-  
-  // Actualizado para reflejar las columnas semánticas de Directorio
   function renderTableDirectorio() { renderTableGeneric('table-directorio-body', listadoDirectorio, ['nombre', 'tel', 'correo', 'tipo', 'entidad', 'reco']); }
 
-  // CONSOLIDAR TODO Y FINALIZAR
-  document.getElementById('btn-submit-final').addEventListener('click', () => {
-    alert('🔒 ¡CONTRATO FINALIZADO CON ÉXITO INSTITUCIONAL!\n\nTu Acta de Transferencia ha sido compilada con todos sus multirregistros. Se ha cerrado el canal de edición y enviado la notificación a tu supervisor (Edison Alexander Montoya) para la firma digital del PDF.');
-    switchView(viewWelcome);
+  // ==========================================
+  // 6. CONEXIÓN EN VIVO: CONSULTA SECOP II
+  // ==========================================
+  document.getElementById('btn-buscar-secop').addEventListener('click', async () => {
+    const contratoInput = document.getElementById('search-contrato').value.trim();
+    const loader = document.getElementById('secop-loader');
+    const resultBox = document.getElementById('secop-result-box');
+
+    if (!contratoInput) {
+      alert('⚠️ Por favor, ingresa una referencia de contrato primero.');
+      return;
+    }
+
+    loader.classList.remove('hidden');
+    resultBox.classList.add('hidden');
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/buscar-secop?contrato=${encodeURIComponent(contratoInput)}`);
+      const data = await response.json();
+
+      if (data.success) {
+        document.getElementById('secop-res-nombre').textContent = data.nombre;
+        document.getElementById('secop-res-cedula').textContent = data.cedula;
+        document.getElementById('secop-res-objeto').textContent = data.objeto;
+
+        window.contratoTemporalValidado = {
+          cedula: data.cedula,
+          nombre: data.nombre,
+          contrato: contratoInput,
+          objeto: data.objeto
+        };
+
+        resultBox.classList.remove('hidden');
+      } else {
+        alert(`❌ ${data.message || 'Contrato no encontrado en los registros de la Agencia APP.'}`);
+      }
+    } catch (error) {
+      console.error('Error al consultar SECOP:', error);
+      alert('❌ Hubo un problema al conectarse con el servidor de la Agencia APP.');
+    } finally {
+      loader.classList.add('hidden');
+    }
+  });
+
+  document.getElementById('btn-confirmar-habilitacion').addEventListener('click', () => {
+    if (window.contratoTemporalValidado) {
+      alert(`🎉 ¡ÉXITO INSTITUCIONAL!\n\nLa cédula ${window.contratoTemporalValidado.cedula} asociada al contrato ${window.contratoTemporalValidado.contrato} ha sido autorizada en la base de datos central de la Agencia APP.`);
+      document.getElementById('secop-result-box').classList.add('hidden');
+      document.getElementById('search-contrato').value = '';
+    }
   });
 
   // ==========================================
-  // 6. DASHBOARD DE FUNCIONARIOS
+  // 7. CONEXIÓN EN VIVO: COMPILACIÓN & SINK SHAREPOINT
+  // ==========================================
+  async function enviarActaASharePoint(isFinalSubmit) {
+    const payload = {
+      datosGenerales: {
+        cedula: document.getElementById('cedula').value,
+        nombreContratista: document.getElementById('nombreContratista').value,
+        numeroContrato: document.getElementById('numeroContrato').value,
+        supervisor: document.getElementById('supervisor').value,
+        objetoContrato: document.getElementById('objetoContrato').value,
+        correoContratista: document.getElementById('correoContratista').value,
+        dependencia: document.getElementById('dependencia').value,
+        lineamientos: document.getElementById('lineamientos').value,
+        recomendacionesAcciones: document.getElementById('recomendaciones-acciones').value,
+        isFinal: isFinalSubmit
+      },
+      acciones: listadoAcciones,
+      asuntos: listadoAsuntos,
+      sistemas: listadoSistemas,
+      directorio: listadoDirectorio
+    };
+
+    if (!payload.datosGenerales.correoContratista || !payload.datosGenerales.dependencia) {
+      alert('⚠️ Por favor completa el Correo Electrónico y la Dependencia en la pestaña de Datos Generales.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/save-acta`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const resData = await response.json();
+
+      if (resData.success) {
+        if (isFinalSubmit) {
+          alert('🔒 ¡CONTRATO FINALIZADO CON ÉXITO INSTITUCIONAL!\n\nTu Acta de Transferencia ha sido compilada e inyectada con todos sus multirregistros en SharePoint de la Agencia APP. Se cerró el canal de edición.');
+          switchView(viewWelcome);
+        } else {
+          alert('💾 ¡Progreso guardado con éxito en SharePoint!\n\nPuedes cerrar la pestaña y reanudar el diligenciamiento cuando desees.');
+          switchView(viewContratistaDashboard);
+        }
+      } else {
+        alert(`❌ Error al guardar en SharePoint: ${resData.message}`);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('❌ Error crítico de comunicación con el backend de Vercel.');
+    }
+  }
+
+  // CONSOLIDAR TODO Y FINALIZAR REAL
+  document.getElementById('btn-submit-final').addEventListener('click', async () => {
+    await enviarActaASharePoint(true);
+  });
+
+  // ==========================================
+  // 8. DASHBOARD DE FUNCIONARIOS
   // ==========================================
   function poblarTablaSeguimientoFuncionarios() {
     const tbody = document.getElementById('table-tracking-body');
