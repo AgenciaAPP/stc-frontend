@@ -3,16 +3,16 @@
    ========================================== */
 :root {
   --primary-color: #ffd500;    /* Amarillo Principal */
-  --text-dark: #1878ba;        /* Azul como color para textos destacados */
-  --real-black: #1e293b;       /* Gris carbón para texto base de lectura */
-  --text-muted: #6a6a6a;       /* Gris Secundario para instrucciones */
-  --accent-blue: #1878ba;      /* Azul Secundario para elementos interactivos */
-  --accent-coral: #cb6c59;     /* Coral Secundario para alertas / denegaciones */
+  --text-dark: #1878ba;        /* Azul Principal para títulos */
+  --real-black: #1e293b;       /* Gris carbón para lectura fluida */
+  --text-muted: #6a6a6a;       /* Gris Secundario institucional */
+  --accent-blue: #1878ba;      /* Azul Secundario interactivo */
+  --accent-coral: #cb6c59;     /* Coral Secundario para alertas y salidas */
   
-  --bg-color: #f8fafc;         /* Fondo gris limpio */
-  --card-bg: #ffffff;          /* Blanco de fondo para tarjetas */
-  --border-color: #cbd5e1;     /* Gris de división */
-  --readonly-bg: #f1f5f9;      /* Fondo de inputs SECOP II bloqueados */
+  --bg-color: #f8fafc;         
+  --card-bg: #ffffff;          
+  --border-color: #cbd5e1;     
+  --readonly-bg: #f1f5f9;      
 }
 
 * {
@@ -25,7 +25,7 @@ body {
   background-color: var(--bg-color);
   color: var(--real-black);
   font-family: 'Metropolis', 'Segoe UI', Tahoma, sans-serif;
-  font-weight: 400; /* Regular */
+  font-weight: 400;
   line-height: 1.6;
   padding-bottom: 60px;
 }
@@ -52,12 +52,12 @@ body {
   display: block;
   margin: 0 auto 15px auto;
   width: 100%;
-  max-width: 240px !important; /* Blindaje absoluto para que no se estire */
+  max-width: 240px !important;
   height: auto !important;
 }
 
 .main-header h1 {
-  font-weight: 700; /* Bold */
+  font-weight: 700;
   font-size: 1.5rem;
   color: var(--accent-blue);
   text-transform: uppercase;
@@ -66,7 +66,7 @@ body {
 }
 
 .main-header h2 {
-  font-weight: 500; /* Medium */
+  font-weight: 500;
   font-size: 0.95rem;
   color: var(--text-muted);
 }
@@ -98,6 +98,7 @@ body {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
 }
 
+/* Títulos internos de tarjetas comunes */
 .card h3 {
   font-weight: 700;
   text-transform: uppercase;
@@ -108,8 +109,15 @@ body {
   padding-left: 12px;
 }
 
+/* Título especial para la bienvenida de la SPA (Sin la barra lateral huérfana) */
+.text-center h3 {
+  border-left: none !important;
+  padding-left: 0 !important;
+  text-align: center;
+}
+
 .card h4 {
-  font-weight: 500;
+  font-weight: 700;
   font-size: 1.1rem;
   color: var(--real-black);
   margin-bottom: 10px;
@@ -119,7 +127,7 @@ body {
   border: 0;
   height: 1px;
   background-color: var(--border-color);
-  margin: 15px 0;
+  margin: 20px 0;
 }
 
 /* Grilla de selección de Roles (Home) */
@@ -148,7 +156,7 @@ body {
 
 .btn-role:hover {
   border-color: var(--accent-blue);
-  background-color: #fffdf0; /* Tintado sutil del amarillo */
+  background-color: #fffdf0; 
   transform: translateY(-4px);
   box-shadow: 0 12px 20px -5px rgba(24, 120, 186, 0.15);
 }
@@ -200,13 +208,14 @@ body {
 .btn-success:hover { opacity: 0.9; }
 
 .btn-danger {
-  background-color: var(--accent-coral);
+  background-color: var(--accent-coral); /* Coral oficial de salida */
   color: white;
   border: none;
   padding: 8px 18px;
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
+  transition: opacity 0.2s;
 }
 .btn-danger:hover { opacity: 0.9; }
 
@@ -222,6 +231,8 @@ body {
   text-transform: uppercase;
   transition: transform 0.2s;
   box-shadow: 0 4px 10px rgba(24, 120, 186, 0.2);
+  margin: 15px auto 0 auto;
+  display: inline-block;
 }
 .btn-large-action:hover { transform: scale(1.02); }
 
@@ -311,7 +322,7 @@ input:focus, select:focus, textarea:focus {
   border: none;
   padding: 14px 22px;
   font-size: 0.95rem;
-  font-weight: 500; /* Medium */
+  font-weight: 500;
   color: var(--text-muted);
   cursor: pointer;
   border-bottom: 3px solid transparent;
@@ -319,7 +330,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .tab-btn.active {
-  font-weight: 700; /* Bold */
+  font-weight: 700;
   color: var(--accent-blue);
   border-bottom-color: var(--accent-blue);
 }
@@ -332,6 +343,15 @@ input:focus, select:focus, textarea:focus {
 /* ==========================================
    8. COMPONENTES DE DASHBOARD Y AUDITORÍA
    ========================================== */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
 .contract-info-box {
   background-color: #fffdeb;
   border-left: 5px solid var(--primary-color);
@@ -409,12 +429,16 @@ input:focus, select:focus, textarea:focus {
 .badge-alert { background-color: #fffbeb; color: #b45309; border: 1px solid #fef3c7; }
 .badge-success { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
 
+/* Badge de Rol del Funcionario (Corregido a Gris Muted para balancear) */
 .badge-role-title {
+  background-color: var(--text-muted) !important;
   color: white;
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 4px;
   font-size: 0.8rem;
   font-weight: 600;
+  display: inline-block;
+  margin-top: 5px;
 }
 
 /* Botones dentro de la grilla */
@@ -441,7 +465,7 @@ input:focus, select:focus, textarea:focus {
 .btn-action-pdf:hover { background-color: #fca5a5; }
 
 /* ==========================================
-   10. DIAGNÓSTICO Y RESPONSIVIDAD
+   10. DIAGNÓSTICO Y RESPONSIVE
    ========================================== */
 .loader {
   margin-top: 12px;
