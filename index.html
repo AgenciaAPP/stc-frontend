@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>STC - Agencia APP</title>
+  <!-- Inyección segura de la tipografía Metropolis sin romper el CSS -->
   <link href="https://fonts.cdnfonts.com/css/metropolis" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -22,9 +23,11 @@
 
   <main class="container">
 
-    <!-- VISTA 1: PORTAL DE BIENVENIDA -->
+    <!-- ==========================================
+         VISTA 1: PORTAL DE BIENVENIDA (SELECCIÓN DE ROL)
+         ========================================== -->
     <section id="view-welcome" class="view-panel active">
-      <div class="card text-center">
+      <div class="card text-center scale-up">
         <h3>BIENVENIDO AL APLICATIVO STC</h3>
         <p class="instruction">Por favor, selecciona tu perfil institucional para ingresar a la plataforma:</p>
         <div class="role-selection-container">
@@ -42,9 +45,11 @@
       </div>
     </section>
 
-    <!-- VISTA 2: LOGIN DINÁMICO CON SPINNER MODERNO -->
+    <!-- ==========================================
+         VISTA 2: LOGIN DINÁMICO CON SPINNER MODERNO
+         ========================================== -->
     <section id="view-login" class="view-panel">
-      <div class="card max-w-md mx-auto">
+      <div class="card max-w-md mx-auto scale-up">
         <button id="btn-back-to-welcome" class="btn-link">← Volver al inicio</button>
         <h3 id="login-title">INGRESO A LA PLATAFORMA</h3>
         <p id="login-instruction" class="instruction"></p>
@@ -56,16 +61,19 @@
 
         <button id="btn-submit-login" class="btn-primary w-full">Ingresar y Verificar</button>
         
+        <!-- Spinner circular animado moderno -->
         <div id="login-loader" class="loader-container hidden">
           <div class="spinner"></div>
-          <span>Buscando autorización en registros...</span>
+          <span>Buscando autorización en registros oficiales...</span>
         </div>
       </div>
     </section>
 
-    <!-- VISTA 3: DASHBOARD DEL CONTRATISTA -->
+    <!-- ==========================================
+         VISTA 3: DASHBOARD DEL CONTRATISTA
+         ========================================== -->
     <section id="view-contratista-dashboard" class="view-panel">
-      <div class="card text-center">
+      <div class="card text-center scale-up">
         <div class="dashboard-header">
           <h3 id="welcome-contratista">BIENVENIDO(A)</h3>
           <button class="btn-danger btn-logout">Cerrar Sesión</button>
@@ -77,11 +85,15 @@
           <p><strong>Objeto:</strong> <span id="dash-objeto-contrato">---</span></p>
           <p><strong>Estado en Sistema:</strong> <span id="dash-estado-acta" class="badge">---</span></p>
         </div>
-        <button id="btn-empezar-diligenciamiento" class="btn-large-action">Diligenciar Acta de Transferencia</button>
+        <div class="spacing-top-lg">
+          <button id="btn-empezar-diligenciamiento" class="btn-large-action">Diligenciar Acta de Transferencia</button>
+        </div>
       </div>
     </section>
 
-    <!-- VISTA 4: MÓDULO FORMULARIO CONTRATISTA -->
+    <!-- ==========================================
+         VISTA 4: MÓDULO FORMULARIO CONTRATISTA
+         ========================================== -->
     <section id="view-formulario-transferencia" class="view-panel">
       
       <div class="form-sticky-header">
@@ -97,9 +109,11 @@
 
       <!-- PESTAÑA 1: DATOS GENERALES -->
       <section id="tab-general" class="tab-panel active">
-        <form id="form-general" class="card grid-form">
-          <h3>1. INFORMACIÓN GENERAL DEL CONTRATO</h3>
-          <p class="instruction colspan-2">Validación de la vinculación asignada en la Agencia APP.</p>
+        <form id="form-general" class="card grid-form scale-up">
+          <div class="section-title-container colspan-2">
+            <h3>1. INFORMACIÓN GENERAL DEL CONTRATO</h3>
+            <p class="instruction">Validación de la vinculación asignada en la Agencia APP.</p>
+          </div>
           <div class="form-group">
             <label>Cédula</label>
             <input type="text" id="cedula" readonly class="readonly-field">
@@ -137,11 +151,14 @@
         </form>
       </section>
 
-      <!-- PESTAÑA 2: ACCIONES REALIZADAS (CORREGIDA LA POSICIÓN) -->
+      <!-- PESTAÑA 2: ACCIONES REALIZADAS -->
       <section id="tab-acciones" class="tab-panel">
-        <div class="card">
+        <div class="card scale-up">
           <div class="table-section-header">
-            <h3>2. ACCIONES DE TRANSFERENCIA DE CONOCIMIENTO</h3>
+            <div>
+              <h3>2. ACCIONES DE TRANSFERENCIA DE CONOCIMIENTO</h3>
+              <p class="instruction">Listado de ejecuciones, hitos y evidencias físicas recopiladas.</p>
+            </div>
             <button type="button" class="btn-primary" onclick="openModal('modal-accion')">+ Nueva transferencia</button>
           </div>
 
@@ -163,14 +180,13 @@
             </table>
           </div>
 
-          <!-- Ajuste Punto 2: Campos de Lineamientos y Recomendaciones agrupados abajo -->
-          <div class="footer-inputs-container spacing-top">
+          <!-- Campos de Lineamientos y Recomendaciones agrupados abajo con respiro -->
+          <div class="footer-inputs-container spacing-top-lg">
             <div class="form-group">
               <label for="lineamientos">Lineamientos Generales</label>
               <textarea id="lineamientos" rows="2" placeholder="Lineamientos técnicos de la subdirección..."></textarea>
             </div>
-
-            <div class="form-group spacing-top">
+            <div class="form-group spacing-top-md">
               <label for="recomendaciones-acciones">Recomendaciones Especiales</label>
               <textarea id="recomendaciones-acciones" rows="2" placeholder="Recomendaciones metodológicas para el empalme..."></textarea>
             </div>
@@ -180,9 +196,12 @@
 
       <!-- PESTAÑA 3: ASUNTOS PENDIENTES -->
       <section id="tab-asuntos" class="tab-panel">
-        <div class="card">
+        <div class="card scale-up">
           <div class="table-section-header">
-            <h3>3. ASUNTOS PENDIENTES</h3>
+            <div>
+              <h3>3. ASUNTOS PENDIENTES</h3>
+              <p class="instruction">Registros en trámite y alertas críticas que requieren continuidad inmediata.</p>
+            </div>
             <button type="button" class="btn-primary" onclick="openModal('modal-asunto')">+ Nuevo asunto</button>
           </div>
           <div class="table-responsive">
@@ -205,9 +224,12 @@
 
       <!-- PESTAÑA 4: SISTEMAS E INFORMACIÓN -->
       <section id="tab-sistemas" class="tab-panel">
-        <div class="card">
+        <div class="card scale-up">
           <div class="table-section-header">
-            <h3>4. INVENTARIO DE SISTEMAS E INFORMACIÓN</h3>
+            <div>
+              <h3>4. INVENTARIO DE SISTEMAS E INFORMACIÓN</h3>
+              <p class="instruction">Control de accesos corporativos, licencias y perfiles asignados.</p>
+            </div>
             <button type="button" class="btn-primary" onclick="openModal('modal-sistema')">+ Nuevo sistema/acceso</button>
           </div>
           <div class="table-responsive">
@@ -228,11 +250,14 @@
         </div>
       </section>
 
-      <!-- PESTAÑA 5: DIRECTORIO Y FINALIZAR (OPTIMIZADO EN RESPIRACIÓN) -->
+      <!-- PESTAÑA 5: DIRECTORIO Y FINALIZAR -->
       <section id="tab-directorio" class="tab-panel">
-        <div class="card">
+        <div class="card scale-up">
           <div class="table-section-header">
-            <h3>5. DIRECTORIO DE CONTACTOS CLAVE</h3>
+            <div>
+              <h3>5. DIRECTORIO DE CONTACTOS CLAVE</h3>
+              <p class="instruction">Red de contactos técnicos y estratégicos relacionados con el cargo.</p>
+            </div>
             <button type="button" class="btn-primary" onclick="openModal('modal-directorio')">+ Nuevo contacto</button>
           </div>
           <div class="table-responsive">
@@ -252,10 +277,10 @@
             </table>
           </div>
           
-          <!-- Ajuste Punto 3: Bloque de finalización con mayor aislamiento y respiro -->
+          <!-- Bloque de finalización con óptima jerarquía y respiro -->
           <div class="final-closure-section">
             <h4>¿Has finalizado por completo tu Acta de Transferencia?</h4>
-            <p class="instruction">Al enviar el acta oficial se bloqueará tu edición de forma definitiva y se notificará formalmente a Talento Humano y a tu Supervisor asignado.</p>
+            <p class="instruction">Al enviar el acta oficial se bloqueará tu edición de forma definitiva y se notificará formalmente a Talento Humano y a tu Supervisor asignado para proceder con las firmas del PDF.</p>
             <button type="button" id="btn-submit-final" class="btn-large-action">🔒 Consolidar y Finalizar Acta</button>
           </div>
         </div>
@@ -263,9 +288,11 @@
 
     </section>
 
-    <!-- VISTA 5: DASHBOARD DE FUNCIONARIOS -->
+    <!-- ==========================================
+         VISTA 5: DASHBOARD DE FUNCIONARIOS
+         ========================================== -->
     <section id="view-funcionario-dashboard" class="view-panel">
-      <div class="card">
+      <div class="card scale-up">
         <div class="dashboard-header">
           <div>
             <h3>PANEL DE CONTROL OPERATIVO</h3>
@@ -313,7 +340,7 @@
 
   </main>
 
-  <!-- MODALES EMERGENTES -->
+  <!-- MODALES EMERGENTES (ESTILO POP-UP POWER APPS) -->
   <div id="modal-acciones" class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
@@ -353,7 +380,7 @@
           <label>Observaciones</label>
           <textarea id="modal-acc-obs" rows="2" placeholder="Anotación opcional"></textarea>
         </div>
-        <button type="submit" class="btn-primary w-full spacing-top">💾 Guardar Registro</button>
+        <button type="submit" class="btn-primary w-full spacing-top-md">💾 Guardar Registro</button>
       </form>
     </div>
   </div>
@@ -385,7 +412,7 @@
           <label>Acción requerida por el empalme</label>
           <textarea id="modal-asu-accion" rows="3" required placeholder="¿Qué debe hacer la persona que recibe?"></textarea>
         </div>
-        <button type="submit" class="btn-primary w-full spacing-top">💾 Guardar Asunto</button>
+        <button type="submit" class="btn-primary w-full spacing-top-md">💾 Guardar Asunto</button>
       </form>
     </div>
   </div>
@@ -416,7 +443,7 @@
             <option value="Credencial devuelta">Credencial devuelta / desactivada</option>
           </select>
         </div>
-        <button type="submit" class="btn-primary w-full spacing-top">💾 Guardar Sistema</button>
+        <button type="submit" class="btn-primary w-full spacing-top-md">💾 Guardar Sistema</button>
       </form>
     </div>
   </div>
@@ -446,9 +473,9 @@
         </div>
         <div class="form-group">
           <label>Asunto / Proceso Relacionado</label>
-          <input type="text" id="modal-dir-asunto" required placeholder="Ej: Gestión presupuestal / Mesa de servicio">
+          <input type="text" id="modal-dir-asunto" required placeholder="Ej: Gestión presupuestal">
         </div>
-        <button type="submit" class="btn-primary w-full spacing-top">💾 Guardar Contacto</button>
+        <button type="submit" class="btn-primary w-full spacing-top-md">💾 Guardar Contacto</button>
       </form>
     </div>
   </div>
