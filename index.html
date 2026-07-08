@@ -101,7 +101,7 @@
           <button class="tab-btn active" data-tab="general">1. Datos Generales</button>
           <button class="tab-btn" data-tab="acciones">2. Acciones</button>
           <button class="tab-btn" data-tab="asuntos">3. Asuntos</button>
-          <button class="tab-btn" data-tab="sistemas">4. Sistemas</button>
+          <button class="tab-btn" data-tab="sistemas">4. Systems</button>
           <button class="tab-btn" data-tab="directorio">5. Directorio y finalizar</button>
         </nav>
         <button id="btn-save-preliminary" class="btn-preliminary">💾 Guardar Progreso y Salir</button>
@@ -222,7 +222,7 @@
         </div>
       </section>
 
-      <!-- PESTAÑA 4: SISTEMAS E INFORMACIÓN (CAMPOS REORDENADOS) -->
+      <!-- PESTAÑA 4: SISTEMAS E INFORMACIÓN -->
       <section id="tab-sistemas" class="tab-panel">
         <div class="card scale-up">
           <div class="table-section-header">
@@ -250,7 +250,7 @@
         </div>
       </section>
 
-      <!-- PESTAÑA 5: DIRECTORIO Y FINALIZAR -->
+      <!-- PESTAÑA 5: DIRECTORIO Y FINALIZAR (CAMPOS ACTUALIZADOS REALES) -->
       <section id="tab-directorio" class="tab-panel">
         <div class="card scale-up">
           <div class="table-section-header">
@@ -264,15 +264,16 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Nombre Contacto</th>
-                  <th>Entidad / Dependencia</th>
-                  <th>Teléfono / Celular</th>
-                  <th>Correo Electrónico</th>
-                  <th>Asunto Relacionado</th>
+                  <th>Nombre</th>
+                  <th>Teléfono</th>
+                  <th>Email</th>
+                  <th>Tipo de contacto</th>
+                  <th>Entidad / dependencia</th>
+                  <th>Recomendaciones</th>
                 </tr>
               </thead>
               <tbody id="table-directorio-body">
-                <tr><td colspan="5" class="text-muted text-center">No se han agregado registros.</td></tr>
+                <tr><td colspan="6" class="text-muted text-center">No se han agregado registros.</td></tr>
               </tbody>
             </table>
           </div>
@@ -427,7 +428,6 @@
     </div>
   </div>
 
-  <!-- POPUP SISTEMAS CORREGIDO (ALTURA BLINDADA Y CONFIGURACIÓN INPUT TYPE="TEXT") -->
   <div id="modal-sistemas" class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
@@ -456,6 +456,7 @@
     </div>
   </div>
 
+  <!-- POPUP DIRECTORIO ACTUALIZADO REAL CON SELECCIÓN ÚNICA -->
   <div id="modal-directorio" class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
@@ -464,24 +465,32 @@
       </div>
       <form id="form-modal-directorio" class="modal-body">
         <div class="form-group">
-          <label>Nombre Completo del Contacto</label>
-          <input type="text" id="modal-dir-nombre" required>
+          <label>Nombre</label>
+          <input type="text" id="modal-dir-nombre" required placeholder="Nombre completo del contacto">
         </div>
         <div class="form-group">
-          <label>Entidad / Subdirección / Dependencia</label>
-          <input type="text" id="modal-dir-entidad" required>
-        </div>
-        <div class="form-group">
-          <label>Teléfono / Celular de Contacto</label>
+          <label>Teléfono</label>
           <input type="text" id="modal-dir-tel" required placeholder="3xxxxxxxxx">
         </div>
         <div class="form-group">
-          <label>Correo Electrónico</label>
-          <input type="email" id="modal-dir-correo" required>
+          <label>Email</label>
+          <input type="email" id="modal-dir-correo" required placeholder="correo@ejemplo.com">
         </div>
         <div class="form-group">
-          <label>Asunto / Proceso Relacionado</label>
-          <input type="text" id="modal-dir-asunto" required placeholder="Ej: Gestión presupuestal">
+          <label>Tipo de contacto</label>
+          <select id="modal-dir-tipo" required>
+            <option value="">Seleccione el tipo...</option>
+            <option value="Interno">Interno</option>
+            <option value="Externo">Externo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Entidad / dependencia</label>
+          <input type="text" id="modal-dir-entidad" required placeholder="Ej: Subdirección de Paisaje / Alcandía de Medellín">
+        </div>
+        <div class="form-group">
+          <label>Recomendaciones</label>
+          <textarea id="modal-dir-reco" rows="3" placeholder="Recomendaciones especiales de gestión con este contacto..."></textarea>
         </div>
         <button type="submit" class="btn-primary w-full spacing-top-md">💾 Guardar Contacto</button>
       </form>
