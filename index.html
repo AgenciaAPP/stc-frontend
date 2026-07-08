@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>STC - Agencia APP</title>
-  <!-- Inyección segura de la tipografía Metropolis sin romper el CSS -->
   <link href="https://fonts.cdnfonts.com/css/metropolis" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -23,9 +22,7 @@
 
   <main class="container">
 
-    <!-- ==========================================
-         VISTA 1: PORTAL DE BIENVENIDA (SELECCIÓN DE ROL)
-         ========================================== -->
+    <!-- VISTA 1: PORTAL DE BIENVENIDA -->
     <section id="view-welcome" class="view-panel active">
       <div class="card text-center scale-up">
         <h3>BIENVENIDO AL APLICATIVO STC</h3>
@@ -45,9 +42,7 @@
       </div>
     </section>
 
-    <!-- ==========================================
-         VISTA 2: LOGIN DINÁMICO CON SPINNER MODERNO
-         ========================================== -->
+    <!-- VISTA 2: LOGIN DINÁMICO -->
     <section id="view-login" class="view-panel">
       <div class="card max-w-md mx-auto scale-up">
         <button id="btn-back-to-welcome" class="btn-link">← Volver al inicio</button>
@@ -61,7 +56,6 @@
 
         <button id="btn-submit-login" class="btn-primary w-full">Ingresar y Verificar</button>
         
-        <!-- Spinner circular animado moderno -->
         <div id="login-loader" class="loader-container hidden">
           <div class="spinner"></div>
           <span>Buscando autorización en registros oficiales...</span>
@@ -69,9 +63,7 @@
       </div>
     </section>
 
-    <!-- ==========================================
-         VISTA 3: DASHBOARD DEL CONTRATISTA
-         ========================================== -->
+    <!-- VISTA 3: DASHBOARD DEL CONTRATISTA -->
     <section id="view-contratista-dashboard" class="view-panel">
       <div class="card text-center scale-up">
         <div class="dashboard-header">
@@ -91,9 +83,7 @@
       </div>
     </section>
 
-    <!-- ==========================================
-         VISTA 4: MÓDULO FORMULARIO CONTRATISTA
-         ========================================== -->
+    <!-- VISTA 4: MÓDULO FORMULARIO CONTRATISTA -->
     <section id="view-formulario-transferencia" class="view-panel">
       
       <div class="form-sticky-header">
@@ -180,7 +170,6 @@
             </table>
           </div>
 
-          <!-- Campos de Lineamientos y Recomendaciones agrupados abajo con respiro -->
           <div class="footer-inputs-container spacing-top-lg">
             <div class="form-group">
               <label for="lineamientos">Lineamientos Generales</label>
@@ -250,7 +239,7 @@
         </div>
       </section>
 
-      <!-- PESTAÑA 5: DIRECTORIO Y FINALIZAR -->
+      <!-- PESTAÑA 5: DIRECTORIO Y FINALIZAR (CORREGIDO EL AISLAMIENTO) -->
       <section id="tab-directorio" class="tab-panel">
         <div class="card scale-up">
           <div class="table-section-header">
@@ -276,11 +265,13 @@
               </tbody>
             </table>
           </div>
-          
-          <!-- Bloque de finalización con óptima jerarquía y respiro -->
-          <div class="final-closure-section">
-            <h4>¿Has finalizado por completo tu Acta de Transferencia?</h4>
-            <p class="instruction">Al enviar el acta oficial se bloqueará tu edición de forma definitiva y se notificará formalmente a Talento Humano y a tu Supervisor asignado para proceder con las firmas del PDF.</p>
+        </div>
+
+        <!-- Sacamos la sección de cierre a su propia tarjeta para obligar la separación visual física -->
+        <div class="final-closure-card scale-up">
+          <h4>¿Has finalizado por completo tu Acta de Transferencia?</h4>
+          <p class="instruction">Al enviar el acta oficial se bloqueará tu edición de forma definitiva y se notificará formalmente a Talento Humano y a tu Supervisor asignado para proceder con las firmas.</p>
+          <div class="button-wrapper">
             <button type="button" id="btn-submit-final" class="btn-large-action">🔒 Consolidar y Finalizar Acta</button>
           </div>
         </div>
@@ -288,9 +279,7 @@
 
     </section>
 
-    <!-- ==========================================
-         VISTA 5: DASHBOARD DE FUNCIONARIOS
-         ========================================== -->
+    <!-- VISTA 5: DASHBOARD DE FUNCIONARIOS -->
     <section id="view-funcionario-dashboard" class="view-panel">
       <div class="card scale-up">
         <div class="dashboard-header">
@@ -340,7 +329,7 @@
 
   </main>
 
-  <!-- MODALES EMERGENTES (ESTILO POP-UP POWER APPS) -->
+  <!-- MODALES POP-UP -->
   <div id="modal-acciones" class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
