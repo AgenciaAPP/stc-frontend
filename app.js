@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal('modal-acciones');
   });
 
-  // ENVÍO DE FORMULARIO: POP-UP ASUNTOS (MAPPING ACTUALIZADO DE CAMPOS)
+  // ENVÍO DE FORMULARIO: POP-UP ASUNTOS
   document.getElementById('form-modal-asuntos').addEventListener('submit', (e) => {
     e.preventDefault();
     const nuevoAsunto = {
@@ -217,14 +217,19 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal('modal-asuntos');
   });
 
-  // ENVÍO DE FORMULARIO: POP-UP SISTEMAS
+  // ENVÍO DE FORMULARIO: POP-UP SISTEMAS (CAMPOS ACTUALIZADOS REALES)
   document.getElementById('form-modal-sistemas').addEventListener('submit', (e) => {
     e.preventDefault();
+    
+    // Generar caracteres simulados de enmascaramiento para la contraseña en la grilla visual
+    const rawPass = document.getElementById('modal-sis-pass').value;
+    const maskedPass = "•".repeat(Math.min(rawPass.length, 8));
+
     const nuevoSistema = {
       nombre: document.getElementById('modal-sis-nombre').value,
-      tipo: document.getElementById('modal-sis-tipo').value,
-      rol: document.getElementById('modal-sis-rol').value,
-      estado: document.getElementById('modal-sis-estado').value
+      usuario: document.getElementById('modal-sis-usuario').value,
+      contrasena: maskedPass,
+      obs: document.getElementById('modal-sis-obs').value || 'Ninguna'
     };
     listadoSistemas.push(nuevoSistema);
     renderTableSistemas();
@@ -290,11 +295,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Actualizado para reflejar las nuevas claves semánticas de Asuntos
-  function renderTableAsuntos() { 
-    renderTableGeneric('table-asuntos-body', listadoAsuntos, ['tramite', 'estado', 'entidad', 'accionesPendientes', 'fecha']); 
-  }
-  function renderTableSistemas() { renderTableGeneric('table-sistemas-body', listadoSistemas, ['nombre', 'tipo', 'rol', 'estado']); }
+  function renderTableAsuntos() { renderTableGeneric('table-asuntos-body', listadoAsuntos, ['tramite', 'estado', 'entidad', 'accionesPendientes', 'fecha']); }
+  
+  // Actualizado para reflejar las nuevas columnas semánticas de Sistemas
+  function renderTableSistemas() { renderTableGeneric('table-sistemas-body', listadoSistemas, ['nombre', 'usuario', 'contrasena', 'obs']); }
+  
   function renderTableDirectorio() { renderTableGeneric('table-directorio-body', listadoDirectorio, ['nombre', 'entidad', 'tel', 'correo', 'asunto']); }
 
   // CONSOLIDAR TODO Y FINALIZAR
