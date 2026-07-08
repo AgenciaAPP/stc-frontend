@@ -1,26 +1,27 @@
 /* ==========================================
-   1. SFERA SENSORIAL & VARIABLES PREMIUM (ESTILO APPLE)
+   1. VARIABLES PREMIUM Y REGLAS DE CONTRASTE (APPLE STYLE)
    ========================================== */
 :root {
   --primary-color: #ffd500;       /* Amarillo Institucional */
-  --accent-blue: #0071e3;         /* Azul Eléctrico estilo Apple Keynote */
-  --accent-blue-hover: #0077ed;   
-  --real-black: #1d1d1f;          /* El negro profundo y opaco de Apple */
-  --text-muted: #86868b;          /* Gris refinado para subtítulos */
-  --bg-color: #f5f5f7;            /* Gris claro premium de fondos de hardware Apple */
-  --card-bg: rgba(255, 255, 255, 0.85); /* Base translúcida */
-  --border-color: rgba(0, 0, 0, 0.08);  /* Bordes ultra finos */
+  --accent-blue: #0071e3;         /* Azul Eléctrico de Apple */
+  --real-black: #1d1d1f;          /* Negro profundo tipográfico */
+  --text-muted: #6e6e73;          /* Gris intermedio legible */
+  --bg-color: #f5f5f7;            /* Gris claro premium de fondo */
+  --card-bg: #ffffff;          
+  --border-color: rgba(0, 0, 0, 0.08); 
   --readonly-bg: #f5f5f7;         
+  
+  /* Radios de curvatura de iOS */
   --radius-sm: 8px;
-  --radius-md: 14px;              /* Curvatura de esquinas líquidas de iOS */
-  --radius-lg: 22px;              /* Cápsulas y botones premium */
+  --radius-md: 14px;              
+  --radius-lg: 20px;              
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  -webkit-font-smoothing: antialiased; /* Suavizado de fuentes premium */
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
@@ -28,7 +29,7 @@ body {
   color: var(--real-black);
   font-family: 'Metropolis', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.6;
   padding-bottom: 120px;
 }
 
@@ -40,14 +41,14 @@ body {
 }
 
 /* ==========================================
-   2. HEADER BANNER INSTITUCIONAL MINIMALISTA
+   2. HEADER BANNER INSTITUNAL MINIMALISTA
    ========================================== */
 .main-header {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px); /* Efecto esmerilado de macOS */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
-  padding: 16px 0;
+  padding: 20px 0;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -78,19 +79,19 @@ body {
 
 .main-header h1 {
   font-weight: 700;
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   color: var(--real-black);
   letter-spacing: -0.2px;
 }
 
 .main-header h2 {
   font-weight: 400;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
 }
 
 /* ==========================================
-   3. SISTEMA DE NAVEGACIÓN PROGRESIVA (SPA)
+   3. ARQUITECTURA SPA Y NAVEGACIÓN EN PÍLDORAS
    ========================================== */
 .view-panel, .tab-panel {
   display: none !important;
@@ -104,17 +105,16 @@ body {
   display: none !important;
 }
 
-/* Header de pestañas flotantes estilo píldoras de iOS */
+/* Solución al Hover feo: Contenedor tipo dock de iOS */
 .form-sticky-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 35px;
-  margin-bottom: 5px;
-  background: rgba(230, 230, 235, 0.5);
-  padding: 8px;
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
+  margin-top: 40px;
+  margin-bottom: 25px; /* Más respiro antes de la tarjeta del contenido */
+  background: #e3e3e8;
+  padding: 6px;
+  border-radius: 14px;
 }
 
 .tabs-nav {
@@ -125,43 +125,49 @@ body {
 .tab-btn {
   background: none;
   border: none;
-  padding: 10px 18px;
+  padding: 10px 22px;
   font-size: 0.9rem;
   font-weight: 500;
-  color: var(--real-black);
+  color: #424245;
   cursor: pointer;
   border-radius: 10px;
-  transition: all 0.25s ease;
+  transition: background-color 0.25s ease, color 0.25s ease; /* Transición suave */
+}
+
+.tab-btn:hover {
+  color: var(--real-black);
+  background-color: rgba(255, 255, 255, 0.4);
 }
 
 .tab-btn.active {
   background: #ffffff;
   font-weight: 600;
   color: var(--accent-blue);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 /* ==========================================
-   4. TARJETAS Y CONTENEDORES CON AIRE (RESPIRACIÓN)
+   4. TARJETAS CON SÚPER AIRE (ANTI-APELLUZCAMIENTO)
    ========================================== */
 .card {
   background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 45px !important; /* Espacio interno generoso anti-apelluzcamiento */
-  margin-top: 25px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.02); /* Sombra ultra suave */
+  padding: 50px 45px !important; /* Colchón masivo interno para que respire */
+  margin-top: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
 }
 
 .card h3 {
   font-weight: 700;
-  font-size: 1.35rem;
+  font-size: 1.4rem;
   color: var(--real-black);
   letter-spacing: -0.4px;
+  margin-bottom: 8px;
 }
 
 .section-title-container {
-  margin-bottom: 35px;
+  margin-bottom: 40px; /* Más aire antes de la cuadrícula de inputs */
   border-left: 4px solid var(--accent-blue);
   padding-left: 16px;
 }
@@ -170,20 +176,20 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 35px;
+  margin-bottom: 35px; /* Más aire antes de que empiece la tabla */
 }
 
 .divider {
   border: 0;
   height: 1px;
   background-color: var(--border-color);
-  margin: 30px 0;
+  margin: 35px 0;
 }
 
-/* Grilla de Roles de Bienvenida (Estilo Hardware Cards) */
+/* Solución al Hover feo de los Roles de Bienvenida */
 .role-selection-container {
   display: flex;
-  gap: 30px;
+  gap: 35px;
   justify-content: center;
   margin-top: 45px;
   flex-wrap: wrap;
@@ -193,20 +199,20 @@ body {
   background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 45px 30px;
-  width: 320px;
+  padding: 50px 35px;
+  width: 325px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  /* Corregido: Transición sin 'transform' bruscos, solo sombras y color de borde */
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
 }
 
 .btn-role:hover {
-  border-color: rgba(0, 0, 0, 0.15);
-  transform: scale(1.02); /* Escala suave orgánica */
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 113, 227, 0.4);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05); /* Efecto de profundidad suave */
 }
 
 .btn-role .icon { font-size: 3rem; }
@@ -214,30 +220,27 @@ body {
 .btn-role small { font-weight: 400; color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; }
 
 /* ==========================================
-   5. BOTONES CAPSULARES MODERNOS
+   5. BOTONES CAPSULARES INTEGRADOS
    ========================================== */
 .btn-primary {
   background-color: var(--accent-blue);
   color: white;
   border: none;
-  padding: 10px 22px;
-  border-radius: var(--radius-sm);
+  padding: 12px 24px;
+  border-radius: 10px;
   font-weight: 500;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: opacity 0.2s ease;
 }
-.btn-primary:hover { 
-  background-color: var(--accent-blue-hover);
-  transform: translateY(-1px);
-}
+.btn-primary:hover { opacity: 0.9; }
 
 .btn-success {
   background-color: var(--real-black);
   color: white;
   border: none;
-  padding: 12px 28px;
-  border-radius: var(--radius-sm);
+  padding: 14px 32px;
+  border-radius: 10px;
   font-weight: 500;
   cursor: pointer;
 }
@@ -246,25 +249,22 @@ body {
   background-color: rgba(203, 108, 89, 0.1);
   color: var(--accent-coral);
   border: none;
-  padding: 8px 18px;
-  border-radius: var(--radius-sm);
+  padding: 10px 22px;
+  border-radius: 10px;
   font-weight: 500;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.2s;
 }
-.btn-danger:hover { background-color: rgba(203, 108, 89, 0.18); }
 
 .btn-preliminary {
   background-color: #ffffff;
   border: 1px solid var(--border-color);
   color: var(--real-black);
-  padding: 10px 18px;
+  padding: 10px 20px;
   border-radius: 10px;
   font-weight: 500;
   font-size: 0.85rem;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
 }
 .btn-preliminary:hover { background-color: var(--bg-color); }
 
@@ -272,18 +272,15 @@ body {
   background-color: var(--accent-blue);
   color: white;
   border: none;
-  padding: 16px 36px;
-  border-radius: var(--radius-lg); /* Botón en cápsula perfecto */
+  padding: 18px 40px;
+  border-radius: var(--radius-lg);
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(0, 113, 227, 0.2);
-  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 0 4px 15px rgba(0, 113, 227, 0.15);
+  transition: opacity 0.2s ease;
 }
-.btn-large-action:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 20px rgba(0, 113, 227, 0.3);
-}
+.btn-large-action:hover { opacity: 0.95; }
 
 .btn-link {
   background: none;
@@ -291,41 +288,41 @@ body {
   color: var(--accent-blue);
   cursor: pointer;
   font-weight: 500;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   font-size: 0.9rem;
 }
 
 /* ==========================================
-   6. COMPONENTES FORMULARIOS E INPUTS MODERNOS
+   6. GRID DE FORMULARIOS CON RESPIRACIÓN EXTENSA
    ========================================== */
 .grid-form {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 36px; /* Más espacio entre columnas de inputs */
+  gap: 40px; /* Separación masiva entre columnas de preguntas */
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 12px; /* Más aire entre el label y el input */
+  gap: 12px; /* Más aire entre la pregunta y la caja de texto */
 }
 
 .colspan-2 { grid-column: span 2; }
 .spacing-bottom { margin-bottom: 35px; }
 .spacing-top-md { margin-top: 25px; }
-.spacing-top-lg { margin-top: 40px; }
+.spacing-top-lg { margin-top: 45px; }
 
 label {
   font-weight: 500;
   font-size: 0.85rem;
-  color: var(--real-black);
+  color: #424245;
   letter-spacing: -0.1px;
 }
 
 input[type="text"], input[type="email"], input[type="date"], select {
   width: 100%;
-  padding: 12px 16px;
-  background-color: #f5f5f7; /* Fondo gris suave nativo de Apple */
+  padding: 14px 18px; /* Cajas de texto más amplias y cómodas */
+  background-color: #f5f5f7; 
   border: 1px solid transparent;
   border-radius: 10px;
   font-size: 0.95rem;
@@ -337,7 +334,7 @@ input[type="text"], input[type="email"], input[type="date"], select {
 
 textarea {
   width: 100%;
-  padding: 14px 16px;
+  padding: 14px 18px;
   background-color: #f5f5f7;
   border: 1px solid transparent;
   border-radius: 10px;
@@ -345,32 +342,46 @@ textarea {
   font-family: inherit;
   color: var(--real-black);
   outline: none;
-  resize: vertical !important; /* Estricta restricción horizontal */
+  resize: vertical !important; 
   transition: all 0.2s ease;
 }
 
 input:focus, select:focus, textarea:focus {
   background-color: #ffffff;
   border-color: var(--accent-blue);
-  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1); /* Anillo de enfoque suave iOS */
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1); 
 }
 
 .readonly-field {
-  background-color: rgba(230, 230, 235, 0.5) !important;
+  background-color: rgba(230, 230, 235, 0.4) !important;
   color: var(--text-muted);
   cursor: not-allowed;
 }
 
+.instruction {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+/* Contenedor inferior de lineamientos en Acciones para que no se peguen */
+.footer-inputs-container {
+  margin-top: 45px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px; /* Respiro entre Lineamientos y Recomendaciones */
+}
+
 /* ==========================================
-   7. TARJETA DE CIERRE EXPLICITA CON SUPER AIRE
+   7. TARJETA DE CIERRE EXPLICITA AISLADA
    ========================================== */
 .final-closure-card {
   background-color: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 45px !important;
-  margin-top: 55px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.01);
+  margin-top: 55px !important; /* Aislamiento completo de la tabla */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.005);
 }
 
 .final-closure-card h4 {
@@ -395,7 +406,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================
-   8. MODALES PREMIUM BLURRADOS (GLASSMORPHISM)
+   8. MODALES POP-UP ESTILO MAC (GLASSMORPHISM)
    ========================================== */
 .modal-overlay {
   position: fixed;
@@ -403,16 +414,16 @@ input:focus, select:focus, textarea:focus {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.2); /* Fondo más claro pero muy blurrado */
-  backdrop-filter: blur(15px); /* Desenfoque de fondo de sistema */
-  -webkit-backdrop-filter: blur(15px);
+  background-color: rgba(0, 0, 0, 0.15); 
+  backdrop-filter: blur(20px); /* Desenfoque intenso elegante */
+  -webkit-backdrop-filter: blur(20px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
 }
 
 .modal-overlay.active {
@@ -425,10 +436,10 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   width: 90%;
-  max-width: 600px;
-  max-height: 80vh; /* Ajuste para que los campos queden más visibles sin colapsar */
+  max-width: 620px;
+  max-height: 82vh; /* Evita que el modal se pegue al borde superior/inferior */
   overflow-y: auto;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
 }
 
 .modal-header {
@@ -444,33 +455,22 @@ input:focus, select:focus, textarea:focus {
   color: var(--real-black);
   font-weight: 600;
   font-size: 1.05rem;
-  letter-spacing: -0.2px;
 }
-
-.btn-close-modal {
-  background: none;
-  border: none;
-  font-size: 1.6rem;
-  cursor: pointer;
-  color: var(--text-muted);
-  transition: color 0.2s;
-}
-.btn-close-modal:hover { color: var(--real-black); }
 
 .modal-body {
-  padding: 35px; /* Mayor respiro interno en las ventanas emergentes */
+  padding: 40px 35px !important; /* Evita el ahogo de los inputs dentro del pop-up */
   display: flex;
   flex-direction: column;
-  gap: 24px; /* Separación amplia entre preguntas del pop-up */
+  gap: 26px; /* Respiro amplio entre las preguntas del pop-up */
 }
 
 /* ==========================================
-   9. TABLAS DE DATOS LIMPIAS Y CRISP
+   9. TABLAS DE DATOS LIMPIAS (CRISP & SPACIOUS)
    ========================================== */
 .table-responsive { 
   width: 100%; 
   overflow-x: auto; 
-  margin-top: 25px; 
+  margin-top: 30px; 
 }
 
 .data-table { 
@@ -484,27 +484,27 @@ input:focus, select:focus, textarea:focus {
   background-color: transparent; 
   color: var(--text-muted); 
   font-weight: 500; 
-  padding: 16px 12px; 
-  border-bottom: 1px solid var(--real-black); /* Línea limpia fina superior */
+  padding: 16px 14px; 
+  border-bottom: 1px solid var(--real-black); /* Línea limpia sutil superior */
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .data-table td { 
-  padding: 20px 12px; /* Más altura de celda para dar aire a las filas */
+  padding: 24px 14px; /* Solución al ahogo: Celdas mucho más altas y amplias */
   border-bottom: 1px solid var(--border-color); 
   vertical-align: middle; 
   color: var(--real-black); 
 }
 
 /* ==========================================
-   10. DIAGNÓSTICO Y RESPONSIVE (UTILERÍAS DE CENTRADO)
+   10. DIAGNÓSTICO Y UTILERÍAS DE CENTRADO (FIX HOVER)
    ========================================== */
 .mx-auto { 
   margin-left: auto !important; 
   margin-right: auto !important; 
-  margin-top: 80px !important; /* Despegue perfecto simétrico */
+  margin-top: 80px !important; 
 }
 
 .max-w-md { 
@@ -514,32 +514,37 @@ input:focus, select:focus, textarea:focus {
 .text-center { text-align: center; }
 .w-full { width: 100%; }
 
+/* Suavizado de entrada general */
 .scale-up {
-  animation: scaleEffect 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: scaleEffect 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes scaleEffect {
-  from { transform: scale(0.96); opacity: 0; }
+  from { transform: scale(0.98); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
 
-/* SPINNER CIRCULAR MINIMALISTA */
+/* SPINNER CIRCULAR */
 .loader-container { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 26px; }
-.spinner { width: 30px; height: 35px; border: 3px solid rgba(0, 0, 0, 0.05); border-left-color: var(--accent-blue); border-radius: 50%; animation: spin 0.7s linear infinite; }
+.spinner { width: 30px; height: 30px; border: 3px solid rgba(0, 0, 0, 0.05); border-left-color: var(--accent-blue); border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 /* BADGES INTEGRADOS */
 .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
 .badge-alert { background-color: rgba(217, 119, 6, 0.1); color: #b45309; }
 .badge-success { background-color: rgba(22, 101, 52, 0.1); color: #166534; }
-.badge-role-title { background-color: #f5f5f7 !important; color: var(--real-black); padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; border: 1px solid var(--border-color); }
+.badge-role-title { background-color: #ffffff !important; color: var(--real-black); padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; border: 1px solid var(--border-color); }
 
 .contract-info-box { background-color: #fffdeb; border-left: 4px solid var(--primary-color); padding: 24px; border-radius: 0 12px 12px 0; margin: 35px auto; max-width: 700px; text-align: left; }
 .management-box { background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 25px; margin-top: 30px; }
 .search-container { display: flex; gap: 12px; margin-top: 15px; }
 
+.dashboard-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+.btn-action-view { background-color: #f5f5f7; color: var(--real-black); border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 500; margin-right: 5px; }
+.btn-action-pdf { background-color: rgba(203, 108, 89, 0.1); color: #991b1b; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+
 @media (max-width: 768px) {
-  .grid-form { grid-template-columns: 1fr; gap: 20px; }
+  .grid-form { grid-template-columns: 1fr; gap: 24px; }
   .form-sticky-header { flex-direction: column; align-items: stretch; gap: 10px; }
   .tabs-nav { overflow-x: auto; padding-bottom: 4px; }
-  .card { padding: 25px !important; }
+  .card { padding: 30px 24px !important; }
 }
