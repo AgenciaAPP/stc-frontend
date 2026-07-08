@@ -3,100 +3,277 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Transferencia de Conocimiento - Agencia APP</title>
-  <link rel="stylesheet" href="/style.css">
+  <title>STC - Agencia APP</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Encabezado Institucional -->
-  <header class="app-header">
-    <div class="header-container">
-      <h1>Sistema de Transferencia de Conocimiento</h1>
-      <p class="subtitle">Agencia para la Gestión del Paisaje, el Patrimonio y Alianzas Público Privadas</p>
-    </div>
+  <!-- ENCABEZADO INSTITUCIONAL -->
+  <header class="main-header">
+    <h1>Sistema de Transferencia de Conocimiento</h1>
+    <h2>Agencia para la Gestión del Paisaje, el Patrimonio y las Alianzas Público Privadas</h2>
   </header>
 
-  <main class="app-container">
-    <!-- Barra de Navegación por Pestañas -->
-    <nav class="tabs-navigation">
-      <button class="tab-btn active" data-tab="general">1. Datos Generales</button>
-      <button class="tab-btn" data-tab="acciones" disabled>2. Acciones Realizadas</button>
-      <button class="tab-btn" data-tab="asuntos" disabled>3. Asuntos Pendientes</button>
-      <button class="tab-btn" data-tab="sistemas" disabled>4. Sistemas e Información</button>
-    </nav>
+  <main class="container">
 
-    <!-- Contenido de las Pestañas -->
-    <div class="tabs-content">
-      
-      <!-- PESTAÑA 1: DATOS GENERALES -->
-      <section id="tab-general" class="tab-panel active">
-        <div class="card">
-          <h3>Consulta de Contrato (SECOP II)</h3>
-          <p class="instruction">Digita tu número de contrato asignado por la Agencia APP para autocompletar la información oficial.</p>
+    <!-- ==========================================
+         VISTA 1: PORTAL DE BIENVENIDA (SELECCIÓN DE ROL)
+         ========================================== -->
+    <section id="view-welcome" class="view-panel active">
+      <div class="card text-center">
+        <h3>Bienvenido al Sistema de Transferencia (STC)</h3>
+        <p class="instruction">Por favor, selecciona tu perfil para ingresar a la plataforma:</p>
+        
+        <div class="role-selection-container">
+          <button id="btn-role-contratista" class="btn-role">
+            <span class="icon">👨‍💻</span>
+            <strong>Soy Contratista</strong>
+            <small>Diligenciar o continuar mi acta de transferencia</small>
+          </button>
           
-          <div class="search-box">
-            <input type="text" id="search-contrato" placeholder="Ej. APP-045-2026">
-            <button id="btn-buscar-secop" class="btn-primary">Consultar SECOP</button>
-          </div>
-          <div id="secop-loader" class="loader hidden">Buscando contrato en Datos Abiertos...</div>
+          <button id="btn-role-funcionario" class="btn-role">
+            <span class="icon">🛡️</span>
+            <strong>Soy Funcionario</strong>
+            <small>Talento Humano / Dirección Técnica / Supervisores</small>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         VISTA 2: LOGIN DINÁMICO (CÉDULA)
+         ========================================== -->
+    <section id="view-login" class="view-panel">
+      <div class="card max-w-md mx-auto">
+        <button id="btn-back-to-welcome" class="btn-link">← Volver al inicio</button>
+        <h3 id="login-title">Ingreso a la Plataforma</h3>
+        <p id="login-instruction" class="instruction"></p>
+
+        <div class="form-group">
+          <label for="login-cedula">Número de Identificación (Cédula)</label>
+          <input type="text" id="login-cedula" placeholder="Digita tu documento sin puntos ni guiones">
         </div>
 
+        <button id="btn-submit-login" class="btn-primary w-full">Ingresar y Verificar</button>
+        <div id="login-loader" class="loader hidden">Verificando autorización...</div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         VISTA 3: DASHBOARD DEL CONTRATISTA (MENÚ)
+         ========================================== -->
+    <section id="view-contratista-dashboard" class="view-panel">
+      <div class="card text-center">
+        <div class="dashboard-header">
+          <h3 id="welcome-contratista">Bienvenido(a)</h3>
+          <button class="btn-danger btn-logout">Cerrar Sesión</button>
+        </div>
+        <hr>
+        <div class="contract-info-box">
+          <h4>Información General de tu Contrato</h4>
+          <p><strong>Contrato N°:</strong> <span id="dash-num-contrato">---</span></p>
+          <p><strong>Objeto:</strong> <span id="dash-objeto-contrato">---</span></p>
+          <p><strong>Estado en Sistema:</strong> <span id="dash-estado-acta" class="badge">---</span></p>
+        </div>
+        <button id="btn-empezar-diligenciamiento" class="btn-primary btn-large">Diligenciar Acta de Transferencia</button>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         VISTA 4: MÓDULO FORMULARIO CONTRATISTA (LAS 4 PESTAÑAS)
+         ========================================== -->
+    <section id="view-formulario-transferencia" class="view-panel">
+      
+      <!-- Navegación de Pestañas Internas -->
+      <nav class="tabs-nav">
+        <button class="tab-btn active" data-tab="general">1. Datos Generales</button>
+        <button class="tab-btn" data-tab="acciones" id="tab-nav-acciones" disabled>2. Acciones Realizadas</button>
+        <button class="tab-btn" data-tab="asuntos" id="tab-nav-asuntos" disabled>3. Asuntos Pendientes</button>
+        <button class="tab-btn" data-tab="sistemas" id="tab-nav-sistemas" disabled>4. Sistemas e Información</button>
+      </nav>
+
+      <!-- PESTAÑA 1: DATOS GENERALES -->
+      <section id="tab-general" class="tab-panel active">
         <form id="form-general" class="card grid-form">
-          <h3>Información General del Contrato</h3>
-          
+          <h3>1. Información General del Contrato (Verificada)</h3>
+          <p class="instruction colspan-2">Esta información proviene directamente de los registros oficiales de SECOP II de la Agencia APP.</p>
+
           <div class="form-group">
             <label for="cedula">Documento de Identidad / Cédula</label>
-            <input type="text" id="cedula" required readonly placeholder="Cargando...">
+            <input type="text" id="cedula" readonly class="readonly-field">
           </div>
-
           <div class="form-group">
             <label for="nombreContratista">Nombre Completo del Contratista</label>
-            <input type="text" id="nombreContratista" required readonly placeholder="Cargando...">
+            <input type="text" id="nombreContratista" readonly class="readonly-field">
           </div>
-
           <div class="form-group">
-            <label for="correoContratista">Correo Electrónico Corporativo</label>
-            <input type="email" id="correoContratista" required>
+            <label for="correoContratista">Correo Electrónico Corporativo / Contacto</label>
+            <input type="email" id="correoContratista" required placeholder="ejemplo@agenciaapp.co">
           </div>
-
           <div class="form-group">
             <label for="numeroContrato">Número de Contrato</label>
-            <input type="text" id="numeroContrato" required readonly>
+            <input type="text" id="numeroContrato" readonly class="readonly-field">
           </div>
-
           <div class="form-group colspan-2">
             <label for="objetoContrato">Objeto Contractual Oficial</label>
-            <textarea id="objetoContrato" rows="3" required readonly></textarea>
+            <textarea id="objetoContrato" rows="3" readonly class="readonly-field"></textarea>
           </div>
-
           <div class="form-group">
             <label for="supervisor">Nombre del Supervisor</label>
-            <input type="text" id="supervisor" required>
+            <input type="text" id="supervisor" readonly class="readonly-field">
           </div>
-
           <div class="form-group">
             <label for="dependencia">Subdirección / Dependencia</label>
             <select id="dependencia" required>
               <option value="">Seleccione una opción...</option>
-              <option value="Subdirección de Gestión del Paisaje">Subdirección de Gestión del Paisaje</option>
-              <option value="Subdirección de Patrimonio">Subdirección de Patrimonio</option>
-              <option value="Subdirección de APP">Subdirección de APP</option>
+              <option value="Subdirección de Gestión de Alianzas Público Privadas">Subdirección de Gestión de APP</option>
+              <option value="Subdirección del Paisaje y el Patrimonio">Subdirección del Paisaje y el Patrimonio</option>
               <option value="Dirección General">Dirección General</option>
-              <option value="Apoyo Administrativo">Apoyo Administrativo (Talento Humano / Jurídica)</option>
+              <option value="Subdirección Administrativa y Financiera">Subdirección Administrativa y Financiera</option>
             </select>
           </div>
-
           <div class="form-actions colspan-2">
-            <button type="submit" class="btn-success">Guardar y Continuar</button>
+            <button type="submit" class="btn-success">Guardar Datos Generales y Continuar</button>
           </div>
         </form>
       </section>
 
-      <!-- Las secciones de las pestañas 2, 3 y 4 las inyectaremos dinámicamente o estructuraremos a continuación -->
+      <!-- PESTAÑA 2: ACCIONES REALIZADAS -->
+      <section id="tab-acciones" class="tab-panel">
+        <form id="form-acciones" class="card grid-form">
+          <h3>2. Acciones y Logros Realizados</h3>
+          <p class="instruction colspan-2">Describe las actividades ejecutadas en tu periodo contractual y las metodologías implementadas.</p>
+          <div class="form-group colspan-2">
+            <label for="actividadesPrincipales">Descripción de Actividades Principales</label>
+            <textarea id="actividadesPrincipales" rows="4" required placeholder="Detalla las funciones desarrolladas..."></textarea>
+          </div>
+          <div class="form-group colspan-2">
+            <label for="logrosClave">Logros o Hitos Relevantes</label>
+            <textarea id="logrosClave" rows="3" required placeholder="¿Cuáles fueron los resultados significativos?"></textarea>
+          </div>
+          <div class="form-group colspan-2">
+            <label for="metodologia">Metodología Aplicada</label>
+            <textarea id="metodologia" rows="3" placeholder="Herramientas o metodologías de trabajo utilizadas..."></textarea>
+          </div>
+          <div class="form-actions colspan-2">
+            <button type="submit" class="btn-success">Guardar Actividades y Continuar</button>
+          </div>
+        </form>
+      </section>
 
-    </div>
+      <!-- PESTAÑA 3: ASUNTOS PENDIENTES -->
+      <section id="tab-asuntos" class="tab-panel">
+        <form id="form-asuntos" class="card grid-form">
+          <h3>3. Asuntos Pendientes y Recomendaciones</h3>
+          <p class="instruction colspan-2">Registra procesos en marcha y alertas para garantizar la continuidad.</p>
+          <div class="form-group colspan-2">
+            <label for="pendientesCriticos">Procesos u Obligaciones Pendientes (Alertas Críticas)</label>
+            <textarea id="pendientesCriticos" rows="4" required placeholder="Describe trámites o informes que requieran seguimiento urgente..."></textarea>
+          </div>
+          <div class="form-group colspan-2">
+            <label for="recomendaciones">Recomendaciones Estratégicas</label>
+            <textarea id="recomendaciones" rows="3" placeholder="Sugerencias técnicas para optimizar el empalme..."></textarea>
+          </div>
+          <div class="form-actions colspan-2">
+            <button type="submit" class="btn-success">Guardar Pendientes y Continuar</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- PESTAÑA 4: SISTEMAS E INFORMACIÓN -->
+      <section id="tab-sistemas" class="tab-panel">
+        <form id="form-sistemas" class="card grid-form">
+          <h3>4. Inventario de Sistemas, Accesos y Repositorios</h3>
+          <p class="instruction colspan-2">Indica las herramientas, carpetas en la nube y accesos administrados.</p>
+          <div class="form-group colspan-2">
+            <label for="repositoriosCloud">Rutas de Repositorios Finales (OneDrive / SharePoint / GitHub)</label>
+            <textarea id="repositoriosCloud" rows="3" required placeholder="Pega los enlaces compartidos de tus entregables..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="sistemasAsignados">Sistemas Utilizados (Ej: ArcGIS, Sagicc, Power BI)</label>
+            <input type="text" id="sistemasAsignados" placeholder="Herramientas consultadas o administradas">
+          </div>
+          <div class="form-group">
+            <label for="estadoAccesos">Estado de Devolución de Accesos</label>
+            <select id="estadoAccesos" required>
+              <option value="">Seleccione una opción...</option>
+              <option value="Pendiente por entregar">Pendiente por entregar / revocar accesos</option>
+              <option value="Entregado al supervisor">Accesos y carpetas compartidas con el Supervisor</option>
+              <option value="No aplica">No manejé accesos especiales ni equipos físicos</option>
+            </select>
+          </div>
+          <div class="form-actions colspan-2">
+            <button type="submit" id="btn-finalizar-todo" class="btn-primary">Finalizar Registro y Enviar Acta</button>
+          </div>
+        </form>
+      </section>
+    </section>
+
+    <!-- ==========================================
+         VISTA 5: DASHBOARD DE FUNCIONARIOS (TH / SUPERVISORES / DIRECCIÓN)
+         ========================================== -->
+    <section id="view-funcionario-dashboard" class="view-panel">
+      <div class="card">
+        <div class="dashboard-header">
+          <div>
+            <h3 id="welcome-funcionario">Panel de Control Operativo</h3>
+            <span id="badge-rol-funcionario" class="badge-role-title">Cargando Perfil...</span>
+          </div>
+          <button class="btn-danger btn-logout">Cerrar Sesión</button>
+        </div>
+        <hr>
+
+        <!-- SECCIÓN EXCLUSIVA DE TALENTO HUMANO: BUSCAR Y HABILITAR CONTRATISTAS -->
+        <div id="section-th-actions" class="management-box hidden">
+          <h4>Habilitar Nuevo Contratista para Transferencia</h4>
+          <p class="instruction">Consulta en SECOP II para autorizar la cédula de un contratista en la plataforma.</p>
+          <div class="search-container">
+            <input type="text" id="search-contrato" placeholder="Ingresa la Referencia del Contrato (Ej: PS2026001)">
+            <button id="btn-buscar-secop" class="btn-primary">Consultar SECOP</button>
+          </div>
+          <div id="secop-loader" class="loader hidden">Consultando base de datos gubernamental...</div>
+          
+          <!-- Tarjeta de Confirmación de Habilitación (Aparece tras buscar) -->
+          <div id="secop-result-box" class="hidden-result-box hidden">
+            <h5>Contrato Encontrado Oficialmente</h5>
+            <div class="result-details">
+              <p><strong>Contratista:</strong> <span id="secop-res-nombre">---</span></p>
+              <p><strong>Cédula:</strong> <span id="secop-res-cedula">---</span></p>
+              <p><strong>Objeto:</strong> <span id="secop-res-objeto">---</span></p>
+            </div>
+            <button id="btn-confirmar-habilitacion" class="btn-success">Habilitar Cédula y Crear Registro</button>
+          </div>
+        </div>
+
+        <!-- TABLA GLOBAL DE SEGUIMIENTO (PARA TODOS LOS COMPONENTES EVALUADORES) -->
+        <div class="management-box">
+          <h4>Estado y Monitoreo de Transferencias Contractuales</h4>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Contratista</th>
+                  <th>N° Contrato</th>
+                  <th>Supervisor</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="table-tracking-body">
+                <!-- Se poblará dinámicamente desde el JavaScript -->
+                <tr>
+                  <td colspan="5" class="text-center">Cargando registros autorizados...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
   </main>
 
-  <script type="module" src="/main.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
