@@ -2,10 +2,10 @@
 const BACKEND_URL = 'https://stc-backend-nine.vercel.app';
 
 // VARIABLES GLOBALES DE SESIÓN SIMULADA
-let currentUserRole = null; // 'contratista' o 'funcionario'
-let currentUserData = null; // Guarda los datos del usuario logueado
+let currentUserRole = null; 
+let currentUserData = null; 
 
-// ARRAYS PARA ALMACENAR LOS MULTIRREGISTROS TEMPORALES (ESTILO POWER APPS)
+// ARRAYS PARA ALMACENAR LOS MULTIRREGISTROS TEMPORALES
 let listadoAcciones = [];
 let listadoAsuntos = [];
 let listadoSistemas = [];
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSubmitLogin = document.getElementById('btn-submit-login');
   const loginLoader = document.getElementById('login-loader');
 
-  // === NAVEGACIÓN POR PESTAÑAS (TABS LIBRES) ===
+  // === NAVEGACIÓN POR PESTAÑAS ===
   const tabButtons = document.querySelectorAll('.tab-btn');
   const tabPanels = document.querySelectorAll('.tab-panel');
   const btnEmpezar = document.getElementById('btn-empezar-diligenciamiento');
@@ -75,14 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Guardar preliminar y regresar al Dashboard Principal
   btnSavePreliminary.addEventListener('click', () => {
     alert('💾 ¡Progreso guardado preliminarmente!\n\nLos datos ingresados en las tablas y campos se han congelado en el estado actual del servidor. Puedes reanudar el diligenciamiento cuando desees.');
     switchView(viewContratistaDashboard);
   });
 
   // ==========================================
-  // 2. ACCESO POR CÉDULA (SPINNER MODERNO)
+  // 2. ACCESO POR CÉDULA
   // ==========================================
   btnSubmitLogin.addEventListener('click', () => {
     const cedula = inputLoginCedula.value.trim();
@@ -94,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loginLoader.classList.remove('hidden');
     btnSubmitLogin.disabled = true;
 
-    // Simulación técnica de acceso
     setTimeout(() => {
       loginLoader.classList.add('hidden');
       btnSubmitLogin.disabled = false;
@@ -140,14 +138,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. ENTRADA AL FORMULARIO Y PESTAÑAS LIBRES
   // ==========================================
   btnEmpezar.addEventListener('click', () => {
-    // Autocompletar datos protegidos fijos
     document.getElementById('cedula').value = currentUserData.cedula;
     document.getElementById('nombreContratista').value = currentUserData.nombre;
     document.getElementById('numeroContrato').value = currentUserData.contract;
     document.getElementById('objetoContrato').value = currentUserData.objeto;
     document.getElementById('supervisor').value = "EDISON ALEXANDER MONTOYA VELEZ";
 
-    // Activación de la primera pestaña por defecto
     tabButtons.forEach(btn => btn.classList.remove('active'));
     tabPanels.forEach(pnl => pnl.classList.remove('active'));
     tabButtons[0].classList.add('active');
@@ -156,7 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
     switchView(viewFormularioTransferencia);
   });
 
-  // Permitir repaso libre entre pestañas haciendo clic en los botones
   tabButtons.forEach(button => {
     button.addEventListener('click', () => {
       const targetTab = button.getAttribute('data-tab');
@@ -206,14 +201,15 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal('modal-acciones');
   });
 
-  // ENVÍO DE FORMULARIO: POP-UP ASUNTOS
+  // ENVÍO DE FORMULARIO: POP-UP ASUNTOS (MAPPING ACTUALIZADO DE CAMPOS)
   document.getElementById('form-modal-asuntos').addEventListener('submit', (e) => {
     e.preventDefault();
     const nuevoAsunto = {
       tramite: document.getElementById('modal-asu-tramite').value,
       estado: document.getElementById('modal-asu-estado').value,
-      riesgo: document.getElementById('modal-asu-riesgo').value,
-      accion: document.getElementById('modal-asu-accion').value
+      entidad: document.getElementById('modal-asu-entidad').value,
+      accionesPendientes: document.getElementById('modal-asu-acciones-pendientes').value,
+      fecha: document.getElementById('modal-asu-fecha').value
     };
     listadoAsuntos.push(nuevoAsunto);
     renderTableAsuntos();
@@ -253,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================================
-  // 5. FUNCIONES RENDEREAR TABLAS CONTRATISTA
+  // 5. RENDEREAR TABLAS MULTIRREGISTRO
   // ==========================================
   function renderTableAcciones() {
     const tbody = document.getElementById('table-acciones-body');
@@ -294,7 +290,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function renderTableAsuntos() { renderTableGeneric('table-asuntos-body', listadoAsuntos, ['tramite', 'estado', 'riesgo', 'accion']); }
+  // Actualizado para reflejar las nuevas claves semánticas de Asuntos
+  function renderTableAsuntos() { 
+    renderTableGeneric('table-asuntos-body', listadoAsuntos, ['tramite', 'estado', 'entidad', 'accionesPendientes', 'fecha']); 
+  }
   function renderTableSistemas() { renderTableGeneric('table-sistemas-body', listadoSistemas, ['nombre', 'tipo', 'rol', 'estado']); }
   function renderTableDirectorio() { renderTableGeneric('table-directorio-body', listadoDirectorio, ['nombre', 'entidad', 'tel', 'correo', 'asunto']); }
 
@@ -305,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================================
-  // 6. FUNCIONALIDADES DE FUNCIONARIOS
+  // 6. DASHBOARD DE FUNCIONARIOS
   // ==========================================
   function poblarTablaSeguimientoFuncionarios() {
     const tbody = document.getElementById('table-tracking-body');
