@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>STC - Agencia APP</title>
+  <!-- Inyección segura de la tipografía Metropolis sin romper el CSS -->
   <link href="https://fonts.cdnfonts.com/css/metropolis" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -22,7 +23,9 @@
 
   <main class="container">
 
-    <!-- VISTA 1: PORTAL DE BIENVENIDA -->
+    <!-- ==========================================
+         VISTA 1: PORTAL DE BIENVENIDA (SELECCIÓN DE ROL)
+         ========================================== -->
     <section id="view-welcome" class="view-panel active">
       <div class="card text-center">
         <h3>BIENVENIDO AL APLICATIVO STC</h3>
@@ -42,7 +45,9 @@
       </div>
     </section>
 
-    <!-- VISTA 2: LOGIN DINÁMICO CON SPINNER MODERNO -->
+    <!-- ==========================================
+         VISTA 2: LOGIN DINÁMICO CON SPINNER MODERNO
+         ========================================== -->
     <section id="view-login" class="view-panel">
       <div class="card max-w-md mx-auto">
         <button id="btn-back-to-welcome" class="btn-link">← Volver al inicio</button>
@@ -64,7 +69,9 @@
       </div>
     </section>
 
-    <!-- VISTA 3: DASHBOARD DEL CONTRATISTA -->
+    <!-- ==========================================
+         VISTA 3: DASHBOARD DEL CONTRATISTA
+         ========================================== -->
     <section id="view-contratista-dashboard" class="view-panel">
       <div class="card text-center">
         <div class="dashboard-header">
@@ -78,11 +85,13 @@
           <p><strong>Objeto:</strong> <span id="dash-objeto-contrato">---</span></p>
           <p><strong>Estado en Sistema:</strong> <span id="dash-estado-acta" class="badge">---</span></p>
         </div>
-        <button id="btn-empezar-diligenciamiento" class="btn-large-action">Diligenciar静态 Acta de Transferencia</button>
+        <button id="btn-empezar-diligenciamiento" class="btn-large-action">Diligenciar Acta de Transferencia</button>
       </div>
     </section>
 
-    <!-- VISTA 4: MÓDULO FORMULARIO CONTRATISTA (NAVEGACIÓN LIBRE) -->
+    <!-- ==========================================
+         VISTA 4: MÓDULO FORMULARIO CONTRATISTA (NAVEGACIÓN LIBRE)
+         ========================================== -->
     <section id="view-formulario-transferencia" class="view-panel">
       
       <div class="form-sticky-header">
@@ -159,7 +168,7 @@
                   <th>Proceso clave / Acción</th>
                   <th>Prioridad</th>
                   <th>Productos entrega</th>
-                  <th>Evidencias y Ejecución</th>
+                  <th>Evidencias y Execution</th>
                   <th>Ruta Repositorio</th>
                   <th>Observaciones</th>
                 </tr>
@@ -262,7 +271,9 @@
 
     </section>
 
-    <!-- VISTA 5: DASHBOARD DE FUNCIONARIOS -->
+    <!-- ==========================================
+         VISTA 5: DASHBOARD DE FUNCIONARIOS
+         ========================================== -->
     <section id="view-funcionario-dashboard" class="view-panel">
       <div class="card">
         <div class="dashboard-header">
@@ -459,7 +470,6 @@
     </div>
   </div>
 
-  <!-- Enlace al cerebro JavaScript modificado -->
   <script src="app.js"></script>
 </body>
 </html>
