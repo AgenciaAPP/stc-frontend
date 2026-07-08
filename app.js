@@ -217,18 +217,14 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal('modal-asuntos');
   });
 
-  // ENVÍO DE FORMULARIO: POP-UP SISTEMAS (CAMPOS ACTUALIZADOS REALES)
+  // ENVÍO DE FORMULARIO: POP-UP SISTEMAS (CAPTURADO COMPLETO EN TEXTO PLANO VISIBLE)
   document.getElementById('form-modal-sistemas').addEventListener('submit', (e) => {
     e.preventDefault();
-    
-    // Generar caracteres simulados de enmascaramiento para la contraseña en la grilla visual
-    const rawPass = document.getElementById('modal-sis-pass').value;
-    const maskedPass = "•".repeat(Math.min(rawPass.length, 8));
 
     const nuevoSistema = {
       nombre: document.getElementById('modal-sis-nombre').value,
       usuario: document.getElementById('modal-sis-usuario').value,
-      contrasena: maskedPass,
+      contrasena: document.getElementById('modal-sis-pass').value, // Almacena y procesa directamente el texto plano para el PDF
       obs: document.getElementById('modal-sis-obs').value || 'Ninguna'
     };
     listadoSistemas.push(nuevoSistema);
@@ -296,10 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderTableAsuntos() { renderTableGeneric('table-asuntos-body', listadoAsuntos, ['tramite', 'estado', 'entidad', 'accionesPendientes', 'fecha']); }
-  
-  // Actualizado para reflejar las nuevas columnas semánticas de Sistemas
   function renderTableSistemas() { renderTableGeneric('table-sistemas-body', listadoSistemas, ['nombre', 'usuario', 'contrasena', 'obs']); }
-  
   function renderTableDirectorio() { renderTableGeneric('table-directorio-body', listadoDirectorio, ['nombre', 'entidad', 'tel', 'correo', 'asunto']); }
 
   // CONSOLIDAR TODO Y FINALIZAR
