@@ -1,18 +1,18 @@
 /* ==========================================
-   1. TIPOGRAFÍA (METROPOLIS) Y VARIABLES
+   1. VARIABLES DE MARCA (MANUAL AGENCIA APP)
    ========================================== */
-@import url('https://fonts.cdnfonts.com/css/metropolis');
-
 :root {
-  --primary-color: #ffd500;    /* Amarillo institucional */
-  --text-dark: #1e293b;        /* Gris casi negro para contraste */
-  --text-muted: #6a6a6a;       /* Gris secundario para descripciones */
-  --accent-blue: #1878ba;      /* Azul secundario para enlaces/acciones */
-  --accent-coral: #cb6c59;     /* Coral secundario para alertas/badges */
-  --bg-color: #f8fafc;         /* Fondo de la aplicación */
-  --card-bg: #ffffff;          /* Fondo de tarjetas */
-  --border-color: #cbd5e1;     /* Gris de bordes */
-  --readonly-bg: #f1f5f9;      /* Fondo para campos de SECOP II */
+  --primary-color: #ffd500;    /* Amarillo Principal */
+  --text-dark: #1878ba;        /* Azul como color para textos destacados */
+  --real-black: #1e293b;       /* Gris carbón para texto base de lectura */
+  --text-muted: #6a6a6a;       /* Gris Secundario para instrucciones */
+  --accent-blue: #1878ba;      /* Azul Secundario para elementos interactivos */
+  --accent-coral: #cb6c59;     /* Coral Secundario para alertas / denegaciones */
+  
+  --bg-color: #f8fafc;         /* Fondo gris limpio */
+  --card-bg: #ffffff;          /* Blanco de fondo para tarjetas */
+  --border-color: #cbd5e1;     /* Gris de división */
+  --readonly-bg: #f1f5f9;      /* Fondo de inputs SECOP II bloqueados */
 }
 
 * {
@@ -23,8 +23,8 @@
 
 body {
   background-color: var(--bg-color);
-  color: var(--text-dark);
-  font-family: 'Metropolis', 'Segoe UI', sans-serif;
+  color: var(--real-black);
+  font-family: 'Metropolis', 'Segoe UI', Tahoma, sans-serif;
   font-weight: 400; /* Regular */
   line-height: 1.6;
   padding-bottom: 60px;
@@ -38,7 +38,7 @@ body {
 }
 
 /* ==========================================
-   2. ENCABEZADO INSTITUTIONAL CON LOGO
+   2. HEADER INSTITUCIONAL (LOGO PROTEGIDO)
    ========================================== */
 .main-header {
   background-color: var(--card-bg);
@@ -49,15 +49,17 @@ body {
 }
 
 .header-logo {
-  max-width: 240px;
-  height: auto;
-  margin-bottom: 15px;
+  display: block;
+  margin: 0 auto 15px auto;
+  width: 100%;
+  max-width: 240px !important; /* Blindaje absoluto para que no se estire */
+  height: auto !important;
 }
 
 .main-header h1 {
   font-weight: 700; /* Bold */
-  font-size: 1.6rem;
-  color: var(--text-dark);
+  font-size: 1.5rem;
+  color: var(--accent-blue);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 5px;
@@ -70,7 +72,7 @@ body {
 }
 
 /* ==========================================
-   3. ARQUITECTURA DE PANTALLA ÚNICA (SPA CONTROL)
+   3. SISTEMA CONTROL DE VISTAS (SPA ENGINE)
    ========================================== */
 .view-panel, .tab-panel {
   display: none !important;
@@ -85,7 +87,7 @@ body {
 }
 
 /* ==========================================
-   4. TARJETAS Y COMPONENTES
+   4. TARJETAS Y CONTENEDORES CONTEMPORÁNEOS
    ========================================== */
 .card {
   background: var(--card-bg);
@@ -93,32 +95,39 @@ body {
   border-radius: 8px;
   padding: 30px;
   margin-top: 25px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
 }
 
 .card h3 {
   font-weight: 700;
   text-transform: uppercase;
-  font-size: 1.25rem;
-  color: var(--text-dark);
+  font-size: 1.2rem;
+  color: var(--accent-blue);
   margin-bottom: 15px;
-  border-left: 4px solid var(--accent-blue);
-  padding-left: 10px;
+  border-left: 5px solid var(--primary-color);
+  padding-left: 12px;
 }
 
 .card h4 {
   font-weight: 500;
   font-size: 1.1rem;
-  color: var(--text-dark);
+  color: var(--real-black);
   margin-bottom: 10px;
 }
 
-/* Botones de Selección de Perfil */
+.divider {
+  border: 0;
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 15px 0;
+}
+
+/* Grilla de selección de Roles (Home) */
 .role-selection-container {
   display: flex;
   gap: 24px;
   justify-content: center;
-  margin-top: 35px;
+  margin-top: 30px;
   flex-wrap: wrap;
 }
 
@@ -126,22 +135,22 @@ body {
   background: var(--card-bg);
   border: 2px solid var(--border-color);
   border-radius: 8px;
-  padding: 25px 20px;
+  padding: 30px 20px;
   width: 290px;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .btn-role:hover {
-  border-color: var(--text-dark);
-  background-color: #fffdec;
+  border-color: var(--accent-blue);
+  background-color: #fffdf0; /* Tintado sutil del amarillo */
   transform: translateY(-4px);
-  box-shadow: 0 12px 20px -5px rgba(255, 213, 0, 0.25);
+  box-shadow: 0 12px 20px -5px rgba(24, 120, 186, 0.15);
 }
 
 .btn-role .icon {
@@ -150,8 +159,8 @@ body {
 
 .btn-role strong {
   font-weight: 700;
-  font-size: 1.15rem;
-  color: var(--text-dark);
+  font-size: 1.1rem;
+  color: var(--real-black);
   text-transform: uppercase;
 }
 
@@ -161,7 +170,9 @@ body {
   font-size: 0.85rem;
 }
 
-/* Botonera Global */
+/* ==========================================
+   5. BOTONES DE ACCIÓN DEL SISTEMA
+   ========================================== */
 .btn-primary {
   background-color: var(--accent-blue);
   color: white;
@@ -170,32 +181,49 @@ body {
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: background-color 0.2s;
+  font-size: 0.95rem;
 }
-.btn-primary:hover { opacity: 0.9; }
+.btn-primary:hover { background-color: #135f94; }
 
 .btn-success {
-  background-color: var(--text-dark);
+  background-color: var(--real-black);
   color: white;
   border: none;
-  padding: 12px 24px;
+  padding: 14px 28px;
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: opacity 0.2s;
+  font-size: 0.95rem;
 }
-.btn-success:hover { background-color: #0f172a; }
+.btn-success:hover { opacity: 0.9; }
 
 .btn-danger {
   background-color: var(--accent-coral);
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 8px 18px;
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
 }
 .btn-danger:hover { opacity: 0.9; }
+
+.btn-large-action {
+  background-color: var(--accent-blue);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: transform 0.2s;
+  box-shadow: 0 4px 10px rgba(24, 120, 186, 0.2);
+}
+.btn-large-action:hover { transform: scale(1.02); }
 
 .btn-link {
   background: none;
@@ -203,13 +231,14 @@ body {
   color: var(--accent-blue);
   cursor: pointer;
   font-weight: 600;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   display: inline-block;
+  font-size: 0.95rem;
 }
 .btn-link:hover { text-decoration: underline; }
 
 /* ==========================================
-   5. INTERFAZ DE FORMULARIOS
+   6. COMPONENTES FORMULARIOS E ENTRADAS
    ========================================== */
 .grid-form {
   display: grid;
@@ -230,7 +259,7 @@ body {
 label {
   font-weight: 600;
   font-size: 0.9rem;
-  color: var(--text-dark);
+  color: var(--real-black);
 }
 
 input[type="text"], input[type="email"], select, textarea {
@@ -240,7 +269,7 @@ input[type="text"], input[type="email"], select, textarea {
   border-radius: 6px;
   font-size: 0.95rem;
   background-color: #ffffff;
-  color: var(--text-dark);
+  color: var(--real-black);
   outline: none;
 }
 
@@ -258,11 +287,16 @@ input:focus, select:focus, textarea:focus {
 .instruction {
   color: var(--text-muted);
   font-size: 0.9rem;
-  margin-bottom: 10px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
 }
 
 /* ==========================================
-   6. PESTAÑAS DE NAVEGACIÓN (TABS)
+   7. PESTAÑAS DILIGENCIAMIENTO (TABS NAV)
    ========================================== */
 .tabs-nav {
   display: flex;
@@ -296,19 +330,11 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================
-   7. DASHBOARDS Y MONITOREO
+   8. COMPONENTES DE DASHBOARD Y AUDITORÍA
    ========================================== */
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 15px;
-}
-
 .contract-info-box {
   background-color: #fffdeb;
-  border-left: 4px solid var(--primary-color);
+  border-left: 5px solid var(--primary-color);
   padding: 20px;
   border-radius: 0 6px 6px 0;
   margin: 25px auto;
@@ -343,7 +369,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================
-   8. TABLAS DE SEGUIMIENTO (DATA TABLES)
+   9. REGISTROS Y TABLAS DE DATOS
    ========================================== */
 .table-responsive {
   width: 100%;
@@ -360,7 +386,7 @@ input:focus, select:focus, textarea:focus {
 
 .data-table th {
   background-color: #f1f5f9;
-  color: var(--text-dark);
+  color: var(--real-black);
   font-weight: 600;
   padding: 14px;
   border-bottom: 2px solid var(--border-color);
@@ -369,9 +395,10 @@ input:focus, select:focus, textarea:focus {
 .data-table td {
   padding: 14px;
   border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
 }
 
-/* Badges de Estado */
+/* Badges Operativos de Estado */
 .badge {
   display: inline-block;
   padding: 4px 10px;
@@ -384,15 +411,16 @@ input:focus, select:focus, textarea:focus {
 
 .badge-role-title {
   color: white;
-  padding: 6px 12px;
+  padding: 4px 10px;
   border-radius: 4px;
   font-size: 0.8rem;
   font-weight: 600;
 }
 
+/* Botones dentro de la grilla */
 .btn-action-view {
   background-color: #e2e8f0;
-  color: var(--text-dark);
+  color: var(--real-black);
   border: none;
   padding: 6px 14px;
   border-radius: 4px;
@@ -413,7 +441,7 @@ input:focus, select:focus, textarea:focus {
 .btn-action-pdf:hover { background-color: #fca5a5; }
 
 /* ==========================================
-   9. ELEMENTOS AUXILIARES
+   10. DIAGNÓSTICO Y RESPONSIVIDAD
    ========================================== */
 .loader {
   margin-top: 12px;
