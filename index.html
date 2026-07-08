@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="es">
-<!-- ENCABEZADO INSTITUTIONAL CON LOGO OFICIAL -->
-  <header class="main-header">
-    <img src="logo.jpg" alt="Logo Agencia APP" class="header-logo">
-    <h1>Sistema de Transferencia de Conocimiento</h1>
-    <h2>Módulo de Registro, Control y Custodia de Entregables Contractuales</h2>
-  </header>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STC - Agencia APP</title>
+  <!-- Inyección segura de la tipografía Metropolis sin romper el CSS -->
+  <link href="https://fonts.cdnfonts.com/css/metropolis" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
 <body>
 
-  <!-- ENCABEZADO INSTITUCIONAL -->
+  <!-- ENCABEZADO INSTITUCIONAL CON LOGO OFICIAL -->
   <header class="main-header">
-    <h1>Sistema de Transferencia de Conocimiento</h1>
-    <h2>Agencia para la Gestión del Paisaje, el Patrimonio y las Alianzas Público Privadas</h2>
+    <img src="logo.jpg" alt="Logo Agencia APP" class="header-logo">
+    <h1>SISTEMA DE TRANSFERENCIA DE CONOCIMIENTO</h1>
+    <h2>Módulo de Registro, Control y Custodia de Entregables Contractuales</h2>
   </header>
 
   <main class="container">
@@ -21,8 +24,8 @@
          ========================================== -->
     <section id="view-welcome" class="view-panel active">
       <div class="card text-center">
-        <h3>Bienvenido al Sistema de Transferencia (STC)</h3>
-        <p class="instruction">Por favor, selecciona tu perfil para ingresar a la plataforma:</p>
+        <h3>BIENVENIDO AL APLICATIVO STC</h3>
+        <p class="instruction">Por favor, selecciona tu perfil institucional para ingresar a la plataforma:</p>
         
         <div class="role-selection-container">
           <button id="btn-role-contratista" class="btn-role">
@@ -46,7 +49,7 @@
     <section id="view-login" class="view-panel">
       <div class="card max-w-md mx-auto">
         <button id="btn-back-to-welcome" class="btn-link">← Volver al inicio</button>
-        <h3 id="login-title">Ingreso a la Plataforma</h3>
+        <h3 id="login-title">INGRESO A LA PLATAFORMA</h3>
         <p id="login-instruction" class="instruction"></p>
 
         <div class="form-group">
@@ -65,22 +68,22 @@
     <section id="view-contratista-dashboard" class="view-panel">
       <div class="card text-center">
         <div class="dashboard-header">
-          <h3 id="welcome-contratista">Bienvenido(a)</h3>
+          <h3 id="welcome-contratista">BIENVENIDO(A)</h3>
           <button class="btn-danger btn-logout">Cerrar Sesión</button>
         </div>
-        <hr>
+        <hr class="divider">
         <div class="contract-info-box">
           <h4>Información General de tu Contrato</h4>
           <p><strong>Contrato N°:</strong> <span id="dash-num-contrato">---</span></p>
           <p><strong>Objeto:</strong> <span id="dash-objeto-contrato">---</span></p>
           <p><strong>Estado en Sistema:</strong> <span id="dash-estado-acta" class="badge">---</span></p>
         </div>
-        <button id="btn-empezar-diligenciamiento" class="btn-primary btn-large">Diligenciar Acta de Transferencia</button>
+        <button id="btn-empezar-diligenciamiento" class="btn-large-action">Diligenciar Acta de Transferencia</button>
       </div>
     </section>
 
     <!-- ==========================================
-         VISTA 4: MÓDULO FORMULARIO CONTRATISTA (LAS 4 PESTAÑAS)
+         VISTA 4: MÓDULO FORMULARIO CONTRATISTA (PESTAÑAS)
          ========================================== -->
     <section id="view-formulario-transferencia" class="view-panel">
       
@@ -95,7 +98,7 @@
       <!-- PESTAÑA 1: DATOS GENERALES -->
       <section id="tab-general" class="tab-panel active">
         <form id="form-general" class="card grid-form">
-          <h3>1. Información General del Contrato (Verificada)</h3>
+          <h3>1. INFORMACIÓN GENERAL DEL CONTRATO (VERIFICADA)</h3>
           <p class="instruction colspan-2">Esta información proviene directamente de los registros oficiales de SECOP II de la Agencia APP.</p>
 
           <div class="form-group">
@@ -141,7 +144,7 @@
       <!-- PESTAÑA 2: ACCIONES REALIZADAS -->
       <section id="tab-acciones" class="tab-panel">
         <form id="form-acciones" class="card grid-form">
-          <h3>2. Acciones y Logros Realizados</h3>
+          <h3>2. ACCIONES Y LOGROS REALIZADOS</h3>
           <p class="instruction colspan-2">Describe las actividades ejecutadas en tu periodo contractual y las metodologías implementadas.</p>
           <div class="form-group colspan-2">
             <label for="actividadesPrincipales">Descripción de Actividades Principales</label>
@@ -164,7 +167,7 @@
       <!-- PESTAÑA 3: ASUNTOS PENDIENTES -->
       <section id="tab-asuntos" class="tab-panel">
         <form id="form-asuntos" class="card grid-form">
-          <h3>3. Asuntos Pendientes y Recomendaciones</h3>
+          <h3>3. ASUNTOS PENDIENTES Y RECOMENDACIONES</h3>
           <p class="instruction colspan-2">Registra procesos en marcha y alertas para garantizar la continuidad.</p>
           <div class="form-group colspan-2">
             <label for="pendientesCriticos">Procesos u Obligaciones Pendientes (Alertas Críticas)</label>
@@ -183,7 +186,7 @@
       <!-- PESTAÑA 4: SISTEMAS E INFORMACIÓN -->
       <section id="tab-sistemas" class="tab-panel">
         <form id="form-sistemas" class="card grid-form">
-          <h3>4. Inventario de Sistemas, Accesos y Repositorios</h3>
+          <h3>4. INVENTARIO DE SISTEMAS, ACCESOS Y REPOSITORIOS</h3>
           <p class="instruction colspan-2">Indica las herramientas, carpetas en la nube y accesos administrados.</p>
           <div class="form-group colspan-2">
             <label for="repositoriosCloud">Rutas de Repositorios Finales (OneDrive / SharePoint / GitHub)</label>
@@ -210,20 +213,20 @@
     </section>
 
     <!-- ==========================================
-         VISTA 5: DASHBOARD DE FUNCIONARIOS (TH / SUPERVISORES / DIRECCIÓN)
+         VISTA 5: DASHBOARD DE FUNCIONARIOS (TH / SUPERVISORES)
          ========================================== -->
     <section id="view-funcionario-dashboard" class="view-panel">
       <div class="card">
         <div class="dashboard-header">
           <div>
-            <h3 id="welcome-funcionario">Panel de Control Operativo</h3>
+            <h3>PANEL DE CONTROL OPERATIVO</h3>
             <span id="badge-rol-funcionario" class="badge-role-title">Cargando Perfil...</span>
           </div>
           <button class="btn-danger btn-logout">Cerrar Sesión</button>
         </div>
-        <hr>
+        <hr class="divider">
 
-        <!-- SECCIÓN EXCLUSIVA DE TALENTO HUMANO: BUSCAR Y HABILITAR CONTRATISTAS -->
+        <!-- SECCIÓN EXCLUSIVA DE TALENTO HUMANO -->
         <div id="section-th-actions" class="management-box hidden">
           <h4>Habilitar Nuevo Contratista para Transferencia</h4>
           <p class="instruction">Consulta en SECOP II para autorizar la cédula de un contratista en la plataforma.</p>
@@ -233,9 +236,8 @@
           </div>
           <div id="secop-loader" class="loader hidden">Consultando base de datos gubernamental...</div>
           
-          <!-- Tarjeta de Confirmación de Habilitación (Aparece tras buscar) -->
           <div id="secop-result-box" class="hidden-result-box hidden">
-            <h5>Contrato Encontrado Oficialmente</h5>
+            <h5>CONTRATO ENCONTRADO OFICIALMENTE</h5>
             <div class="result-details">
               <p><strong>Contratista:</strong> <span id="secop-res-nombre">---</span></p>
               <p><strong>Cédula:</strong> <span id="secop-res-cedula">---</span></p>
@@ -245,7 +247,7 @@
           </div>
         </div>
 
-        <!-- TABLA GLOBAL DE SEGUIMIENTO (PARA TODOS LOS COMPONENTES EVALUADORES) -->
+        <!-- TABLA GLOBAL DE MONITORIZACIÓN -->
         <div class="management-box">
           <h4>Estado y Monitoreo de Transferencias Contractuales</h4>
           <div class="table-responsive">
@@ -260,7 +262,6 @@
                 </tr>
               </thead>
               <tbody id="table-tracking-body">
-                <!-- Se poblará dinámicamente desde el JavaScript -->
                 <tr>
                   <td colspan="5" class="text-center">Cargando registros autorizados...</td>
                 </tr>
