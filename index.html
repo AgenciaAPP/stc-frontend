@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>STC - Agencia APP</title>
-  <!-- Inyección segura de la tipografía Metropolis sin romper el CSS -->
   <link href="https://fonts.cdnfonts.com/css/metropolis" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -23,21 +22,17 @@
 
   <main class="container">
 
-    <!-- ==========================================
-         VISTA 1: PORTAL DE BIENVENIDA (SELECCIÓN DE ROL)
-         ========================================== -->
+    <!-- VISTA 1: PORTAL DE BIENVENIDA -->
     <section id="view-welcome" class="view-panel active">
       <div class="card text-center">
         <h3>BIENVENIDO AL APLICATIVO STC</h3>
         <p class="instruction">Por favor, selecciona tu perfil institucional para ingresar a la plataforma:</p>
-        
         <div class="role-selection-container">
           <button id="btn-role-contratista" class="btn-role">
             <span class="icon">👨‍💻</span>
             <strong>Soy Contratista</strong>
             <small>Diligenciar o continuar mi acta de transferencia</small>
           </button>
-          
           <button id="btn-role-funcionario" class="btn-role">
             <span class="icon">🛡️</span>
             <strong>Soy Funcionario</strong>
@@ -47,28 +42,29 @@
       </div>
     </section>
 
-    <!-- ==========================================
-         VISTA 2: LOGIN DINÁMICO (CÉDULA)
-         ========================================== -->
+    <!-- VISTA 2: LOGIN DINÁMICO CON SPINNER MODERNO -->
     <section id="view-login" class="view-panel">
       <div class="card max-w-md mx-auto">
         <button id="btn-back-to-welcome" class="btn-link">← Volver al inicio</button>
         <h3 id="login-title">INGRESO A LA PLATAFORMA</h3>
         <p id="login-instruction" class="instruction"></p>
 
-        <div class="form-group">
+        <div class="form-group spacing-bottom">
           <label for="login-cedula">Número de Identificación (Cédula)</label>
           <input type="text" id="login-cedula" placeholder="Digita tu documento sin puntos ni guiones">
         </div>
 
         <button id="btn-submit-login" class="btn-primary w-full">Ingresar y Verificar</button>
-        <div id="login-loader" class="loader hidden">Verificando autorización...</div>
+        
+        <!-- Spinner circular animado mucho más moderno -->
+        <div id="login-loader" class="loader-container hidden">
+          <div class="spinner"></div>
+          <span>Buscando autorización en registros...</span>
+        </div>
       </div>
     </section>
 
-    <!-- ==========================================
-         VISTA 3: DASHBOARD DEL CONTRATISTA (MENÚ)
-         ========================================== -->
+    <!-- VISTA 3: DASHBOARD DEL CONTRATISTA -->
     <section id="view-contratista-dashboard" class="view-panel">
       <div class="card text-center">
         <div class="dashboard-header">
@@ -82,52 +78,53 @@
           <p><strong>Objeto:</strong> <span id="dash-objeto-contrato">---</span></p>
           <p><strong>Estado en Sistema:</strong> <span id="dash-estado-acta" class="badge">---</span></p>
         </div>
-        <button id="btn-empezar-diligenciamiento" class="btn-large-action">Diligenciar Acta de Transferencia</button>
+        <button id="btn-empezar-diligenciamiento" class="btn-large-action">Diligenciar静态 Acta de Transferencia</button>
       </div>
     </section>
 
-    <!-- ==========================================
-         VISTA 4: MÓDULO FORMULARIO CONTRATISTA (PESTAÑAS)
-         ========================================== -->
+    <!-- VISTA 4: MÓDULO FORMULARIO CONTRATISTA (NAVEGACIÓN LIBRE) -->
     <section id="view-formulario-transferencia" class="view-panel">
       
-      <!-- Navegación de Pestañas Internas -->
-      <nav class="tabs-nav">
-        <button class="tab-btn active" data-tab="general">1. Datos Generales</button>
-        <button class="tab-btn" data-tab="acciones" id="tab-nav-acciones" disabled>2. Acciones Realizadas</button>
-        <button class="tab-btn" data-tab="asuntos" id="tab-nav-asuntos" disabled>3. Asuntos Pendientes</button>
-        <button class="tab-btn" data-tab="sistemas" id="tab-nav-sistemas" disabled>4. Sistemas e Información</button>
-      </nav>
+      <div class="form-sticky-header">
+        <nav class="tabs-nav">
+          <button class="tab-btn active" data-tab="general">1. Datos Generales</button>
+          <button class="tab-btn" data-tab="acciones">2. Acciones</button>
+          <button class="tab-btn" data-tab="asuntos">3. Asuntos</button>
+          <button class="tab-btn" data-tab="sistemas">4. Sistemas</button>
+          <button class="tab-btn" data-tab="directorio">5. Directorio y finalizar</button>
+        </nav>
+        <!-- Opción de Guardado Preliminar para no perder avances -->
+        <button id="btn-save-preliminary" class="btn-preliminary">💾 Guardar Progreso y Salir</button>
+      </div>
 
       <!-- PESTAÑA 1: DATOS GENERALES -->
       <section id="tab-general" class="tab-panel active">
         <form id="form-general" class="card grid-form">
-          <h3>1. INFORMACIÓN GENERAL DEL CONTRATO (VERIFICADA)</h3>
-          <p class="instruction colspan-2">Esta información proviene directamente de los registros oficiales de SECOP II de la Agencia APP.</p>
-
+          <h3>1. INFORMACIÓN GENERAL DEL CONTRATO</h3>
+          <p class="instruction colspan-2">Validación de la vinculación asignada en la Agencia APP.</p>
           <div class="form-group">
-            <label for="cedula">Documento de Identidad / Cédula</label>
+            <label>Cédula</label>
             <input type="text" id="cedula" readonly class="readonly-field">
           </div>
           <div class="form-group">
-            <label for="nombreContratista">Nombre Completo del Contratista</label>
+            <label>Nombre del Contratista</label>
             <input type="text" id="nombreContratista" readonly class="readonly-field">
           </div>
           <div class="form-group">
-            <label for="correoContratista">Correo Electrónico Corporativo / Contacto</label>
-            <input type="email" id="correoContratista" required placeholder="ejemplo@agenciaapp.co">
-          </div>
-          <div class="form-group">
-            <label for="numeroContrato">Número de Contrato</label>
+            <label>Número de Contrato</label>
             <input type="text" id="numeroContrato" readonly class="readonly-field">
           </div>
+          <div class="form-group">
+            <label>Supervisor</label>
+            <input type="text" id="supervisor" readonly class="readonly-field">
+          </div>
           <div class="form-group colspan-2">
-            <label for="objetoContrato">Objeto Contractual Oficial</label>
-            <textarea id="objetoContrato" rows="3" readonly class="readonly-field"></textarea>
+            <label>Objeto Contractual</label>
+            <textarea id="objetoContrato" rows="2" readonly class="readonly-field"></textarea>
           </div>
           <div class="form-group">
-            <label for="supervisor">Nombre del Supervisor</label>
-            <input type="text" id="supervisor" readonly class="readonly-field">
+            <label for="correoContratista">Correo Electrónico de Contacto</label>
+            <input type="email" id="correoContratista" required placeholder="ejemplo@agenciaapp.co">
           </div>
           <div class="form-group">
             <label for="dependencia">Subdirección / Dependencia</label>
@@ -139,86 +136,133 @@
               <option value="Subdirección Administrativa y Financiera">Subdirección Administrativa y Financiera</option>
             </select>
           </div>
-          <div class="form-actions colspan-2">
-            <button type="submit" class="btn-success">Guardar Datos Generales y Continuar</button>
-          </div>
         </form>
       </section>
 
-      <!-- PESTAÑA 2: ACCIONES REALIZADAS -->
+      <!-- PESTAÑA 2: ACCIONES REALIZADAS (MULTIRREGISTRO) -->
       <section id="tab-acciones" class="tab-panel">
-        <form id="form-acciones" class="card grid-form">
-          <h3>2. ACCIONES Y LOGROS REALIZADOS</h3>
-          <p class="instruction colspan-2">Describe las actividades ejecutadas en tu periodo contractual y las metodologías implementadas.</p>
-          <div class="form-group colspan-2">
-            <label for="actividadesPrincipales">Descripción de Actividades Principales</label>
-            <textarea id="actividadesPrincipales" rows="4" required placeholder="Detalla las funciones desarrolladas..."></textarea>
+        <div class="card">
+          <div class="table-section-header">
+            <h3>2. ACCIONES DE TRANSFERENCIA DE CONOCIMIENTO</h3>
+            <button type="button" class="btn-primary" onclick="openModal('modal-accion')">+ Nueva transferencia</button>
           </div>
-          <div class="form-group colspan-2">
-            <label for="logrosClave">Logros o Hitos Relevantes</label>
-            <textarea id="logrosClave" rows="3" required placeholder="¿Cuáles fueron los resultados significativos?"></textarea>
+          
+          <div class="form-group spacing-top">
+            <label for="lineamientos">Lineamientos Generales</label>
+            <textarea id="lineamientos" rows="2" placeholder="Lineamientos de la subdirección..."></textarea>
           </div>
-          <div class="form-group colspan-2">
-            <label for="metodologia">Metodología Aplicada</label>
-            <textarea id="metodologia" rows="3" placeholder="Herramientas o metodologías de trabajo utilizadas..."></textarea>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Proceso clave / Acción</th>
+                  <th>Prioridad</th>
+                  <th>Productos entrega</th>
+                  <th>Evidencias y Ejecución</th>
+                  <th>Ruta Repositorio</th>
+                  <th>Observaciones</th>
+                </tr>
+              </thead>
+              <tbody id="table-acciones-body">
+                <tr><td colspan="6" class="text-muted text-center">No se han agregado registros.</td></tr>
+              </tbody>
+            </table>
           </div>
-          <div class="form-actions colspan-2">
-            <button type="submit" class="btn-success">Guardar Actividades y Continuar</button>
+
+          <div class="form-group spacing-top">
+            <label for="recomendaciones-acciones">Recomendaciones Especiales</label>
+            <textarea id="recomendaciones-acciones" rows="2" placeholder="Recomendaciones metodológicas..."></textarea>
           </div>
-        </form>
+        </div>
       </section>
 
-      <!-- PESTAÑA 3: ASUNTOS PENDIENTES -->
+      <!-- PESTAÑA 3: ASUNTOS PENDIENTES (MULTIRREGISTRO) -->
       <section id="tab-asuntos" class="tab-panel">
-        <form id="form-asuntos" class="card grid-form">
-          <h3>3. ASUNTOS PENDIENTES Y RECOMENDACIONES</h3>
-          <p class="instruction colspan-2">Registra procesos en marcha y alertas para garantizar la continuidad.</p>
-          <div class="form-group colspan-2">
-            <label for="pendientesCriticos">Procesos u Obligaciones Pendientes (Alertas Críticas)</label>
-            <textarea id="pendientesCriticos" rows="4" required placeholder="Describe trámites o informes que requieran seguimiento urgente..."></textarea>
+        <div class="card">
+          <div class="table-section-header">
+            <h3>3. ASUNTOS PENDIENTES</h3>
+            <button type="button" class="btn-primary" onclick="openModal('modal-asunto')">+ Nuevo asunto</button>
           </div>
-          <div class="form-group colspan-2">
-            <label for="recomendaciones">Recomendaciones Estratégicas</label>
-            <textarea id="recomendaciones" rows="3" placeholder="Sugerencias técnicas para optimizar el empalme..."></textarea>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Aspecto / Trámite</th>
+                  <th>Estado Actual</th>
+                  <th>Impacto / Riesgo</th>
+                  <th>Acción Requerida</th>
+                </tr>
+              </thead>
+              <tbody id="table-asuntos-body">
+                <tr><td colspan="4" class="text-muted text-center">No se han agregado registros.</td></tr>
+              </tbody>
+            </table>
           </div>
-          <div class="form-actions colspan-2">
-            <button type="submit" class="btn-success">Guardar Pendientes y Continuar</button>
-          </div>
-        </form>
+        </div>
       </section>
 
-      <!-- PESTAÑA 4: SISTEMAS E INFORMACIÓN -->
+      <!-- PESTAÑA 4: SISTEMAS E INFORMACIÓN (MULTIRREGISTRO) -->
       <section id="tab-sistemas" class="tab-panel">
-        <form id="form-sistemas" class="card grid-form">
-          <h3>4. INVENTARIO DE SISTEMAS, ACCESOS Y REPOSITORIOS</h3>
-          <p class="instruction colspan-2">Indica las herramientas, carpetas en la nube y accesos administrados.</p>
-          <div class="form-group colspan-2">
-            <label for="repositoriosCloud">Rutas de Repositorios Finales (OneDrive / SharePoint / GitHub)</label>
-            <textarea id="repositoriosCloud" rows="3" required placeholder="Pega los enlaces compartidos de tus entregables..."></textarea>
+        <div class="card">
+          <div class="table-section-header">
+            <h3>4. INVENTARIO DE SISTEMAS E INFORMACIÓN</h3>
+            <button type="button" class="btn-primary" onclick="openModal('modal-sistema')">+ Nuevo sistema/acceso</button>
           </div>
-          <div class="form-group">
-            <label for="sistemasAsignados">Sistemas Utilizados (Ej: ArcGIS, Sagicc, Power BI)</label>
-            <input type="text" id="sistemasAsignados" placeholder="Herramientas consultadas o administradas">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Plataforma / Sistema</th>
+                  <th>Tipo de Acceso</th>
+                  <th>Uso o Rol en el Sistema</th>
+                  <th>Estado de la Credencial</th>
+                </tr>
+              </thead>
+              <tbody id="table-sistemas-body">
+                <tr><td colspan="4" class="text-muted text-center">No se han agregado registros.</td></tr>
+              </tbody>
+            </table>
           </div>
-          <div class="form-group">
-            <label for="estadoAccesos">Estado de Devolución de Accesos</label>
-            <select id="estadoAccesos" required>
-              <option value="">Seleccione una opción...</option>
-              <option value="Pendiente por entregar">Pendiente por entregar / revocar accesos</option>
-              <option value="Entregado al supervisor">Accesos y carpetas compartidas con el Supervisor</option>
-              <option value="No aplica">No manejé accesos especiales ni equipos físicos</option>
-            </select>
-          </div>
-          <div class="form-actions colspan-2">
-            <button type="submit" id="btn-finalizar-todo" class="btn-primary">Finalizar Registro y Enviar Acta</button>
-          </div>
-        </form>
+        </div>
       </section>
+
+      <!-- PESTAÑA 5: DIRECTORIO Y FINALIZAR (MULTIRREGISTRO) -->
+      <section id="tab-directorio" class="tab-panel">
+        <div class="card">
+          <div class="table-section-header">
+            <h3>5. DIRECTORIO DE CONTACTOS CLAVE</h3>
+            <button type="button" class="btn-primary" onclick="openModal('modal-directorio')">+ Nuevo contacto</button>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Nombre Contacto</th>
+                  <th>Entidad / Dependencia</th>
+                  <th>Teléfono / Celular</th>
+                  <th>Correo Electrónico</th>
+                  <th>Asunto Relacionado</th>
+                </tr>
+              </thead>
+              <tbody id="table-directorio-body">
+                <tr><td colspan="5" class="text-muted text-center">No se han agregado registros.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <hr class="divider">
+          <div class="text-center spacing-top">
+            <h4>¿Has finalizado por completo tu Acta de Transferencia?</h4>
+            <p class="instruction">Al enviar el acta oficial se bloqueará tu edición y se notificará formalmente a Talento Humano y a tu Supervisor.</p>
+            <button type="button" id="btn-submit-final" class="btn-large-action">🔒 Consolidar y Finalizar Acta</button>
+          </div>
+        </div>
+      </section>
+
     </section>
 
-    <!-- ==========================================
-         VISTA 5: DASHBOARD DE FUNCIONARIOS (TH / SUPERVISORES)
-         ========================================== -->
+    <!-- VISTA 5: DASHBOARD DE FUNCIONARIOS -->
     <section id="view-funcionario-dashboard" class="view-panel">
       <div class="card">
         <div class="dashboard-header">
@@ -230,28 +274,22 @@
         </div>
         <hr class="divider">
 
-        <!-- SECCIÓN EXCLUSIVA DE TALENTO HUMANO -->
         <div id="section-th-actions" class="management-box hidden">
           <h4>Habilitar Nuevo Contratista para Transferencia</h4>
-          <p class="instruction">Consulta en SECOP II para autorizar la cédula de un contratista en la plataforma.</p>
           <div class="search-container">
             <input type="text" id="search-contrato" placeholder="Ingresa la Referencia del Contrato (Ej: PS2026001)">
             <button id="btn-buscar-secop" class="btn-primary">Consultar SECOP</button>
           </div>
           <div id="secop-loader" class="loader hidden">Consultando base de datos gubernamental...</div>
-          
           <div id="secop-result-box" class="hidden-result-box hidden">
             <h5>CONTRATO ENCONTRADO OFICIALMENTE</h5>
-            <div class="result-details">
-              <p><strong>Contratista:</strong> <span id="secop-res-nombre">---</span></p>
-              <p><strong>Cédula:</strong> <span id="secop-res-cedula">---</span></p>
-              <p><strong>Objeto:</strong> <span id="secop-res-objeto">---</span></p>
-            </div>
+            <p><strong>Contratista:</strong> <span id="secop-res-nombre">---</span></p>
+            <p><strong>Cédula:</strong> <span id="secop-res-cedula">---</span></p>
+            <p><strong>Objeto:</strong> <span id="secop-res-objeto">---</span></p>
             <button id="btn-confirmar-habilitacion" class="btn-success">Habilitar Cédula y Crear Registro</button>
           </div>
         </div>
 
-        <!-- TABLA GLOBAL DE MONITORIZACIÓN -->
         <div class="management-box">
           <h4>Estado y Monitoreo de Transferencias Contractuales</h4>
           <div class="table-responsive">
@@ -265,20 +303,163 @@
                   <th>Acciones</th>
                 </tr>
               </thead>
-              <tbody id="table-tracking-body">
-                <tr>
-                  <td colspan="5" class="text-center">Cargando registros autorizados...</td>
-                </tr>
-              </tbody>
+              <tbody id="table-tracking-body"></tbody>
             </table>
           </div>
         </div>
-
       </div>
     </section>
 
   </main>
 
+  <!-- ==========================================
+       MODALES EMERGENTES (ESTILO POP-UP)
+       ========================================== -->
+  
+  <!-- POPUP 2: ACCIONES REALIZADAS -->
+  <div id="modal-acciones" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4>Agregar Acción / Logro</h4>
+        <button type="button" class="btn-close-modal" onclick="closeModal('modal-acciones')">×</button>
+      </div>
+      <form id="form-modal-acciones" class="modal-body">
+        <div class="form-group">
+          <label>Proceso clave / Acción de transferencia ejecutada</label>
+          <textarea id="modal-acc-proceso" required placeholder="Describe la acción realizada..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Prioridad</label>
+          <select id="modal-acc-prioridad" required>
+            <option value="Alta">Alta</option>
+            <option value="Media">Media</option>
+            <option value="Baja">Baja</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Productos entrega</label>
+          <input type="text" id="modal-acc-productos" required placeholder="Actividad o producto asociado">
+        </div>
+        <div class="form-group">
+          <label>Describa cómo se llevó a cabo la acción de transferencia y evidencias</label>
+          <textarea id="modal-acc-ejecucion" required placeholder="Detalla la forma de entrega..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Fecha en que se ejecutó la acción de transferencia</label>
+          <input type="date" id="modal-acc-fecha" required>
+        </div>
+        <div class="form-group">
+          <label>Ruta(s) donde reposa(n) la evidencia(s) de la acción realizada</label>
+          <input type="text" id="modal-acc-ruta" required placeholder="https://agenciaapp.gov.co/sharepoint...">
+        </div>
+        <div class="form-group">
+          <label>Observaciones</label>
+          <input type="text" id="modal-acc-obs" placeholder="Anotación opcional">
+        </div>
+        <button type="submit" class="btn-primary w-full spacing-top">💾 Guardar Registro</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- POPUP 3: ASUNTOS PENDIENTES -->
+  <div id="modal-asuntos" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4>Agregar Asunto Pendiente</h4>
+        <button type="button" class="btn-close-modal" onclick="closeModal('modal-asuntos')">×</button>
+      </div>
+      <form id="form-modal-asuntos" class="modal-body">
+        <div class="form-group">
+          <label>Aspecto / Trámite pendiente</label>
+          <input type="text" id="modal-asu-tramite" required>
+        </div>
+        <div class="form-group">
+          <label>Estado Actual</label>
+          <input type="text" id="modal-asu-estado" required placeholder="Ej: En revisión jurídica">
+        </div>
+        <div class="form-group">
+          <label>Impacto / Riesgo de no gestionarse</label>
+          <select id="modal-asu-riesgo" required>
+            <option value="Alto">Alto</option>
+            <option value="Medio">Medio</option>
+            <option value="Bajo">Baja</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Acción requerida por el empalme</label>
+          <textarea id="modal-asu-accion" required placeholder="¿Qué debe hacer la persona que recibe?"></textarea>
+        </div>
+        <button type="submit" class="btn-primary w-full spacing-top">💾 Guardar Asunto</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- POPUP 4: INVENTARIO DE SISTEMAS -->
+  <div id="modal-sistemas" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4>Agregar Sistema / Acceso</h4>
+        <button type="button" class="btn-close-modal" onclick="closeModal('modal-sistemas')">×</button>
+      </div>
+      <form id="form-modal-sistemas" class="modal-body">
+        <div class="form-group">
+          <label>Plataforma / Sistema administrado</label>
+          <input type="text" id="modal-sis-nombre" required placeholder="Ej: ArcGIS Online / Sagicc">
+        </div>
+        <div class="form-group">
+          <label>Tipo de Acceso</label>
+          <input type="text" id="modal-sis-tipo" required placeholder="Ej: Credencial / Token / API Key">
+        </div>
+        <div class="form-group">
+          <label>Uso o Rol en el sistema</label>
+          <input type="text" id="modal-sis-rol" required placeholder="Ej: Administrador de capas / Analista de datos">
+        </div>
+        <div class="form-group">
+          <label>Estado de la Credencial</label>
+          <select id="modal-sis-estado" required>
+            <option value="Pendiente por revocar">Pendiente por revocar</option>
+            <option value="Credencial devuelta">Credencial devuelta / desactivada</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary w-full spacing-top">💾 Guardar Sistema</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- POPUP 5: DIRECTORIO DE CONTACTOS -->
+  <div id="modal-directorio" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h4>Agregar Contacto Clave</h4>
+        <button type="button" class="btn-close-modal" onclick="closeModal('modal-directorio')">×</button>
+      </div>
+      <form id="form-modal-directorio" class="modal-body">
+        <div class="form-group">
+          <label>Nombre Completo del Contacto</label>
+          <input type="text" id="modal-dir-nombre" required>
+        </div>
+        <div class="form-group">
+          <label>Entidad / Subdirección / Dependencia</label>
+          <input type="text" id="modal-dir-entidad" required>
+        </div>
+        <div class="form-group">
+          <label>Teléfono / Celular de Contacto</label>
+          <input type="text" id="modal-dir-tel" required placeholder="3xxxxxxxxx">
+        </div>
+        <div class="form-group">
+          <label>Correo Electrónico</label>
+          <input type="email" id="modal-dir-correo" required>
+        </div>
+        <div class="form-group">
+          <label>Asunto / Proceso Relacionado</label>
+          <input type="text" id="modal-dir-asunto" required placeholder="Ej: Gestión presupuestal / Mesa de servicio">
+        </div>
+        <button type="submit" class="btn-primary w-full spacing-top">💾 Guardar Contacto</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Enlace al cerebro JavaScript modificado -->
   <script src="app.js"></script>
 </body>
 </html>
