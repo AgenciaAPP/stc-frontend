@@ -310,7 +310,7 @@ textarea {
   font-family: inherit;
   outline: none;
   color: #334155;
-  resize: vertical !important; /* Evita ensanchamiento horizontal */
+  resize: vertical !important; /* Protección de redimensión horizontal */
 }
 
 input:focus, select:focus, textarea:focus {
@@ -359,9 +359,9 @@ input:focus, select:focus, textarea:focus {
    8. NUEVA TARJETA DE CIERRE EXPLICITA (SÚPER RESPIRO)
    ========================================== */
 .final-closure-card {
-  background-color: #fffdeb !important; /* Forzamos el fondo ámbar de advertencia */
+  background-color: #fffdeb !important; 
   border: 1px solid #fef3c7;
-  border-left: 6px solid var(--primary-color) !important; /* Barra amarilla institucional a la izquierda */
+  border-left: 6px solid var(--primary-color) !important; /* Barra amarilla izquierda */
   border-radius: 8px;
   padding: 40px !important;
   margin-top: 50px !important; /* Aislamiento físico contundente de la tabla */
@@ -371,7 +371,7 @@ input:focus, select:focus, textarea:focus {
 .final-closure-card h4 {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #92400e; /* Marrón jerárquico legible */
+  color: #92400e; 
   text-transform: uppercase;
   margin-bottom: 12px;
 }
@@ -385,7 +385,7 @@ input:focus, select:focus, textarea:focus {
 
 .button-wrapper {
   display: flex;
-  justify-content: flex-start; /* Alineación limpia al botón */
+  justify-content: flex-start; 
   margin-top: 24px;
 }
 
@@ -489,9 +489,26 @@ input:focus, select:focus, textarea:focus {
 .btn-action-view { background-color: #e2e8f0; color: var(--real-black); border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: 600; margin-right: 5px; }
 .btn-action-pdf { background-color: #fee2e2; color: #991b1b; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: 600; }
 
-.max-w-md { max-width: 30rem; }
-.text-center { text-align: center; }
-.w-full { width: 100%; }
+/* ==========================================
+   11. DIAGNÓSTICO Y CLASES DE UTILERÍA (CENTRADOS)
+   ========================================== */
+.mx-auto { 
+  margin-left: auto !important; 
+  margin-right: auto !important; 
+  margin-top: 60px !important; /* Despegue controlado con respecto al banner superior */
+}
+
+.max-w-md { 
+  max-width: 32rem; /* Anchura ideal y estilizada para el recuadro de Login */
+}
+
+.text-center { 
+  text-align: center; 
+}
+
+.w-full { 
+  width: 100%; 
+}
 
 @media (max-width: 768px) {
   .grid-form { grid-template-columns: 1fr; gap: 20px; }
