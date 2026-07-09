@@ -279,7 +279,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // MODIFICADA SUTILES LÍNEAS PARA LA EXTRACCIÓN DINÁMICA DE SUPERVISORES REALES
   function renderTableGeneric(elementId, dataset, fields) {
     const tbody = document.getElementById(elementId);
     tbody.innerHTML = '';
@@ -327,12 +326,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('secop-res-cedula').textContent = data.cedula;
         document.getElementById('secop-res-objeto').textContent = data.objeto;
 
-        window.contratoTemporalValidado = {
+        window.contratoTemporalValidated = {
           cedula: data.cedula,
           nombre: data.nombre,
           contrato: contratoInput,
           objeto: data.objeto,
-          // CAPTURA DE SUPERVISOR DEFINITIVA DESDE EL BACKEND
           nombreSupervisor: data.nombreSupervisor,
           cedulaSupervisor: data.cedulaSupervisor
         };
@@ -351,22 +349,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // CONFIRMAR HABILITACIÓN LÓGICA LOCAL DE LA INTERFAZ
   document.getElementById('btn-confirmar-habilitacion').addEventListener('click', () => {
-    if (window.contratoTemporalValidado) {
+    if (window.contratoTemporalValidated) {
       
-      const existe = listadoMonitoreo.some(reg => reg.contract === window.contratoTemporalValidado.contract);
+      const existe = listadoMonitoreo.some(reg => reg.contract === window.contratoTemporalValidated.contrato);
       
       if (!existe) {
         listadoMonitoreo.push({
-          name: window.contratoTemporalValidado.nombre,
-          contract: window.contratoTemporalValidado.contrato,
-          // REEMPLAZADO "POR ASIGNAR" POR EL NOMBRE COMPLETO EN MAYÚSCULAS INSTITUCIONALES
-          boss: window.contratoTemporalValidado.nombreSupervisor.toUpperCase(),
+          name: window.contratoTemporalValidated.nombre,
+          contract: window.contratoTemporalValidated.contrato,
+          boss: window.contratoTemporalValidated.nombreSupervisor.toUpperCase(),
           status: "EN DILIGENCIAMIENTO",
-          cedulaSupervisor: window.contratoTemporalValidado.cedulaSupervisor // Guardado estratégico
+          cedulaSupervisor: window.contratoTemporalValidated.cedulaSupervisor
         });
       }
 
-      alert(`🎉 ¡ÉXITO INSTITUCIONAL!\n\nLa cédula ${window.contratoTemporalValidado.cedula} asociada al contrato ${window.contratoTemporalValidado.contrato} ha sido autorizada en la base de datos central de la Agencia APP.\n\nEl supervisor asignado es: ${window.contratoTemporalValidado.nombreSupervisor}.`);
+      alert(`🎉 ¡ÉXITO INSTITUCIONAL!\n\nLa cédula ${window.contratoTemporalValidated.cedula} asociada al contrato ${window.contratoTemporalValidated.contrato} ha sido autorizada en la base de datos central de la Agencia APP.\n\nEl supervisor asignado es: ${window.contratoTemporalValidado.nombreSupervisor}.`);
       
       poblarTablaSeguimientoFuncionarios();
       
@@ -420,7 +417,8 @@ document.addEventListener('DOMContentLoaded', () => {
           switchView(viewContratistaDashboard);
         }
       } else {
-        alert(`❌ Error al guardar en SharePoint: ${resData.message}`);
+        const detalleError = resData.detail ? (resData.detail.message || JSON.stringify(resData.detail)) : resData.message;
+        alert(`❌ Error al guardar en SharePoint: ${detalleError}`);
       }
     } catch (error) {
       console.error(error);
