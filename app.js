@@ -2,7 +2,7 @@ const BACKEND_URL = 'https://stc-backend-nine.vercel.app';
 
 let currentUserRole = null; 
 let currentUserData = null; 
-let isReadOnlyMode = false; // Variable global de control de flujo de visualización
+let isReadOnlyMode = false; 
 
 let listadoAcciones = [];
 let listadoAsuntos = [];
@@ -42,6 +42,25 @@ document.addEventListener('DOMContentLoaded', () => {
     targetView.classList.add('active');
   }
 
+  // FUNCIÓN SOLUCIÓN PUNTO 3: LIMPIEZA ABSOLUTA DE CACHÉ DE CAMPOS ANTES DE CARGAR USUARIOS
+  function limpiarCamposFormulario() {
+    listadoAcciones = [];
+    listadoAsuntos = [];
+    listadoSistemas = [];
+    listadoDirectorio = [];
+    
+    renderTableAcciones();
+    renderTableAsuntos();
+    renderTableSistemas();
+    renderTableDirectorio();
+
+    const textareas = viewFormularioTransferencia.querySelectorAll('textarea');
+    textareas.forEach(t => t.value = '');
+
+    const inputs = viewFormularioTransferencia.querySelectorAll('input');
+    inputs.forEach(i => i.value = '');
+  }
+
   btnRoleContratista.addEventListener('click', () => {
     currentUserRole = 'contratista';
     loginTitle.innerText = 'INGRESAR COMO CONTRATISTA';
@@ -58,13 +77,12 @@ document.addEventListener('DOMContentLoaded', () => {
     switchView(viewLogin);
   });
 
-  // CONTROL INTERMUTADOR EN EL BOTÓN REGRESAR / SALIR (SOLUCIÓN PUNTO 2)
+  // SOLUCIÓN PUNTO 1: INTERMUTACIÓN ADAPTATIVA DEL BOTÓN DE REGRESO
   btnBackToWelcome.addEventListener('click', () => {
     if (isReadOnlyMode) {
-      // Si estaba auditando, lo devuelve seguro a su mesa de control institucional
+      btnBackToWelcome.innerText = "Cerrar Sesión"; // Restaura texto
       switchView(viewFuncionarioDashboard);
     } else {
-      // Si es el contratista saliendo de su panel normal
       switchView(viewWelcome);
     }
   });
@@ -98,15 +116,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const resData = await response.json();
 
         if (resData.success && resData.exists) {
+          limpiarCamposFormulario(); // Limpieza previa preventiva de campos
+
           currentUserData = {
             idSharePoint: resData.idSharePoint,
             cedula: cedula,
             nombre: resData.nombre,
             contract: resData.contract,
             objeto: resData.objeto,
+            supervisor: resData.supervisor, // Mapeado correcto de Supervisor (Punto 2)
             estado: resData.estado,
             correo: resData.correo,
-            dependencia: resData.dependencia
+            dependencia: resData.dependencia,
+            lineamientos: resData.lineamientos,
+            recomendaciones: resData.recomendaciones
           };
 
           document.getElementById('welcome-contratista').innerText = `BIENVENIDO(A), ${currentUserData.nombre.toUpperCase()}`;
@@ -153,8 +176,25 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('nombreContratista').value = currentUserData.nombre;
     document.getElementById('numeroContrato').value = currentUserData.contract;
     document.getElementById('objetoContrato').value = currentUserData.objeto;
+    document.getElementById('supervisor').value = currentUserData.supervisor; // Precarga del Supervisor (Punto 2)
     document.getElementById('correoContratista').value = currentUserData.correo || '';
-    document.getElementById('dependencia').value = currentUserData.dependencia || 'Dirección General';
+    
+    // SOLUCIÓN PUNTO 3: Inyección Robusta del desplegable de Dependencia
+    const selectDep = document.getElementById('dependencia');
+    const valorDep = currentUserData.dependencia || 'Dirección General';
+    
+    // Si la opción no se encuentra explícitamente en el HTML, la creamos al vuelo para que no aparezca en blanco
+    if (!Array.from(selectDep.options).some(opt => opt.value === valorDep)) {
+      const optNueva = document.createElement('option');
+      optNueva.value = valorDep;
+      optNueva.text = valorDep;
+      selectDep.add(optNueva);
+    }
+    selectDep.value = valorDep;
+
+    // Carga limpia de comentarios guardados previamente
+    document.getElementById('lineamientos').value = currentUserData.lineamientos || '';
+    document.getElementById('recomendaciones-acciones').value = currentUserData.recomendaciones || '';
 
     tabButtons.forEach(btn => btn.classList.remove('active'));
     tabPanels.forEach(pnl => pnl.classList.remove('active'));
@@ -175,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   window.openModal = function(modalType) {
-    if(isReadOnlyMode) return; // Bloqueo de adición en auditoría
+    if(isReadOnlyMode) return; 
     let targetId = '';
     if(modalType === 'modal-accion') targetId = 'modal-acciones';
     if(modalType === 'modal-asunto') targetId = 'modal-asuntos';
@@ -312,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resultBox.classList.add('hidden');
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/buscar-secop?contract=${encodeURIComponent(contratoInput)}`);
+      const response = await fetch(`${BACKEND_URL}/api/buscar-secop?contrato=${encodeURIComponent(contratoInput)}`);
       const data = await response.json();
 
       if (data.success) {
@@ -451,7 +491,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const btnSave = document.getElementById('btn-save-preliminary');
     const btnSubmit = document.getElementById('btn-submit-final');
-    // Ocultar botones de acción masiva de edición en los popups de adición
     const btnAdders = viewFormularioTransferencia.querySelectorAll('.btn-add-row');
     
     if(isReadOnly) {
@@ -494,15 +533,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const index = e.target.getAttribute('data-index');
         const actaSeleccionada = listadoMonitoreo[index];
 
-        // ACTIVACIÓN DE MODO LECTURA AUDITORÍA
+        limpiarCamposFormulario(); // Limpieza profunda preventiva previa a cargar la auditoría
+
         isReadOnlyMode = true;
         ajustarModoLecturaFormulario(true);
+        
+        // Cambio dinámico de texto para el botón de regreso (Punto 1)
+        btnBackToWelcome.innerText = "⬅️ Volver al Panel";
 
         document.getElementById('cedula').value = actaSeleccionada.cedula || '';
         document.getElementById('nombreContratista').value = actaSeleccionada.name || '';
         document.getElementById('numeroContrato').value = actaSeleccionada.contract || '';
         document.getElementById('supervisor').value = actaSeleccionada.boss || '';
+        document.getElementById('lineamientos').value = actaSeleccionada.lineamientos || '';
+        document.getElementById('recomendaciones-acciones').value = actaSeleccionada.recomendaciones || '';
         
+        // Validación adaptativa de la Dependencia
+        const selectDep = document.getElementById('dependencia');
+        const valorDep = actaSeleccionada.dependencia || 'Dirección General';
+        if (!Array.from(selectDep.options).some(opt => opt.value === valorDep)) {
+          const optNueva = document.createElement('option');
+          optNueva.value = valorDep;
+          optNueva.text = valorDep;
+          selectDep.add(optNueva);
+        }
+        selectDep.value = valorDep;
+
         tabButtons.forEach(b => b.classList.remove('active'));
         tabPanels.forEach(p => p.classList.remove('active'));
         tabButtons[0].classList.add('active');
