@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
             recomendaciones: resData.recomendaciones
           };
 
-          // SOLUCIÓN COMPLETA: Trae los multirregistros que ya reposan como preliminares en SharePoint
+          // Recarga dinámica desde SharePoint al iniciar sesión para mantener el avance
           const respHijos = await fetch(`${BACKEND_URL}/api/obtener-detalles-hijos?cedula=${encodeURIComponent(cedula)}`);
           const dataHijos = await respHijos.json();
           if(dataHijos.success) {
@@ -526,7 +526,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         selectDep.value = valorDep;
 
-        // SOLUCIÓN TOTAL MULTIRREGISTROS PARA EL SUPERVISOR: Trae las acciones guardadas desde SharePoint
         const responseHijos = await fetch(`${BACKEND_URL}/api/obtener-detalles-hijos?cedula=${encodeURIComponent(actaSeleccionada.cedula)}`);
         const dataHijos = await responseHijos.json();
         if(dataHijos.success) {
@@ -541,7 +540,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         switchView(viewFormularioTransferencia);
         
-        // SOLUCIÓN AL SCROLL CON RETRASO CONTROLADO (PUNTO 2)
         setTimeout(() => {
           window.scrollTo({ top: 0, behavior: 'instant' });
         }, 80);
