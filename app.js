@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function limpiarCamposAuditoria() {
     listadoAcciones = []; listadoAsuntos = []; listadoSistemas = []; listadoDirectorio = [];
     renderTableAcciones(); renderTableAsuntos(); renderTableSistemas(); renderTableDirectorio();
-
     viewFormularioTransferencia.querySelectorAll('textarea, input').forEach(el => el.value = '');
   }
 
@@ -69,19 +68,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   btnRoleContratista.addEventListener('click', () => {
-    currentUserRole = 'contratista';
-    loginTitle.innerText = 'INGRESAR COMO CONTRATISTA';
-    loginInstruction.innerText = 'Introduce tu número de cédula para acceder a tu Acta de Transferencia de Conocimiento.';
-    inputLoginCedula.value = ''; 
-    switchView(viewLogin);
+    currentUserRole = 'contratista'; loginTitle.innerText = 'INGRESAR COMO CONTRATISTA'; inputLoginCedula.value = ''; switchView(viewLogin);
   });
 
   btnRoleFuncionario.addEventListener('click', () => {
-    currentUserRole = 'funcionario';
-    loginTitle.innerText = 'INGRESAR COMO FUNCIONARIO';
-    loginInstruction.innerText = 'Acceso exclusivo para Personal de la Agencia APP, Supervisores y Talento Humano.';
-    inputLoginCedula.value = ''; 
-    switchView(viewLogin);
+    currentUserRole = 'funcionario'; loginTitle.innerText = 'INGRESAR COMO FUNCIONARIO'; inputLoginCedula.value = ''; switchView(viewLogin);
   });
 
   btnBackToWelcome.addEventListener('click', (e) => {
@@ -103,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
   btnSubmitLogin.addEventListener('click', async () => {
     const cedula = inputLoginCedula.value.trim();
     if (!cedula) { alert('⚠️ Por favor, ingresa tu número de documento.'); return; }
-
     loginLoader.classList.remove('hidden'); btnSubmitLogin.disabled = true;
 
     try {
@@ -137,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
           
           isReadOnlyMode = false; switchView(viewContratistaDashboard);
         } else {
-          alert('❌ Tu documento no se encuentra habilitado por Talento Humano.');
+          alert('❌ Tu documento no se encuentra habilitado.');
         }
       } else if (currentUserRole === 'funcionario') {
         const sectionTH = document.getElementById('section-th-actions');
@@ -207,14 +197,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById(modalId); if(modal) modal.classList.remove('active');
   }
 
-  // SOLUCIÓN PUNTO 1: Captura completa incluyendo "Acción para la transferencia de conocimiento"
   document.getElementById('form-modal-acciones').addEventListener('submit', (e) => {
     e.preventDefault();
     listadoAcciones.push({
-      proceso: document.getElementById('modal-acc-proceso').value, // Proceso clave
+      proceso: document.getElementById('modal-acc-proceso').value, 
       prioridad: document.getElementById('modal-acc-prioridad').value,
       productos: document.getElementById('modal-acc-productos').value,
-      accionConocimiento: document.getElementById('modal-acc-conocimiento')?.value || 'No registrada', // Nuevo campo
+      accionConocimiento: document.getElementById('modal-acc-conocimiento')?.value || 'No registrada', 
       ejecucion: document.getElementById('modal-acc-ejecucion').value,
       fecha: document.getElementById('modal-acc-fecha').value,
       ruta: document.getElementById('modal-acc-ruta').value,
@@ -244,10 +233,32 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTableDirectorio(); document.getElementById('form-modal-directorio').reset(); closeModal('modal-directorio');
   });
 
-  // SOLUCIÓN PUNTO 1: Renderizado completo con los 8 títulos institucionales en la tabla
+  // SOLUCIÓN PUNTO 2: Forzado y normalización de las 8 columnas institucionales completas
   function renderTableAcciones() {
-    const tbody = document.getElementById('table-acciones-body'); tbody.innerHTML = '';
-    if(listadoAcciones.length === 0) { tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Ningún registro.</td></tr>`; return; }
+    const tableContainer = document.getElementById('table-acciones-body').parentElement;
+    
+    // Inyectamos el esqueleto completo en caliente con las 8 columnas para que calce perfectamente
+    tableContainer.innerHTML = `
+      <thead>
+        <tr>
+          <th>PROCESO CLAVE</th>
+          <th>PRIORIDAD</th>
+          <th>PRODUCTOS ENTREGA</th>
+          <th>ACCIÓN TRANSFERENCIA</th>
+          <th>EVIDENCIAS Y EJECUCIÓN</th>
+          <th>FECHA EJECUCIÓN</th>
+          <th>RUTA REPOSITORIO</th>
+          <th>OBSERVACIONES</th>
+        </tr>
+      </thead>
+      <tbody id="table-acciones-body"></tbody>
+    `;
+
+    const tbody = document.getElementById('table-acciones-body');
+    if(listadoAcciones.length === 0) { 
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Ningún registro agregado.</td></tr>`; 
+      return; 
+    }
     
     listadoAcciones.forEach(item => {
       const tr = document.createElement('tr');
@@ -257,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <td>${item.productos}</td>
         <td>${item.accionConocimiento}</td>
         <td><small>${item.ejecucion}</small></td>
-        <td><small>${item.fecha || 'Sin fecha'}</small></td>
+        <td><small>${item.fecha || 'Sin registrar'}</small></td>
         <td><a href="${item.ruta}" target="_blank" class="btn-link">Ver evidencia</a></td>
         <td><small>${item.obs}</small></td>
       `;
@@ -398,7 +409,9 @@ document.addEventListener('DOMContentLoaded', () => {
         tabButtons[0].classList.add('active'); document.getElementById('tab-general').classList.add('active');
 
         switchView(viewFormularioTransferencia);
-        setTimeout(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, 80);
+        
+        // El scroll con retraso ahora se ejecuta de forma instantánea al pintar la vista
+        setTimeout(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, 50);
       });
     });
   }
