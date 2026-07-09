@@ -42,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
     targetView.classList.add('active');
   }
 
-  // FUNCIÓN SOLUCIÓN PUNTO 3: LIMPIEZA ABSOLUTA DE CACHÉ DE CAMPOS ANTES DE CARGAR USUARIOS
   function limpiarCamposFormulario() {
     listadoAcciones = [];
     listadoAsuntos = [];
@@ -77,10 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
     switchView(viewLogin);
   });
 
-  // SOLUCIÓN PUNTO 1: INTERMUTACIÓN ADAPTATIVA DEL BOTÓN DE REGRESO
-  btnBackToWelcome.addEventListener('click', () => {
+  // SOLUCIÓN PUNTO 1: CONTROL INMUTABLE EN EL EVENTO CLICK PARA REGRESAR
+  btnBackToWelcome.addEventListener('click', (e) => {
+    e.preventDefault();
     if (isReadOnlyMode) {
-      btnBackToWelcome.innerText = "Cerrar Sesión"; // Restaura texto
+      isReadOnlyMode = false;
+      btnBackToWelcome.innerText = "Cerrar Sesión"; 
       switchView(viewFuncionarioDashboard);
     } else {
       switchView(viewWelcome);
@@ -116,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const resData = await response.json();
 
         if (resData.success && resData.exists) {
-          limpiarCamposFormulario(); // Limpieza previa preventiva de campos
+          limpiarCamposFormulario();
 
           currentUserData = {
             idSharePoint: resData.idSharePoint,
@@ -124,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
             nombre: resData.nombre,
             contract: resData.contract,
             objeto: resData.objeto,
-            supervisor: resData.supervisor, // Mapeado correcto de Supervisor (Punto 2)
+            supervisor: resData.supervisor, 
             estado: resData.estado,
             correo: resData.correo,
             dependencia: resData.dependencia,
@@ -176,14 +177,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('nombreContratista').value = currentUserData.nombre;
     document.getElementById('numeroContrato').value = currentUserData.contract;
     document.getElementById('objetoContrato').value = currentUserData.objeto;
-    document.getElementById('supervisor').value = currentUserData.supervisor; // Precarga del Supervisor (Punto 2)
+    document.getElementById('supervisor').value = currentUserData.supervisor; 
     document.getElementById('correoContratista').value = currentUserData.correo || '';
     
-    // SOLUCIÓN PUNTO 3: Inyección Robusta del desplegable de Dependencia
+    // SOLUCIÓN PUNTO 2: Forzado Dinámico y Limpieza de la Opcion Inmobiliaria
     const selectDep = document.getElementById('dependencia');
-    const valorDep = currentUserData.dependencia || 'Dirección General';
+    let valorDep = currentUserData.dependencia ? currentUserData.dependencia.trim() : 'Dirección General';
     
-    // Si la opción no se encuentra explícitamente en el HTML, la creamos al vuelo para que no aparezca en blanco
     if (!Array.from(selectDep.options).some(opt => opt.value === valorDep)) {
       const optNueva = document.createElement('option');
       optNueva.value = valorDep;
@@ -192,7 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     selectDep.value = valorDep;
 
-    // Carga limpia de comentarios guardados previamente
     document.getElementById('lineamientos').value = currentUserData.lineamientos || '';
     document.getElementById('recomendaciones-acciones').value = currentUserData.recomendaciones || '';
 
@@ -533,24 +532,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const index = e.target.getAttribute('data-index');
         const actaSeleccionada = listadoMonitoreo[index];
 
-        limpiarCamposFormulario(); // Limpieza profunda preventiva previa a cargar la auditoría
+        limpiarCamposFormulario(); 
 
         isReadOnlyMode = true;
         ajustarModoLecturaFormulario(true);
         
-        // Cambio dinámico de texto para el botón de regreso (Punto 1)
+        // SOLUCIÓN PUNTO 1 (Garantía de Texto): Forzado directo en la propiedad
         btnBackToWelcome.innerText = "⬅️ Volver al Panel";
 
         document.getElementById('cedula').value = actaSeleccionada.cedula || '';
         document.getElementById('nombreContratista').value = actaSeleccionada.name || '';
         document.getElementById('numeroContrato').value = actaSeleccionada.contract || '';
+        document.getElementById('objetoContrato').value = actaSeleccionada.objeto || ''; // SOLUCIÓN PUNTO 1 (Objeto en Auditoría)
         document.getElementById('supervisor').value = actaSeleccionada.boss || '';
         document.getElementById('lineamientos').value = actaSeleccionada.lineamientos || '';
         document.getElementById('recomendaciones-acciones').value = actaSeleccionada.recomendaciones || '';
         
-        // Validación adaptativa de la Dependencia
+        // SOLUCIÓN PUNTO 2 (Consistencia): Limpieza estricta de la Dependencia
         const selectDep = document.getElementById('dependencia');
-        const valorDep = actaSeleccionada.dependencia || 'Dirección General';
+        let valorDep = actaSeleccionada.dependencia ? actaSeleccionada.dependencia.trim() : 'Dirección General';
         if (!Array.from(selectDep.options).some(opt => opt.value === valorDep)) {
           const optNueva = document.createElement('option');
           optNueva.value = valorDep;
