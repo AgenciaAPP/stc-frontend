@@ -279,6 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // MODIFICADA SUTILES LÍNEAS PARA LA EXTRACCIÓN DINÁMICA DE SUPERVISORES REALES
   function renderTableGeneric(elementId, dataset, fields) {
     const tbody = document.getElementById(elementId);
     tbody.innerHTML = '';
@@ -330,7 +331,10 @@ document.addEventListener('DOMContentLoaded', () => {
           cedula: data.cedula,
           nombre: data.nombre,
           contrato: contratoInput,
-          objeto: data.objeto
+          objeto: data.objeto,
+          // CAPTURA DE SUPERVISOR DEFINITIVA DESDE EL BACKEND
+          nombreSupervisor: data.nombreSupervisor,
+          cedulaSupervisor: data.cedulaSupervisor
         };
 
         resultBox.classList.remove('hidden');
@@ -349,18 +353,20 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-confirmar-habilitacion').addEventListener('click', () => {
     if (window.contratoTemporalValidado) {
       
-      const existe = listadoMonitoreo.some(reg => reg.contract === window.contratoTemporalValidado.contrato);
+      const existe = listadoMonitoreo.some(reg => reg.contract === window.contratoTemporalValidado.contract);
       
       if (!existe) {
         listadoMonitoreo.push({
           name: window.contratoTemporalValidado.nombre,
           contract: window.contratoTemporalValidado.contrato,
-          boss: "POR ASIGNAR",
-          status: "EN DILIGENCIAMIENTO"
+          // REEMPLAZADO "POR ASIGNAR" POR EL NOMBRE COMPLETO EN MAYÚSCULAS INSTITUCIONALES
+          boss: window.contratoTemporalValidado.nombreSupervisor.toUpperCase(),
+          status: "EN DILIGENCIAMIENTO",
+          cedulaSupervisor: window.contratoTemporalValidado.cedulaSupervisor // Guardado estratégico
         });
       }
 
-      alert(`🎉 ¡ÉXITO INSTITUCIONAL!\n\nLa cédula ${window.contratoTemporalValidado.cedula} asociada al contrato ${window.contratoTemporalValidado.contrato} ha sido autorizada en la base de datos central de la Agencia APP.`);
+      alert(`🎉 ¡ÉXITO INSTITUCIONAL!\n\nLa cédula ${window.contratoTemporalValidado.cedula} asociada al contrato ${window.contratoTemporalValidado.contrato} ha sido autorizada en la base de datos central de la Agencia APP.\n\nEl supervisor asignado es: ${window.contratoTemporalValidado.nombreSupervisor}.`);
       
       poblarTablaSeguimientoFuncionarios();
       
