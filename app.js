@@ -163,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
             recomendaciones: resData.recomendaciones
           };
 
-          // Recarga dinámica desde SharePoint al iniciar sesión para mantener el avance
           const respHijos = await fetch(`${BACKEND_URL}/api/obtener-detalles-hijos?cedula=${encodeURIComponent(cedula)}`);
           const dataHijos = await respHijos.json();
           if(dataHijos.success) {
@@ -445,7 +444,8 @@ document.addEventListener('DOMContentLoaded', () => {
           switchView(viewContratistaDashboard);
         }
       } else {
-        alert('❌ Error actualizando campos.');
+        const detalleError = resData.detail ? (resData.detail.message || JSON.stringify(resData.detail)) : resData.message;
+        alert(`❌ Error al guardar en SharePoint: ${detalleError}`);
       }
     } catch (error) {
       alert('❌ Error de comunicación.');
