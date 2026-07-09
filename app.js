@@ -8,7 +8,6 @@ let listadoAcciones = [];
 let listadoAsuntos = [];
 let listadoSistemas = [];
 let listadoDirectorio = [];
-
 let listadoMonitoreo = [];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -87,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btnRegresar.remove(); 
         switchView(viewFuncionarioDashboard);
       });
-
       document.body.appendChild(btnRegresar);
     }
   }
@@ -95,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnRoleContratista.addEventListener('click', () => {
     currentUserRole = 'contratista';
     loginTitle.innerText = 'INGRESAR COMO CONTRATISTA';
-    loginInstruction.innerText = 'Introduce tu número de cédula para acceder a tu Acta de Transferencia de Conocimiento.';
+    loginInstruction.innerText = 'Introduce tu número de cédula para acceder a tu Acta de Transferencia.';
     inputLoginCedula.value = '';
     switchView(viewLogin);
   });
@@ -103,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnRoleFuncionario.addEventListener('click', () => {
     currentUserRole = 'funcionario';
     loginTitle.innerText = 'INGRESAR COMO FUNCIONARIO';
-    loginInstruction.innerText = 'Acceso exclusivo para Talento Humano, Dirección Técnica y Supervisores de la Agencia APP.';
+    loginInstruction.innerText = 'Acceso exclusivo para personal de la Agencia APP.';
     inputLoginCedula.value = '';
     switchView(viewLogin);
   });
@@ -112,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante');
     if (btnFlotante) btnFlotante.remove();
-
     if (isReadOnlyMode) {
       isReadOnlyMode = false;
       switchView(viewFuncionarioDashboard);
@@ -166,6 +163,13 @@ document.addEventListener('DOMContentLoaded', () => {
             recomendaciones: resData.recomendaciones
           };
 
+          // SOLUCIÓN COMPLETA: Trae los multirregistros que ya reposan como preliminares en SharePoint
+          const respHijos = await fetch(`${BACKEND_URL}/api/obtener-detalles-hijos?cedula=${encodeURIComponent(cedula)}`);
+          const dataHijos = await respHijos.json();
+          if(dataHijos.success) {
+            listadoAcciones = dataHijos.acciones || [];
+          }
+
           document.getElementById('welcome-contratista').innerText = `BIENVENIDO(A), ${currentUserData.nombre.toUpperCase()}`;
           document.getElementById('dash-num-contrato').innerText = currentUserData.contract;
           document.getElementById('dash-objeto-contrato').innerText = currentUserData.objeto;
@@ -177,12 +181,11 @@ document.addEventListener('DOMContentLoaded', () => {
           isReadOnlyMode = false;
           switchView(viewContratistaDashboard);
         } else {
-          alert('❌ Tu documento no se encuentra registrado ni habilitado por Talento Humano.');
+          alert('❌ Tu documento no se encuentra habilitado por Talento Humano.');
         }
       } else if (currentUserRole === 'funcionario') {
         const badgeRol = document.getElementById('badge-rol-funcionario');
         const sectionTH = document.getElementById('section-th-actions');
-
         if (cedula === '123') {
           badgeRol.innerText = 'Perfil: Talento Humano (Superusuario)';
           sectionTH.classList.remove('hidden');
@@ -190,12 +193,11 @@ document.addEventListener('DOMContentLoaded', () => {
           badgeRol.innerText = 'Perfil: Supervisor / Dirección Técnica';
           sectionTH.classList.add('hidden');
         }
-
         await consultarContratosEnVivo();
         switchView(viewFuncionarioDashboard);
       }
     } catch (error) {
-      alert('❌ Ocurrió un error consultando la autenticación central.');
+      alert('❌ Error consultando autenticación.');
     } finally {
       loginLoader.classList.add('hidden');
       btnSubmitLogin.disabled = false;
@@ -213,10 +215,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('supervisor').value = currentUserData.supervisor; 
     document.getElementById('correoContratista').value = currentUserData.correo || '';
     
-    // SOLUCIÓN PUNTO 1 & 2: Homologación exacta de las opciones del HTML sin descalces
     const selectDep = document.getElementById('dependencia');
     let valorDep = currentUserData.dependencia ? currentUserData.dependencia.trim() : 'Dirección General';
-    
     if (!Array.from(selectDep.options).some(opt => opt.value === valorDep)) {
       const optNueva = document.createElement('option');
       optNueva.value = valorDep;
@@ -228,11 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('lineamientos').value = currentUserData.lineamientos || '';
     document.getElementById('recomendaciones-acciones').value = currentUserData.recomendaciones || '';
 
-    // SOLUCIÓN PUNTO 4: Forzamos el renderizado de la tabla local en la sesión activa del contratista
     renderTableAcciones();
-    renderTableAsuntos();
-    renderTableSistemas();
-    renderTableDirectorio();
 
     tabButtons.forEach(btn => btn.classList.remove('active'));
     tabPanels.forEach(pnl => pnl.classList.remove('active'));
@@ -259,7 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(modalType === 'modal-asunto') targetId = 'modal-asuntos';
     if(modalType === 'modal-sistema') targetId = 'modal-sistemas';
     if(modalType === 'modal-directorio') targetId = 'modal-directorio';
-
     const modal = document.getElementById(targetId);
     if(modal) modal.classList.add('active');
   }
@@ -285,51 +280,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTableAcciones();
     document.getElementById('form-modal-acciones').reset();
     closeModal('modal-acciones');
-  });
-
-  document.getElementById('form-modal-asuntos').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const nuevoAsunto = {
-      tramite: document.getElementById('modal-asu-tramite').value,
-      estado: document.getElementById('modal-asu-estado').value,
-      entidad: document.getElementById('modal-asu-entidad').value,
-      accionesPendientes: document.getElementById('modal-asu-acciones-pendientes').value,
-      fecha: document.getElementById('modal-asu-fecha').value
-    };
-    listadoAsuntos.push(nuevoAsunto);
-    renderTableAsuntos();
-    document.getElementById('form-modal-asuntos').reset();
-    closeModal('modal-asuntos');
-  });
-
-  document.getElementById('form-modal-sistemas').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const nuevoSistema = {
-      nombre: document.getElementById('modal-sis-nombre').value,
-      usuario: document.getElementById('modal-sis-usuario').value,
-      contrasena: document.getElementById('modal-sis-pass').value,
-      obs: document.getElementById('modal-sis-obs').value || 'Ninguna'
-    };
-    listadoSistemas.push(nuevoSistema);
-    renderTableSistemas();
-    document.getElementById('form-modal-sistemas').reset();
-    closeModal('modal-sistemas');
-  });
-
-  document.getElementById('form-modal-directorio').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const nuevoContacto = {
-      nombre: document.getElementById('modal-dir-nombre').value,
-      tel: document.getElementById('modal-dir-tel').value,
-      correo: document.getElementById('modal-dir-correo').value,
-      tipo: document.getElementById('modal-dir-tipo').value,
-      entidad: document.getElementById('modal-dir-entidad').value,
-      reco: document.getElementById('modal-dir-reco').value || 'Ninguna'
-    };
-    listadoDirectorio.push(nuevoContacto);
-    renderTableDirectorio();
-    document.getElementById('form-modal-directorio').reset();
-    closeModal('modal-directorio');
   });
 
   function renderTableAcciones() {
@@ -364,9 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dataset.forEach(item => {
       const tr = document.createElement('tr');
       let html = '';
-      fields.forEach(f => {
-        html += `<td>${item[f]}</td>`;
-      });
+      fields.forEach(f => { html += `<td>${item[f]}</td>`; });
       tr.innerHTML = html;
       tbody.appendChild(tr);
     });
@@ -380,24 +328,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const contratoInput = document.getElementById('search-contrato').value.trim();
     const loader = document.getElementById('secop-loader');
     const resultBox = document.getElementById('secop-result-box');
-
     if (!contratoInput) {
-      alert('⚠️ Por favor, ingresa una referencia de contrato primero.');
+      alert('⚠️ Por favor, ingresa una referencia de contrato.');
       return;
     }
-
     loader.classList.remove('hidden');
     resultBox.classList.add('hidden');
-
     try {
       const response = await fetch(`${BACKEND_URL}/api/buscar-secop?contrato=${encodeURIComponent(contratoInput)}`);
       const data = await response.json();
-
       if (data.success) {
         document.getElementById('secop-res-nombre').textContent = data.nombre;
         document.getElementById('secop-res-cedula').textContent = data.cedula;
         document.getElementById('secop-res-objeto').textContent = data.objeto;
-
         window.contratoTemporalValidado = {
           cedula: data.cedula,
           nombre: data.nombre,
@@ -407,13 +350,12 @@ document.addEventListener('DOMContentLoaded', () => {
           cedulaSupervisor: data.cedulaSupervisor,
           fechaInicio: data.fechaFirma
         };
-
         resultBox.classList.remove('hidden');
       } else {
         alert(`❌ ${data.message || 'Contrato no encontrado.'}`);
       }
     } catch (error) {
-      alert('❌ Hubo un problema al conectarse con el servidor.');
+      alert('❌ Error de comunicación.');
     } finally {
       loader.classList.add('hidden');
     }
@@ -429,7 +371,6 @@ document.addEventListener('DOMContentLoaded', () => {
         supervisor: window.contratoTemporalValidado.nombreSupervisor,
         fechaInicio: window.contratoTemporalValidado.fechaInicio
       };
-
       try {
         const response = await fetch(`${BACKEND_URL}/api/habilitar-contrato`, {
           method: 'POST',
@@ -437,14 +378,11 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify(payloadHabilitar)
         });
         const resData = await response.json();
-
         if (resData.success) {
-          alert('🎉 ¡CONTRATO INYECTADO EN SHAREPOINT CON ÉXITO INSTITUCIONAL!');
+          alert('🎉 ¡CONTRATO INYECTADO EN SHAREPOINT CON ÉXITO!');
           await consultarContratosEnVivo();
           document.getElementById('secop-result-box').classList.add('hidden');
           document.getElementById('search-contrato').value = '';
-        } else {
-          alert(`❌ Error: ${resData.message}`);
         }
       } catch (error) {
         alert('❌ Error de comunicación.');
@@ -461,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
         poblarTablaSeguimientoFuncionarios();
       }
     } catch (e) {
-      console.error("Error cargando monitoreo", e);
+      console.error(e);
     }
   }
 
@@ -498,20 +436,19 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify(payload)
       });
       const resData = await response.json();
-
       if (resData.success) {
         if (isFinalSubmit) {
-          alert('🔒 ¡CONTRATO FINALIZADO E INYECTADO EN SHAREPOINT CON ÉXITO!');
+          alert('🔒 ¡ACTA FINALIZADA E INYECTADA CON ÉXITO!');
           switchView(viewWelcome);
         } else {
-          alert('💾 ¡Progreso guardado (PATCH) con éxito en SharePoint!');
+          alert('💾 ¡Progreso preliminar guardado en SharePoint de forma persistente!');
           switchView(viewContratistaDashboard);
         }
       } else {
         alert('❌ Error actualizando campos.');
       }
     } catch (error) {
-      alert('❌ Error de comunicación backend.');
+      alert('❌ Error de comunicación.');
     }
   }
 
@@ -522,15 +459,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function ajustarModoLecturaFormulario(isReadOnly) {
     const inputs = viewFormularioTransferencia.querySelectorAll('input, select, textarea');
     inputs.forEach(el => {
-      if(el.id !== 'btn-back-to-welcome') {
-        el.disabled = isReadOnly;
-      }
+      if(el.id !== 'btn-back-to-welcome') { el.disabled = isReadOnly; }
     });
-    
     const btnSave = document.getElementById('btn-save-preliminary');
     const btnSubmit = document.getElementById('btn-submit-final');
     const btnAdders = viewFormularioTransferencia.querySelectorAll('.btn-add-row');
-    
     if(isReadOnly) {
       if(btnSave) btnSave.classList.add('hidden');
       if(btnSubmit) btnSubmit.classList.add('hidden');
@@ -545,9 +478,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function poblarTablaSeguimientoFuncionarios() {
     const tbody = document.getElementById('table-tracking-body');
     tbody.innerHTML = '';
-    
     if (listadoMonitoreo.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay actas registradas en SharePoint.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay actas registradas.</td></tr>`;
       return;
     }
 
@@ -560,7 +492,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <td><span class="badge ${reg.status === 'FINALIZADO' ? 'badge-success' : 'badge-alert'}">${reg.status}</span></td>
         <td>
           <button class="btn-action-view" data-index="${index}">👁️ Ver</button>
-          ${reg.status === 'FINALIZADO' ? `<button class="btn-action-pdf" data-index="${index}">📄 PDF</button>` : ''}
         </td>
       `;
       tbody.appendChild(tr);
@@ -572,10 +503,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const actaSeleccionada = listadoMonitoreo[index];
 
         limpiarCamposAuditoria(); 
-
         isReadOnlyMode = true;
         ajustarModoLecturaFormulario(true);
-        
         inyectarBotonRegresoAuditoria();
 
         document.getElementById('cedula').value = actaSeleccionada.cedula || '';
@@ -597,6 +526,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         selectDep.value = valorDep;
 
+        // SOLUCIÓN TOTAL MULTIRREGISTROS PARA EL SUPERVISOR: Trae las acciones guardadas desde SharePoint
+        const responseHijos = await fetch(`${BACKEND_URL}/api/obtener-detalles-hijos?cedula=${encodeURIComponent(actaSeleccionada.cedula)}`);
+        const dataHijos = await responseHijos.json();
+        if(dataHijos.success) {
+          listadoAcciones = dataHijos.acciones || [];
+          renderTableAcciones();
+        }
+
         tabButtons.forEach(b => b.classList.remove('active'));
         tabPanels.forEach(p => p.classList.remove('active'));
         tabButtons[0].classList.add('active');
@@ -604,8 +541,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         switchView(viewFormularioTransferencia);
         
-        // SOLUCIÓN PUNTO 2: Auto-Scroll suave a la parte superior del DOM al abrir la vista
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // SOLUCIÓN AL SCROLL CON RETRASO CONTROLADO (PUNTO 2)
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        }, 80);
       });
     });
   }
