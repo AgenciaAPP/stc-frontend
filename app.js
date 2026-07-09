@@ -1,17 +1,13 @@
-// CONFIGURACIÓN: Endpoint de conexión real con el backend seguro de Vercel
 const BACKEND_URL = 'https://stc-backend-nine.vercel.app';
 
-// VARIABLES GLOBALES DE SESIÓN SIMULADA
 let currentUserRole = null; 
 let currentUserData = null; 
 
-// ARRAYS PARA ALMACENAR LOS MULTIRREGISTROS TEMPORALES
 let listadoAcciones = [];
 let listadoAsuntos = [];
 let listadoSistemas = [];
 let listadoDirectorio = [];
 
-// REGISTROS EN MEMORIA PARA EL MONITOREO LOCAL DE FUNCIONARIOS
 let listadoMonitoreo = [
   { name: "Cynthia Giraldo Gil", contract: "PS2026001", boss: "EDISON MONTOYA", status: "EN DILIGENCIAMIENTO" },
   { name: "Andrés Moreira Fuentes", contract: "PS2026045", boss: "DIRECTOR TÉCNICO", status: "FINALIZADO" }
@@ -19,35 +15,28 @@ let listadoMonitoreo = [
 
 document.addEventListener('DOMContentLoaded', () => {
   
-  // === CAPTURA DE PANELES/VISTAS PRINCIPALES (SPA) ===
   const viewWelcome = document.getElementById('view-welcome');
   const viewLogin = document.getElementById('view-login');
   const viewContratistaDashboard = document.getElementById('view-contratista-dashboard');
   const viewFormularioTransferencia = document.getElementById('view-formulario-transferencia');
   const viewFuncionarioDashboard = document.getElementById('view-funcionario-dashboard');
 
-  // === BOTONES DE NAVEGACIÓN GENERAL ===
   const btnRoleContratista = document.getElementById('btn-role-contratista');
   const btnRoleFuncionario = document.getElementById('btn-role-funcionario');
   const btnBackToWelcome = document.getElementById('btn-back-to-welcome');
   const btnLogoutButtons = document.querySelectorAll('.btn-logout');
   const btnSavePreliminary = document.getElementById('btn-save-preliminary');
 
-  // === ELEMENTOS DE LOGIN ===
   const loginTitle = document.getElementById('login-title');
   const loginInstruction = document.getElementById('login-instruction');
   const inputLoginCedula = document.getElementById('login-cedula');
   const btnSubmitLogin = document.getElementById('btn-submit-login');
   const loginLoader = document.getElementById('login-loader');
 
-  // === NAVEGACIÓN POR PESTAÑAS ===
   const tabButtons = document.querySelectorAll('.tab-btn');
   const tabPanels = document.querySelectorAll('.tab-panel');
   const btnEmpezar = document.getElementById('btn-empezar-diligenciamiento');
 
-  // ==========================================
-  // 1. CONTROL DE ENRUTAMIENTO (SPA)
-  // ==========================================
   function switchView(targetView) {
     [viewWelcome, viewLogin, viewContratistaDashboard, viewFormularioTransferencia, viewFuncionarioDashboard].forEach(view => {
       if(view) view.classList.remove('active');
@@ -81,14 +70,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // BOTÓN: GUARDAR PROGRESO PRELIMINAR (CONEXIÓN BACKEND)
   btnSavePreliminary.addEventListener('click', async () => {
     await enviarActaASharePoint(false);
   });
 
-  // ==========================================
-  // 2. ACCESO POR CÉDULA
-  // ==========================================
   btnSubmitLogin.addEventListener('click', () => {
     const cedula = inputLoginCedula.value.trim();
     if (!cedula) {
@@ -109,7 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
           nombre: "Cynthia Giraldo Gil",
           contract: "PS2026001",
           objeto: "Prestación de servicios profesionales para el apoyo en la planeación, gestión, control y seguimiento del sistema presupuestal de la Agencia APP",
-          estado: "En Diligenciamiento"
+          estado: "En Diligenciamiento",
+          fechaInicio: "2026-01-15"
         };
 
         document.getElementById('welcome-contratista').innerText = `BIENVENIDO(A), ${currentUserData.nombre.toUpperCase()}`;
@@ -140,9 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 1200);
   });
 
-  // ==========================================
-  // 3. ENTRADA AL FORMULARIO Y PESTAÑAS LIBRES
-  // ==========================================
   btnEmpezar.addEventListener('click', () => {
     document.getElementById('cedula').value = currentUserData.cedula;
     document.getElementById('nombreContratista').value = currentUserData.nombre;
@@ -161,18 +144,13 @@ document.addEventListener('DOMContentLoaded', () => {
   tabButtons.forEach(button => {
     button.addEventListener('click', () => {
       const targetTab = button.getAttribute('data-tab');
-
       tabButtons.forEach(btn => btn.classList.remove('active'));
       button.classList.add('active');
-
       tabPanels.forEach(panel => panel.classList.remove('active'));
       document.getElementById(`tab-${targetTab}`).classList.add('active');
     });
   });
 
-  // ==========================================
-  // 4. CONTROLADORES DE MODALES MULTIRREGISTRO
-  // ==========================================
   window.openModal = function(modalType) {
     let targetId = '';
     if(modalType === 'modal-accion') targetId = 'modal-acciones';
@@ -189,13 +167,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if(modal) modal.classList.remove('active');
   }
 
-  // ENVÍO DE FORMULARIO: POP-UP ACCIONES
+  // ENVÍO DE FORMULARIO: POP-UP ACCIONES ADAPTADO A LA NUEVA COLUMNA OBLIGATORIA
   document.getElementById('form-modal-acciones').addEventListener('submit', (e) => {
     e.preventDefault();
     const nuevaAccion = {
       proceso: document.getElementById('modal-acc-proceso').value,
       prioridad: document.getElementById('modal-acc-prioridad').value,
       productos: document.getElementById('modal-acc-productos').value,
+      // INCLUSIÓN TÉCNICA DEL NUEVO CAMPO TEXTO ADICIONAL REQUERIDO
+      accionConocimiento: document.getElementById('modal-acc-conocimiento')?.value || 'No registrada', 
       ejecucion: document.getElementById('modal-acc-ejecucion').value,
       fecha: document.getElementById('modal-acc-fecha').value,
       ruta: document.getElementById('modal-acc-ruta').value,
@@ -207,7 +187,6 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal('modal-acciones');
   });
 
-  // ENVÍO DE FORMULARIO: POP-UP ASUNTOS
   document.getElementById('form-modal-asuntos').addEventListener('submit', (e) => {
     e.preventDefault();
     const nuevoAsunto = {
@@ -223,7 +202,6 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal('modal-asuntos');
   });
 
-  // ENVÍO DE FORMULARIO: POP-UP SISTEMAS
   document.getElementById('form-modal-sistemas').addEventListener('submit', (e) => {
     e.preventDefault();
     const nuevoSistema = {
@@ -238,7 +216,6 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal('modal-sistemas');
   });
 
-  // ENVÍO DE FORMULARIO: POP-UP DIRECTORIO
   document.getElementById('form-modal-directorio').addEventListener('submit', (e) => {
     e.preventDefault();
     const nuevoContacto = {
@@ -255,14 +232,11 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal('modal-directorio');
   });
 
-  // ==========================================
-  // 5. RENDEREAR TABLAS MULTIRREGISTRO
-  // ==========================================
   function renderTableAcciones() {
     const tbody = document.getElementById('table-acciones-body');
     tbody.innerHTML = '';
     if(listadoAcciones.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" class="text-muted text-center">No se han agregado registros.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="text-muted text-center">No se han agregado registros.</td></tr>`;
       return;
     }
     listadoAcciones.forEach(item => {
@@ -271,6 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <td><strong>${item.proceso}</strong></td>
         <td><span class="badge ${item.prioridad === 'Alta' ? 'badge-danger' : 'badge-alert'}">${item.prioridad}</span></td>
         <td>${item.productos}</td>
+        <td>${item.accionConocimiento}</td>
         <td><small>${item.ejecucion}</small></td>
         <td><a href="${item.ruta}" target="_blank" class="btn-link">Ver repositorio</a></td>
         <td><small>${item.obs}</small></td>
@@ -326,13 +301,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('secop-res-cedula').textContent = data.cedula;
         document.getElementById('secop-res-objeto').textContent = data.objeto;
 
-        window.contratoTemporalValidated = {
+        // CORRECCIÓN CLAVE: Se unificó el nombre de la variable global a 'contratoTemporalValidado'
+        window.contratoTemporalValidado = {
           cedula: data.cedula,
           nombre: data.nombre,
           contrato: contratoInput,
           objeto: data.objeto,
           nombreSupervisor: data.nombreSupervisor,
-          cedulaSupervisor: data.cedulaSupervisor
+          cedulaSupervisor: data.cedulaSupervisor,
+          fechaInicio: data.fechaFirma
         };
 
         resultBox.classList.remove('hidden');
@@ -347,23 +324,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // CONFIRMAR HABILITACIÓN LÓGICA LOCAL DE LA INTERFAZ
+  // CONFIRMAR HABILITACIÓN SÍNCRONA CORREGIDA
   document.getElementById('btn-confirmar-habilitacion').addEventListener('click', () => {
-    if (window.contratoTemporalValidated) {
+    if (window.contratoTemporalValidado) {
       
-      const existe = listadoMonitoreo.some(reg => reg.contract === window.contratoTemporalValidated.contrato);
+      const existe = listadoMonitoreo.some(reg => reg.contract === window.contratoTemporalValidado.contrato);
       
       if (!existe) {
         listadoMonitoreo.push({
-          name: window.contratoTemporalValidated.nombre,
-          contract: window.contratoTemporalValidated.contrato,
-          boss: window.contratoTemporalValidated.nombreSupervisor.toUpperCase(),
+          name: window.contratoTemporalValidado.nombre,
+          contract: window.contratoTemporalValidado.contrato,
+          boss: window.contratoTemporalValidado.nombreSupervisor.toUpperCase(),
           status: "EN DILIGENCIAMIENTO",
-          cedulaSupervisor: window.contratoTemporalValidated.cedulaSupervisor
+          cedulaSupervisor: window.contratoTemporalValidado.cedulaSupervisor,
+          fechaInicio: window.contratoTemporalValidado.fechaInicio
         });
       }
 
-      alert(`🎉 ¡ÉXITO INSTITUCIONAL!\n\nLa cédula ${window.contratoTemporalValidated.cedula} asociada al contrato ${window.contratoTemporalValidated.contrato} ha sido autorizada en la base de datos central de la Agencia APP.\n\nEl supervisor asignado es: ${window.contratoTemporalValidado.nombreSupervisor}.`);
+      alert(`🎉 ¡ÉXITO INSTITUCIONAL!\n\nLa cédula ${window.contratoTemporalValidado.cedula} asociada al contrato ${window.contratoTemporalValidado.contrato} ha sido autorizada en este módulo técnico.\n\nEl supervisor asignado es: ${window.contratoTemporalValidado.nombreSupervisor}.`);
       
       poblarTablaSeguimientoFuncionarios();
       
@@ -387,6 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dependencia: document.getElementById('dependencia').value,
         lineamientos: document.getElementById('lineamientos').value,
         recomendacionesAcciones: document.getElementById('recomendaciones-acciones').value,
+        fechaInicio: currentUserData?.fechaInicio || '',
         isFinal: isFinalSubmit
       },
       acciones: listadoAcciones,
@@ -413,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
           alert('🔒 ¡CONTRATO FINALIZADO CON ÉXITO INSTITUCIONAL!\n\nTu Acta de Transferencia ha sido compilada e inyectada con todos sus multirregistros en SharePoint de la Agencia APP. Se cerró el canal de edición.');
           switchView(viewWelcome);
         } else {
-          alert('💾 ¡Progreso guardado con éxito en SharePoint!\n\nPuedes cerrar la pestaña y reanudar el diligenciamiento cuando desees.');
+          alert('💾 ¡Progreso guardado con éxito localmente!\n\nPuedes cerrar la pestaña y reanudar el diligenciamiento cuando desees.');
           switchView(viewContratistaDashboard);
         }
       } else {
@@ -426,14 +405,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // CONSOLIDAR TODO Y FINALIZAR REAL
   document.getElementById('btn-submit-final').addEventListener('click', async () => {
     await enviarActaASharePoint(true);
   });
 
-  // ==========================================
-  // 8. DASHBOARD DE FUNCIONARIOS
-  // ==========================================
   function poblarTablaSeguimientoFuncionarios() {
     const tbody = document.getElementById('table-tracking-body');
     tbody.innerHTML = '';
