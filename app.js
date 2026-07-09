@@ -167,14 +167,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if(modal) modal.classList.remove('active');
   }
 
-  // ENVÍO DE FORMULARIO: POP-UP ACCIONES ADAPTADO A LA NUEVA COLUMNA OBLIGATORIA
   document.getElementById('form-modal-acciones').addEventListener('submit', (e) => {
     e.preventDefault();
     const nuevaAccion = {
       proceso: document.getElementById('modal-acc-proceso').value,
       prioridad: document.getElementById('modal-acc-prioridad').value,
       productos: document.getElementById('modal-acc-productos').value,
-      // INCLUSIÓN TÉCNICA DEL NUEVO CAMPO TEXTO ADICIONAL REQUERIDO
       accionConocimiento: document.getElementById('modal-acc-conocimiento')?.value || 'No registrada', 
       ejecucion: document.getElementById('modal-acc-ejecucion').value,
       fecha: document.getElementById('modal-acc-fecha').value,
@@ -277,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderTableDirectorio() { renderTableGeneric('table-directorio-body', listadoDirectorio, ['nombre', 'tel', 'correo', 'tipo', 'entidad', 'reco']); }
 
   // ==========================================
-  // 6. CONEXIÓN EN VIVO: CONSULTA SECOP II
+  // CONEXIÓN EN VIVO: CONSULTA SECOP II
   // ==========================================
   document.getElementById('btn-buscar-secop').addEventListener('click', async () => {
     const contratoInput = document.getElementById('search-contrato').value.trim();
@@ -301,7 +299,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('secop-res-cedula').textContent = data.cedula;
         document.getElementById('secop-res-objeto').textContent = data.objeto;
 
-        // CORRECCIÓN CLAVE: Se unificó el nombre de la variable global a 'contratoTemporalValidado'
         window.contratoTemporalValidado = {
           cedula: data.cedula,
           nombre: data.nombre,
@@ -324,34 +321,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // CONFIRMAR HABILITACIÓN SÍNCRONA CORREGIDA
-  document.getElementById('btn-confirmar-habilitacion').addEventListener('click', () => {
+  // CONFIRMAR HABILITACIÓN CON INYECCIÓN REAL EN SHAREPOINT (PASO A)
+  document.getElementById('btn-confirmar-habilitacion').addEventListener('click', async () => {
     if (window.contratoTemporalValidado) {
       
-      const existe = listadoMonitoreo.some(reg => reg.contract === window.contratoTemporalValidado.contrato);
-      
-      if (!existe) {
-        listadoMonitoreo.push({
-          name: window.contratoTemporalValidado.nombre,
-          contract: window.contratoTemporalValidado.contrato,
-          boss: window.contratoTemporalValidado.nombreSupervisor.toUpperCase(),
-          status: "EN DILIGENCIAMIENTO",
-          cedulaSupervisor: window.contratoTemporalValidado.cedulaSupervisor,
-          fechaInicio: window.contratoTemporalValidado.fechaInicio
-        });
-      }
+      const payloadHabilitar = {
+        contrato: window.contratoTemporalValidado.contrato,
+        contratista: window.contratoTemporalValidado.nombre,
+        cedula: window.contratoTemporalValidado.cedula,
+        objeto: window.contratoTemporalValidado.objeto,
+        supervisor: window.contratoTemporalValidado.nombreSupervisor,
+        cedulaSupervisor: window.contratoTemporalValidado.cedulaSupervisor,
+        fechaInicio: window.contratoTemporalValidado.fechaInicio
+      };
 
-      alert(`🎉 ¡ÉXITO INSTITUCIONAL!\n\nLa cédula ${window.contratoTemporalValidado.cedula} asociada al contrato ${window.contratoTemporalValidado.contrato} ha sido autorizada en este módulo técnico.\n\nEl supervisor asignado es: ${window.contratoTemporalValidado.nombreSupervisor}.`);
-      
-      poblarTablaSeguimientoFuncionarios();
-      
-      document.getElementById('secop-result-box').classList.add('hidden');
-      document.getElementById('search-contrato').value = '';
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/habilitar-contrato`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payloadHabilitar)
+        });
+        const resData = await response.json();
+
+        if (resData.success) {
+          alert(`🎉 ¡ÉXITO INSTITUCIONAL!\n\nEl contrato ${payloadHabilitar.contrato} de ${payloadHabilitar.contratista} ha sido inyectada en la lista general de SharePoint con estado 'Sin diligenciar'.`);
+          
+          const existe = listadoMonitoreo.some(reg => reg.contract === payloadHabilitar.contrato);
+          if (!existe) {
+            listadoMonitoreo.push({
+              name: payloadHabilitar.contratista,
+              contract: payloadHabilitar.contrato,
+              boss: payloadHabilitar.supervisor.toUpperCase(),
+              status: "EN DILIGENCIAMIENTO",
+              cedulaSupervisor: payloadHabilitar.cedulaSupervisor,
+              fechaInicio: payloadHabilitar.fechaInicio
+            });
+          }
+          
+          poblarTablaSeguimientoFuncionarios();
+          document.getElementById('secop-result-box').classList.add('hidden');
+          document.getElementById('search-contrato').value = '';
+        } else {
+          alert(`❌ Error de persistencia en SharePoint: ${resData.message}`);
+        }
+      } catch (error) {
+        console.error(error);
+        alert('❌ Error crítico al comunicar la habilitación con el servidor.');
+      }
     }
   });
 
   // ==========================================
-  // 7. CONEXIÓN EN VIVO: COMPILACIÓN & SINK SHAREPOINT
+  // CONEXIÓN EN VIVO: COMPILACIÓN & SINK SHAREPOINT
   // ==========================================
   async function enviarActaASharePoint(isFinalSubmit) {
     const payload = {
