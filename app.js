@@ -8,7 +8,6 @@ let listadoAsuntos = [];
 let listadoSistemas = [];
 let listadoDirectorio = [];
 
-// Eliminamos los registros hardcodeados para depender exclusivamente del fetch dinámico de SharePoint
 let listadoMonitoreo = [];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -72,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
     await enviarActaASharePoint(false);
   });
 
-  // PASO C: ACCESO MEDIANTE CONSULTA EN TIEMPO REAL A SHAREPOINT
   btnSubmitLogin.addEventListener('click', async () => {
     const cedula = inputLoginCedula.value.trim();
     if (!cedula) {
@@ -136,6 +134,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnEmpezar.addEventListener('click', () => {
+    // Habilitar campos si entra el contratista a diligenciar
+    ajustarModoLecturaFormulario(false);
+
     document.getElementById('cedula').value = currentUserData.cedula;
     document.getElementById('nombreContratista').value = currentUserData.nombre;
     document.getElementById('numeroContrato').value = currentUserData.contract;
@@ -364,7 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // PASO B: CARGA DINÁMICA DE LA TABLA DIRECTO DESDE SHAREPOINT (REFRESCO SEGURO CON F5)
   async function consultarContratosEnVivo() {
     try {
       const response = await fetch(`${BACKEND_URL}/api/contratos`);
@@ -378,12 +378,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ==========================================
-  // PASO D: ENVIAR CON EL ID DE SHAREPOINT ASIGNADO PARA ACTUALIZAR (PATCH)
-  // ==========================================
   async function enviarActaASharePoint(isFinalSubmit) {
     const payload = {
-      idSharePoint: currentUserData.idSharePoint, // Enviamos el ID de la fila para que haga el PATCH
+      idSharePoint: currentUserData.idSharePoint, 
       datosGenerales: {
         cedula: document.getElementById('cedula').value,
         nombreContratista: document.getElementById('nombreContratista').value,
@@ -435,7 +432,28 @@ document.addEventListener('DOMContentLoaded', () => {
     await enviarActaASharePoint(true);
   });
 
-  // PASO E: ACCIONES DINÁMICAS (ASIGNACIÓN FUNCIONAL DEL OJITO)
+  // FUNCIÓN AUXILIAR PARA INTERMUTAR MODO LECTURA / EDICIÓN
+  function ajustarModoLecturaFormulario(isReadOnly) {
+    const inputs = viewFormularioTransferencia.querySelectorAll('input, select, textarea');
+    inputs.forEach(el => {
+      if(el.id !== 'btn-back-to-welcome' && el.id !== 'btn-save-preliminary' && el.id !== 'btn-submit-final') {
+        el.disabled = isReadOnly;
+      }
+    });
+    
+    // Ocultar botones de guardado si es auditoría
+    const btnSave = document.getElementById('btn-save-preliminary');
+    const btnSubmit = document.getElementById('btn-submit-final');
+    if(isReadOnly) {
+      if(btnSave) btnSave.classList.add('hidden');
+      if(btnSubmit) btnSubmit.classList.add('hidden');
+    } else {
+      if(btnSave) btnSave.classList.remove('hidden');
+      if(btnSubmit) btnSubmit.classList.remove('hidden');
+    }
+  }
+
+  // PASO E: APERTURA EN VIVO DE LA FILA EN MODO AUDITORÍA (SOLO LECTURA)
   function poblarTablaSeguimientoFuncionarios() {
     const tbody = document.getElementById('table-tracking-body');
     tbody.innerHTML = '';
@@ -460,13 +478,27 @@ document.addEventListener('DOMContentLoaded', () => {
       tbody.appendChild(tr);
     });
 
-    // Escuchadores de eventos para los botones del ojito
     document.querySelectorAll('.btn-action-view').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         const index = e.target.getAttribute('data-index');
         const actaSeleccionada = listadoMonitoreo[index];
-        alert(`👁️ Módulo de Auditoría (Paso E):\n\nVisualizando el Acta del contratista: ${actaSeleccionada.name}\nContrato: ${actaSeleccionada.contract}\nEstado: ${actaSeleccionada.status}`);
-        // Aquí se conectará la apertura del modal detallado de lectura
+
+        // Cambiar a vista formulario en modo Solo Lectura
+        ajustarModoLecturaFormulario(true);
+
+        // Precarga de los campos mapeados desde SharePoint de la lista general
+        document.getElementById('cedula').value = actaSeleccionada.cedula || '';
+        document.getElementById('nombreContratista').value = actaSeleccionada.name || '';
+        document.getElementById('numeroContrato').value = actaSeleccionada.contract || '';
+        document.getElementById('supervisor').value = actaSeleccionada.boss || '';
+        
+        // Marcamos las pestañas vacías para auditoría visual inicial
+        tabButtons.forEach(b => b.classList.remove('active'));
+        tabPanels.forEach(p => p.classList.remove('active'));
+        tabButtons[0].classList.add('active');
+        document.getElementById('tab-general').classList.add('active');
+
+        switchView(viewFormularioTransferencia);
       });
     });
   }
