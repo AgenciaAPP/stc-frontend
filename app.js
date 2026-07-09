@@ -11,6 +11,12 @@ let listadoAsuntos = [];
 let listadoSistemas = [];
 let listadoDirectorio = [];
 
+// REGISTROS EN MEMORIA PARA EL MONITOREO LOCAL DE FUNCIONARIOS
+let listadoMonitoreo = [
+  { name: "Cynthia Giraldo Gil", contract: "PS2026001", boss: "EDISON MONTOYA", status: "EN DILIGENCIAMIENTO" },
+  { name: "Andrés Moreira Fuentes", contract: "PS2026045", boss: "DIRECTOR TÉCNICO", status: "FINALIZADO" }
+];
+
 document.addEventListener('DOMContentLoaded', () => {
   
   // === CAPTURA DE PANELES/VISTAS PRINCIPALES (SPA) ===
@@ -339,9 +345,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // CONFIRMAR HABILITACIÓN LÓGICA LOCAL DE LA INTERFAZ
   document.getElementById('btn-confirmar-habilitacion').addEventListener('click', () => {
     if (window.contratoTemporalValidado) {
+      
+      const existe = listadoMonitoreo.some(reg => reg.contract === window.contratoTemporalValidado.contrato);
+      
+      if (!existe) {
+        listadoMonitoreo.push({
+          name: window.contratoTemporalValidado.nombre,
+          contract: window.contratoTemporalValidado.contrato,
+          boss: "POR ASIGNAR",
+          status: "EN DILIGENCIAMIENTO"
+        });
+      }
+
       alert(`🎉 ¡ÉXITO INSTITUCIONAL!\n\nLa cédula ${window.contratoTemporalValidado.cedula} asociada al contrato ${window.contratoTemporalValidado.contrato} ha sido autorizada en la base de datos central de la Agencia APP.`);
+      
+      poblarTablaSeguimientoFuncionarios();
+      
       document.getElementById('secop-result-box').classList.add('hidden');
       document.getElementById('search-contrato').value = '';
     }
@@ -410,13 +432,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================
   function poblarTablaSeguimientoFuncionarios() {
     const tbody = document.getElementById('table-tracking-body');
-    const registrosEjemplo = [
-      { name: "Cynthia Giraldo Gil", contract: "PS2026001", boss: "EDISON MONTOYA", status: "EN DILIGENCIAMIENTO" },
-      { name: "Andrés Moreira Fuentes", contract: "PS2026045", boss: "DIRECTOR TÉCNICO", status: "FINALIZADO" }
-    ];
-
     tbody.innerHTML = '';
-    registrosEjemplo.forEach(reg => {
+    
+    listadoMonitoreo.forEach(reg => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong>${reg.name}</strong></td>
