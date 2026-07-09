@@ -2,6 +2,7 @@ const BACKEND_URL = 'https://stc-backend-nine.vercel.app';
 
 let currentUserRole = null; 
 let currentUserData = null; 
+let isReadOnlyMode = false; // Variable global de control de flujo de visualización
 
 let listadoAcciones = [];
 let listadoAsuntos = [];
@@ -57,12 +58,22 @@ document.addEventListener('DOMContentLoaded', () => {
     switchView(viewLogin);
   });
 
-  btnBackToWelcome.addEventListener('click', () => switchView(viewWelcome));
+  // CONTROL INTERMUTADOR EN EL BOTÓN REGRESAR / SALIR (SOLUCIÓN PUNTO 2)
+  btnBackToWelcome.addEventListener('click', () => {
+    if (isReadOnlyMode) {
+      // Si estaba auditando, lo devuelve seguro a su mesa de control institucional
+      switchView(viewFuncionarioDashboard);
+    } else {
+      // Si es el contratista saliendo de su panel normal
+      switchView(viewWelcome);
+    }
+  });
 
   btnLogoutButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       currentUserRole = null;
       currentUserData = null;
+      isReadOnlyMode = false;
       switchView(viewWelcome);
     });
   });
@@ -106,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
           labelEstado.innerText = currentUserData.estado.toUpperCase();
           labelEstado.className = currentUserData.estado === 'Finalizado' ? "badge badge-success" : "badge badge-alert";
           
+          isReadOnlyMode = false;
           switchView(viewContratistaDashboard);
         } else {
           alert('❌ Tu documento no se encuentra registrado ni habilitado por Talento Humano.');
@@ -134,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnEmpezar.addEventListener('click', () => {
-    // Habilitar campos si entra el contratista a diligenciar
+    isReadOnlyMode = false;
     ajustarModoLecturaFormulario(false);
 
     document.getElementById('cedula').value = currentUserData.cedula;
@@ -163,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   window.openModal = function(modalType) {
+    if(isReadOnlyMode) return; // Bloqueo de adición en auditoría
     let targetId = '';
     if(modalType === 'modal-accion') targetId = 'modal-acciones';
     if(modalType === 'modal-asunto') targetId = 'modal-asuntos';
@@ -285,9 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderTableSistemas() { renderTableGeneric('table-sistemas-body', listadoSistemas, ['nombre', 'usuario', 'contrasena', 'obs']); }
   function renderTableDirectorio() { renderTableGeneric('table-directorio-body', listadoDirectorio, ['nombre', 'tel', 'correo', 'tipo', 'entidad', 'reco']); }
 
-  // ==========================================
-  // CONEXIÓN EN VIVO: CONSULTA SECOP II
-  // ==========================================
   document.getElementById('btn-buscar-secop').addEventListener('click', async () => {
     const contratoInput = document.getElementById('search-contrato').value.trim();
     const loader = document.getElementById('secop-loader');
@@ -302,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resultBox.classList.add('hidden');
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/buscar-secop?contrato=${encodeURIComponent(contratoInput)}`);
+      const response = await fetch(`${BACKEND_URL}/api/buscar-secop?contract=${encodeURIComponent(contratoInput)}`);
       const data = await response.json();
 
       if (data.success) {
@@ -331,7 +341,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // CONFIRMAR HABILITACIÓN REAL EN SHAREPOINT
   document.getElementById('btn-confirmar-habilitacion').addEventListener('click', async () => {
     if (window.contratoTemporalValidado) {
       const payloadHabilitar = {
@@ -432,28 +441,30 @@ document.addEventListener('DOMContentLoaded', () => {
     await enviarActaASharePoint(true);
   });
 
-  // FUNCIÓN AUXILIAR PARA INTERMUTAR MODO LECTURA / EDICIÓN
   function ajustarModoLecturaFormulario(isReadOnly) {
     const inputs = viewFormularioTransferencia.querySelectorAll('input, select, textarea');
     inputs.forEach(el => {
-      if(el.id !== 'btn-back-to-welcome' && el.id !== 'btn-save-preliminary' && el.id !== 'btn-submit-final') {
+      if(el.id !== 'btn-back-to-welcome') {
         el.disabled = isReadOnly;
       }
     });
     
-    // Ocultar botones de guardado si es auditoría
     const btnSave = document.getElementById('btn-save-preliminary');
     const btnSubmit = document.getElementById('btn-submit-final');
+    // Ocultar botones de acción masiva de edición en los popups de adición
+    const btnAdders = viewFormularioTransferencia.querySelectorAll('.btn-add-row');
+    
     if(isReadOnly) {
       if(btnSave) btnSave.classList.add('hidden');
       if(btnSubmit) btnSubmit.classList.add('hidden');
+      btnAdders.forEach(b => b.classList.add('hidden'));
     } else {
       if(btnSave) btnSave.classList.remove('hidden');
       if(btnSubmit) btnSubmit.classList.remove('hidden');
+      btnAdders.forEach(b => b.classList.remove('hidden'));
     }
   }
 
-  // PASO E: APERTURA EN VIVO DE LA FILA EN MODO AUDITORÍA (SOLO LECTURA)
   function poblarTablaSeguimientoFuncionarios() {
     const tbody = document.getElementById('table-tracking-body');
     tbody.innerHTML = '';
@@ -483,16 +494,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const index = e.target.getAttribute('data-index');
         const actaSeleccionada = listadoMonitoreo[index];
 
-        // Cambiar a vista formulario en modo Solo Lectura
+        // ACTIVACIÓN DE MODO LECTURA AUDITORÍA
+        isReadOnlyMode = true;
         ajustarModoLecturaFormulario(true);
 
-        // Precarga de los campos mapeados desde SharePoint de la lista general
         document.getElementById('cedula').value = actaSeleccionada.cedula || '';
         document.getElementById('nombreContratista').value = actaSeleccionada.name || '';
         document.getElementById('numeroContrato').value = actaSeleccionada.contract || '';
         document.getElementById('supervisor').value = actaSeleccionada.boss || '';
         
-        // Marcamos las pestañas vacías para auditoría visual inicial
         tabButtons.forEach(b => b.classList.remove('active'));
         tabPanels.forEach(p => p.classList.remove('active'));
         tabButtons[0].classList.add('active');
