@@ -42,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
     targetView.classList.add('active');
   }
 
-  // SOLUCIÓN PUNTO 3: Limpieza profunda controlada (EXCLUSIVA PARA AUDITORÍA)
   function limpiarCamposAuditoria() {
     listadoAcciones = [];
     listadoAsuntos = [];
@@ -61,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
     inputs.forEach(i => i.value = '');
   }
 
-  // SOLUCIÓN PUNTO 1: Creación dinámica del botón de regreso flotante para Auditoría
   function inyectarBotonRegresoAuditoria() {
     let btnExistente = document.getElementById('btn-regresar-auditoria-flotante');
     if (btnExistente) btnExistente.remove();
@@ -86,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnRegresar.addEventListener('click', (e) => {
         e.preventDefault();
         isReadOnlyMode = false;
-        btnRegresar.remove(); // Limpia el botón al salir
+        btnRegresar.remove(); 
         switchView(viewFuncionarioDashboard);
       });
 
@@ -154,7 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const resData = await response.json();
 
         if (resData.success && resData.exists) {
-          // NOTA: No llamamos a la función de limpieza aquí para no borrar la pestaña de acciones local del contratista (Punto 3)
           currentUserData = {
             idSharePoint: resData.idSharePoint,
             cedula: cedula,
@@ -216,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('supervisor').value = currentUserData.supervisor; 
     document.getElementById('correoContratista').value = currentUserData.correo || '';
     
-    // SOLUCIÓN PUNTO 2: Forzado previo de la opción en el selector antes del render
+    // SOLUCIÓN PUNTO 1 & 2: Homologación exacta de las opciones del HTML sin descalces
     const selectDep = document.getElementById('dependencia');
     let valorDep = currentUserData.dependencia ? currentUserData.dependencia.trim() : 'Dirección General';
     
@@ -230,6 +227,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('lineamientos').value = currentUserData.lineamientos || '';
     document.getElementById('recomendaciones-acciones').value = currentUserData.recomendaciones || '';
+
+    // SOLUCIÓN PUNTO 4: Forzamos el renderizado de la tabla local en la sesión activa del contratista
+    renderTableAcciones();
+    renderTableAsuntos();
+    renderTableSistemas();
+    renderTableDirectorio();
 
     tabButtons.forEach(btn => btn.classList.remove('active'));
     tabPanels.forEach(pnl => pnl.classList.remove('active'));
@@ -568,13 +571,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const index = e.target.getAttribute('data-index');
         const actaSeleccionada = listadoMonitoreo[index];
 
-        // Ejecuta la limpieza EXCLUSIVAMENTE para la auditoría (Punto 3 resuelto)
         limpiarCamposAuditoria(); 
 
         isReadOnlyMode = true;
         ajustarModoLecturaFormulario(true);
         
-        // Inyecta el botón de regreso flotante infalible (Punto 1 resuelto)
         inyectarBotonRegresoAuditoria();
 
         document.getElementById('cedula').value = actaSeleccionada.cedula || '';
@@ -582,11 +583,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('numeroContrato').value = actaSeleccionada.contract || '';
         document.getElementById('objetoContrato').value = actaSeleccionada.objeto || ''; 
         document.getElementById('supervisor').value = actaSeleccionada.boss || '';
-        document.getElementById('correoContratista').value = actaSeleccionada.correo || ''; // Mapeo correcto de correo en auditoría (Punto 1 resuelto)
+        document.getElementById('correoContratista').value = actaSeleccionada.correo || ''; 
         document.getElementById('lineamientos').value = actaSeleccionada.lineamientos || '';
         document.getElementById('recomendaciones-acciones').value = actaSeleccionada.recomendaciones || '';
         
-        // Carga forzada de la Dependencia
         const selectDep = document.getElementById('dependencia');
         let valorDep = actaSeleccionada.dependencia ? actaSeleccionada.dependencia.trim() : 'Dirección General';
         if (!Array.from(selectDep.options).some(opt => opt.value === valorDep)) {
@@ -603,6 +603,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('tab-general').classList.add('active');
 
         switchView(viewFormularioTransferencia);
+        
+        // SOLUCIÓN PUNTO 2: Auto-Scroll suave a la parte superior del DOM al abrir la vista
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
     });
   }
