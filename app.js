@@ -8,10 +8,8 @@ let listadoAsuntos = [];
 let listadoSistemas = [];
 let listadoDirectorio = [];
 
-let listadoMonitoreo = [
-  { name: "Cynthia Giraldo Gil", contract: "PS2026001", boss: "EDISON MONTOYA", status: "EN DILIGENCIAMIENTO" },
-  { name: "Andrés Moreira Fuentes", contract: "PS2026045", boss: "DIRECTOR TÉCNICO", status: "FINALIZADO" }
-];
+// Eliminamos los registros hardcodeados para depender exclusivamente del fetch dinámico de SharePoint
+let listadoMonitoreo = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   
@@ -74,7 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
     await enviarActaASharePoint(false);
   });
 
-  btnSubmitLogin.addEventListener('click', () => {
+  // PASO C: ACCESO MEDIANTE CONSULTA EN TIEMPO REAL A SHAREPOINT
+  btnSubmitLogin.addEventListener('click', async () => {
     const cedula = inputLoginCedula.value.trim();
     if (!cedula) {
       alert('Por favor, ingresa tu número de documento.');
@@ -84,30 +83,35 @@ document.addEventListener('DOMContentLoaded', () => {
     loginLoader.classList.remove('hidden');
     btnSubmitLogin.disabled = true;
 
-    setTimeout(() => {
-      loginLoader.classList.add('hidden');
-      btnSubmitLogin.disabled = false;
-
+    try {
       if (currentUserRole === 'contratista') {
-        currentUserData = {
-          cedula: cedula,
-          nombre: "Cynthia Giraldo Gil",
-          contract: "PS2026001",
-          objeto: "Prestación de servicios profesionales para el apoyo en la planeación, gestión, control y seguimiento del sistema presupuestal de la Agencia APP",
-          estado: "En Diligenciamiento",
-          fechaInicio: "2026-01-15"
-        };
+        const response = await fetch(`${BACKEND_URL}/api/login-contratista?cedula=${encodeURIComponent(cedula)}`);
+        const resData = await response.json();
 
-        document.getElementById('welcome-contratista').innerText = `BIENVENIDO(A), ${currentUserData.nombre.toUpperCase()}`;
-        document.getElementById('dash-num-contrato').innerText = currentUserData.contract;
-        document.getElementById('dash-objeto-contrato').innerText = currentUserData.objeto;
-        
-        const labelEstado = document.getElementById('dash-estado-acta');
-        labelEstado.innerText = currentUserData.estado.toUpperCase();
-        labelEstado.className = "badge badge-alert";
-        
-        switchView(viewContratistaDashboard);
+        if (resData.success && resData.exists) {
+          currentUserData = {
+            idSharePoint: resData.idSharePoint,
+            cedula: cedula,
+            nombre: resData.nombre,
+            contract: resData.contract,
+            objeto: resData.objeto,
+            estado: resData.estado,
+            correo: resData.correo,
+            dependencia: resData.dependencia
+          };
 
+          document.getElementById('welcome-contratista').innerText = `BIENVENIDO(A), ${currentUserData.nombre.toUpperCase()}`;
+          document.getElementById('dash-num-contrato').innerText = currentUserData.contract;
+          document.getElementById('dash-objeto-contrato').innerText = currentUserData.objeto;
+          
+          const labelEstado = document.getElementById('dash-estado-acta');
+          labelEstado.innerText = currentUserData.estado.toUpperCase();
+          labelEstado.className = currentUserData.estado === 'Finalizado' ? "badge badge-success" : "badge badge-alert";
+          
+          switchView(viewContratistaDashboard);
+        } else {
+          alert('❌ Tu documento no se encuentra registrado ni habilitado por Talento Humano.');
+        }
       } else if (currentUserRole === 'funcionario') {
         const badgeRol = document.getElementById('badge-rol-funcionario');
         const sectionTH = document.getElementById('section-th-actions');
@@ -120,10 +124,15 @@ document.addEventListener('DOMContentLoaded', () => {
           sectionTH.classList.add('hidden');
         }
 
-        poblarTablaSeguimientoFuncionarios();
+        await consultarContratosEnVivo();
         switchView(viewFuncionarioDashboard);
       }
-    }, 1200);
+    } catch (error) {
+      alert('❌ Ocurrió un error consultando la autenticación central.');
+    } finally {
+      loginLoader.classList.add('hidden');
+      btnSubmitLogin.disabled = false;
+    }
   });
 
   btnEmpezar.addEventListener('click', () => {
@@ -131,7 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('nombreContratista').value = currentUserData.nombre;
     document.getElementById('numeroContrato').value = currentUserData.contract;
     document.getElementById('objetoContrato').value = currentUserData.objeto;
-    document.getElementById('supervisor').value = "EDISON ALEXANDER MONTOYA VELEZ";
+    document.getElementById('correoContratista').value = currentUserData.correo || '';
+    document.getElementById('dependencia').value = currentUserData.dependencia || 'Dirección General';
 
     tabButtons.forEach(btn => btn.classList.remove('active'));
     tabPanels.forEach(pnl => pnl.classList.remove('active'));
@@ -311,27 +321,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         resultBox.classList.remove('hidden');
       } else {
-        alert(`❌ ${data.message || 'Contrato no encontrado en los registros de la Agencia APP.'}`);
+        alert(`❌ ${data.message || 'Contrato no encontrado.'}`);
       }
     } catch (error) {
-      console.error('Error al consultar SECOP:', error);
-      alert('❌ Hubo un problema al conectarse con el servidor de la Agencia APP.');
+      alert('❌ Hubo un problema al conectarse con el servidor.');
     } finally {
       loader.classList.add('hidden');
     }
   });
 
-  // CONFIRMAR HABILITACIÓN CON INYECCIÓN REAL EN SHAREPOINT (PASO A)
+  // CONFIRMAR HABILITACIÓN REAL EN SHAREPOINT
   document.getElementById('btn-confirmar-habilitacion').addEventListener('click', async () => {
     if (window.contratoTemporalValidado) {
-      
       const payloadHabilitar = {
         contrato: window.contratoTemporalValidado.contrato,
         contratista: window.contratoTemporalValidado.nombre,
         cedula: window.contratoTemporalValidado.cedula,
         objeto: window.contratoTemporalValidado.objeto,
         supervisor: window.contratoTemporalValidado.nombreSupervisor,
-        cedulaSupervisor: window.contratoTemporalValidado.cedulaSupervisor,
         fechaInicio: window.contratoTemporalValidado.fechaInicio
       };
 
@@ -344,38 +351,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const resData = await response.json();
 
         if (resData.success) {
-          alert(`🎉 ¡ÉXITO INSTITUCIONAL!\n\nEl contrato ${payloadHabilitar.contrato} de ${payloadHabilitar.contratista} ha sido inyectada en la lista general de SharePoint con estado 'Sin diligenciar'.`);
-          
-          const existe = listadoMonitoreo.some(reg => reg.contract === payloadHabilitar.contrato);
-          if (!existe) {
-            listadoMonitoreo.push({
-              name: payloadHabilitar.contratista,
-              contract: payloadHabilitar.contrato,
-              boss: payloadHabilitar.supervisor.toUpperCase(),
-              status: "EN DILIGENCIAMIENTO",
-              cedulaSupervisor: payloadHabilitar.cedulaSupervisor,
-              fechaInicio: payloadHabilitar.fechaInicio
-            });
-          }
-          
-          poblarTablaSeguimientoFuncionarios();
+          alert('🎉 ¡CONTRATO INYECTADO EN SHAREPOINT CON ÉXITO INSTITUCIONAL!');
+          await consultarContratosEnVivo();
           document.getElementById('secop-result-box').classList.add('hidden');
           document.getElementById('search-contrato').value = '';
         } else {
-          alert(`❌ Error de persistencia en SharePoint: ${resData.message}`);
+          alert(`❌ Error: ${resData.message}`);
         }
       } catch (error) {
-        console.error(error);
-        alert('❌ Error crítico al comunicar la habilitación con el servidor.');
+        alert('❌ Error de comunicación.');
       }
     }
   });
 
+  // PASO B: CARGA DINÁMICA DE LA TABLA DIRECTO DESDE SHAREPOINT (REFRESCO SEGURO CON F5)
+  async function consultarContratosEnVivo() {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/contratos`);
+      const resData = await response.json();
+      if (resData.success) {
+        listadoMonitoreo = resData.data;
+        poblarTablaSeguimientoFuncionarios();
+      }
+    } catch (e) {
+      console.error("Error cargando monitoreo", e);
+    }
+  }
+
   // ==========================================
-  // CONEXIÓN EN VIVO: COMPILACIÓN & SINK SHAREPOINT
+  // PASO D: ENVIAR CON EL ID DE SHAREPOINT ASIGNADO PARA ACTUALIZAR (PATCH)
   // ==========================================
   async function enviarActaASharePoint(isFinalSubmit) {
     const payload = {
+      idSharePoint: currentUserData.idSharePoint, // Enviamos el ID de la fila para que haga el PATCH
       datosGenerales: {
         cedula: document.getElementById('cedula').value,
         nombreContratista: document.getElementById('nombreContratista').value,
@@ -386,7 +394,6 @@ document.addEventListener('DOMContentLoaded', () => {
         dependencia: document.getElementById('dependencia').value,
         lineamientos: document.getElementById('lineamientos').value,
         recomendacionesAcciones: document.getElementById('recomendaciones-acciones').value,
-        fechaInicio: currentUserData?.fechaInicio || '',
         isFinal: isFinalSubmit
       },
       acciones: listadoAcciones,
@@ -396,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     if (!payload.datosGenerales.correoContratista || !payload.datosGenerales.dependencia) {
-      alert('⚠️ Por favor completa el Correo Electrónico y la Dependencia en la pestaña de Datos Generales.');
+      alert('⚠️ Por favor completa el Correo Electrónico y la Dependencia.');
       return;
     }
 
@@ -410,19 +417,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (resData.success) {
         if (isFinalSubmit) {
-          alert('🔒 ¡CONTRATO FINALIZADO CON ÉXITO INSTITUCIONAL!\n\nTu Acta de Transferencia ha sido compilada e inyectada con todos sus multirregistros en SharePoint de la Agencia APP. Se cerró el canal de edición.');
+          alert('🔒 ¡CONTRATO FINALIZADO E INYECTADO EN SHAREPOINT CON ÉXITO!');
           switchView(viewWelcome);
         } else {
-          alert('💾 ¡Progreso guardado con éxito localmente!\n\nPuedes cerrar la pestaña y reanudar el diligenciamiento cuando desees.');
+          alert('💾 ¡Progreso guardado (PATCH) con éxito en SharePoint!');
           switchView(viewContratistaDashboard);
         }
       } else {
-        const detalleError = resData.detail ? (resData.detail.message || JSON.stringify(resData.detail)) : resData.message;
-        alert(`❌ Error al guardar en SharePoint: ${detalleError}`);
+        alert('❌ Error actualizando campos.');
       }
     } catch (error) {
-      console.error(error);
-      alert('❌ Error crítico de comunicación con el backend de Vercel.');
+      alert('❌ Error de comunicación backend.');
     }
   }
 
@@ -430,23 +435,39 @@ document.addEventListener('DOMContentLoaded', () => {
     await enviarActaASharePoint(true);
   });
 
+  // PASO E: ACCIONES DINÁMICAS (ASIGNACIÓN FUNCIONAL DEL OJITO)
   function poblarTablaSeguimientoFuncionarios() {
     const tbody = document.getElementById('table-tracking-body');
     tbody.innerHTML = '';
     
-    listadoMonitoreo.forEach(reg => {
+    if (listadoMonitoreo.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay actas registradas en SharePoint.</td></tr>`;
+      return;
+    }
+
+    listadoMonitoreo.forEach((reg, index) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><strong>${reg.name}</strong></td>
+        <td><strong>${reg.name || 'Sin nombre'}</strong></td>
         <td>${reg.contract}</td>
-        <td>${reg.boss}</td>
+        <td>${reg.boss || 'Sin asignar'}</td>
         <td><span class="badge ${reg.status === 'FINALIZADO' ? 'badge-success' : 'badge-alert'}">${reg.status}</span></td>
         <td>
-          <button class="btn-action-view">👁️ Ver</button>
-          ${reg.status === 'FINALIZADO' ? '<button class="btn-action-pdf">📄 PDF</button>' : ''}
+          <button class="btn-action-view" data-index="${index}">👁️ Ver</button>
+          ${reg.status === 'FINALIZADO' ? `<button class="btn-action-pdf" data-index="${index}">📄 PDF</button>` : ''}
         </td>
       `;
       tbody.appendChild(tr);
+    });
+
+    // Escuchadores de eventos para los botones del ojito
+    document.querySelectorAll('.btn-action-view').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const index = e.target.getAttribute('data-index');
+        const actaSeleccionada = listadoMonitoreo[index];
+        alert(`👁️ Módulo de Auditoría (Paso E):\n\nVisualizando el Acta del contratista: ${actaSeleccionada.name}\nContrato: ${actaSeleccionada.contract}\nEstado: ${actaSeleccionada.status}`);
+        // Aquí se conectará la apertura del modal detallado de lectura
+      });
     });
   }
 });
