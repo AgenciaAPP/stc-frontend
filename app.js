@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginLoader.classList.remove('hidden'); btnSubmitLogin.disabled = true;
 
     try {
-      if (currentUserRole === 'contratista') {
+      if (currentUserData === null || currentUserRole === 'contratista') {
         const response = await fetch(`${BACKEND_URL}/api/login-contratista?cedula=${encodeURIComponent(cedula)}`);
         const resData = await response.json();
 
@@ -233,11 +233,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTableDirectorio(); document.getElementById('form-modal-directorio').reset(); closeModal('modal-directorio');
   });
 
-  // SOLUCIÓN PUNTO 2: Forzado y normalización de las 8 columnas institucionales completas
   function renderTableAcciones() {
     const tableContainer = document.getElementById('table-acciones-body').parentElement;
     
-    // Inyectamos el esqueleto completo en caliente con las 8 columnas para que calce perfectamente
     tableContainer.innerHTML = `
       <thead>
         <tr>
@@ -262,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     listadoAcciones.forEach(item => {
       const tr = document.createElement('tr');
+      // SOLUCIÓN COMPLETA: Muestra la Ruta Repositorio como texto plano limpio
       tr.innerHTML = `
         <td><strong>${item.proceso}</strong></td>
         <td><span class="badge ${item.prioridad === 'Alta' ? 'badge-danger' : 'badge-alert'}">${item.prioridad}</span></td>
@@ -269,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <td>${item.accionConocimiento}</td>
         <td><small>${item.ejecucion}</small></td>
         <td><small>${item.fecha || 'Sin registrar'}</small></td>
-        <td><a href="${item.ruta}" target="_blank" class="btn-link">Ver evidencia</a></td>
+        <td><small>${item.ruta || 'Sin registrar'}</small></td>
         <td><small>${item.obs}</small></td>
       `;
       tbody.appendChild(tr);
@@ -294,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!contratoInput) { alert('⚠️ Ingresa una referencia de contrato.'); return; }
     loader.classList.remove('hidden'); resultBox.classList.add('hidden');
     try {
-      const response = await fetch(`${BACKEND_URL}/api/buscar-secop?contrato=${encodeURIComponent(contratoInput)}`);
+      const response = await fetch(`${BACKEND_URL}/api/buscar-secop?contract=${encodeURIComponent(contratoInput)}`);
       const data = await response.json();
       if (data.success) {
         document.getElementById('secop-res-nombre').textContent = data.nombre; document.getElementById('secop-res-cedula').textContent = data.cedula; document.getElementById('secop-res-objeto').textContent = data.objeto;
@@ -410,7 +409,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         switchView(viewFormularioTransferencia);
         
-        // El scroll con retraso ahora se ejecuta de forma instantánea al pintar la vista
         setTimeout(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, 50);
       });
     });
