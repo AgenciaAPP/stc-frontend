@@ -1,549 +1,342 @@
-const BACKEND_URL = 'https://stc-backend-nine.vercel.app';
+import express from 'express';
+import cors from 'cors';
+import axios from 'axios';
+import dotenv from 'dotenv';
 
-let currentUserRole = null; 
-let currentUserData = null; 
-let isReadOnlyMode = false; 
+dotenv.config();
 
-let listadoAcciones = [];
-let listadoAsuntos = [];
-let listadoSistemas = [];
-let listadoDirectorio = [];
-let listadoMonitoreo = [];
+const app = express();
 
-document.addEventListener('DOMContentLoaded', () => {
-  
-  const viewWelcome = document.getElementById('view-welcome');
-  const viewLogin = document.getElementById('view-login');
-  const viewContratistaDashboard = document.getElementById('view-contratista-dashboard');
-  const viewFormularioTransferencia = document.getElementById('view-formulario-transferencia');
-  const viewFuncionarioDashboard = document.getElementById('view-funcionario-dashboard');
+app.use(cors());
+app.use(express.json());
 
-  const btnRoleContratista = document.getElementById('btn-role-contratista');
-  const btnRoleFuncionario = document.getElementById('btn-role-funcionario');
-  const btnBackToWelcome = document.getElementById('btn-back-to-welcome');
-  const btnLogoutButtons = document.querySelectorAll('.btn-logout');
-  const btnSavePreliminary = document.getElementById('btn-save-preliminary');
+const TENANT_ID = process.env.TENANT_ID;
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const SITE_ID = process.env.SITE_ID;
 
-  const loginTitle = document.getElementById('login-title');
-  const loginInstruction = document.getElementById('login-instruction');
-  const inputLoginCedula = document.getElementById('login-cedula');
-  const btnSubmitLogin = document.getElementById('btn-submit-login');
-  const loginLoader = document.getElementById('login-loader');
+const LIST_ID_GENERAL = process.env.LIST_ID_GENERAL;
+const LIST_ID_ACCIONES = process.env.LIST_ID_ACCIONES;
+const LIST_ID_ASUNTOS = process.env.LIST_ID_ASUNTOS;
+const LIST_ID_SISTEMAS = process.env.LIST_ID_SISTEMAS;
+const LIST_ID_DIRECTORIO = process.env.LIST_ID_DIRECTORIO;
 
-  const tabButtons = document.querySelectorAll('.tab-btn');
-  const tabPanels = document.querySelectorAll('.tab-panel');
-  const btnEmpezar = document.getElementById('btn-empezar-diligenciamiento');
+async function getMicrosoftGraphToken() {
+  const url = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`;
+  const params = new URLSearchParams();
+  params.append('client_id', CLIENT_ID);
+  params.append('scope', 'https://graph.microsoft.com/.default');
+  params.append('client_secret', CLIENT_SECRET);
+  params.append('grant_type', 'client_credentials');
 
-  function switchView(targetView) {
-    [viewWelcome, viewLogin, viewContratistaDashboard, viewFormularioTransferencia, viewFuncionarioDashboard].forEach(view => {
-      if(view) view.classList.remove('active');
+  try {
+    const response = await axios.post(url, params, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
-    targetView.classList.add('active');
+    return response.data.access_token;
+  } catch (error) {
+    console.error('Error de autenticación con Azure AD:', error.message);
+    throw new Error('No se pudo adquirir el Token de Acceso de Microsoft.');
   }
+}
 
-  function limpiarCamposAuditoria() {
-    listadoAcciones = [];
-    listadoAsuntos = [];
-    listadoSistemas = [];
-    listadoDirectorio = [];
+app.get('/', (req, res) => {
+  res.send('Servidor STC operando con filtrado por CedulaRelacion en todas las sublistas.');
+});
+
+// ==========================================
+// RUTA: CONSULTAR SECOP II
+// ==========================================
+app.get('/api/buscar-secop', async (req, res) => {
+  try {
+    const { contrato } = req.query;
+    if (!contrato) {
+      return res.status(400).json({ success: false, message: "Falta el parámetro 'contrato' en la consulta" });
+    }
+    const nitAgenciaAPP = "900623766"; 
+    const secopUrl = `https://www.datos.gov.co/resource/jbjy-vk9h.json?referencia_del_contrato=${encodeURIComponent(contrato)}&nit_entidad=${nitAgenciaAPP}`;
+    const response = await axios.get(secopUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
     
-    renderTableAcciones();
-    renderTableAsuntos();
-    renderTableSistemas();
-    renderTableDirectorio();
-
-    const textareas = viewFormularioTransferencia.querySelectorAll('textarea');
-    textareas.forEach(t => t.value = '');
-
-    const inputs = viewFormularioTransferencia.querySelectorAll('input');
-    inputs.forEach(i => i.value = '');
-  }
-
-  function inyectarBotonRegresoAuditoria() {
-    let btnExistente = document.getElementById('btn-regresar-auditoria-flotante');
-    if (btnExistente) btnExistente.remove();
-
-    if (isReadOnlyMode) {
-      const btnRegresar = document.createElement('button');
-      btnRegresar.id = 'btn-regresar-auditoria-flotante';
-      btnRegresar.innerText = '⬅️ Volver al Panel de Monitoreo';
-      btnRegresar.style.position = 'fixed';
-      btnRegresar.style.top = '20px';
-      btnRegresar.style.right = '20px';
-      btnRegresar.style.zIndex = '9999';
-      btnRegresar.style.padding = '12px 20px';
-      btnRegresar.style.backgroundColor = '#0056b3';
-      btnRegresar.style.color = '#fff';
-      btnRegresar.style.border = 'none';
-      btnRegresar.style.borderRadius = '5px';
-      btnRegresar.style.cursor = 'pointer';
-      btnRegresar.style.fontWeight = 'bold';
-      btnRegresar.style.boxShadow = '0px 4px 6px rgba(0,0,0,0.1)';
-
-      btnRegresar.addEventListener('click', (e) => {
-        e.preventDefault();
-        isReadOnlyMode = false;
-        btnRegresar.remove(); 
-        switchView(viewFuncionarioDashboard);
+    if (response.data && response.data.length > 0) {
+      const contratoData = response.data[0];
+      let fechaLimpia = contratoData.fecha_de_firma || null;
+      if (fechaLimpia && fechaLimpia.includes('T')) {
+        fechaLimpia = fechaLimpia.split('T')[0];
+      }
+      res.json({
+        success: true,
+        nombre: contratoData.proveedor_adjudicado || "No registrado",
+        cedula: contratoData.documento_proveedor || "No registrado",
+        objeto: contratoData.objeto_del_contrato || "No registrado",
+        nombreSupervisor: contratoData.nombre_supervisor || "No registrado",
+        cedulaSupervisor: contratoData.n_mero_de_documento_supervisor || "No registrado",
+        fechaFirma: fechaLimpia
       });
-      document.body.appendChild(btnRegresar);
-    }
-  }
-
-  btnRoleContratista.addEventListener('click', () => {
-    currentUserRole = 'contratista';
-    loginTitle.innerText = 'INGRESAR COMO CONTRATISTA';
-    loginInstruction.innerText = 'Introduce tu número de cédula para acceder a tu Acta de Transferencia.';
-    inputLoginCedula.value = '';
-    switchView(viewLogin);
-  });
-
-  btnRoleFuncionario.addEventListener('click', () => {
-    currentUserRole = 'funcionario';
-    loginTitle.innerText = 'INGRESAR COMO FUNCIONARIO';
-    loginInstruction.innerText = 'Acceso exclusivo para personal de la Agencia APP.';
-    inputLoginCedula.value = '';
-    switchView(viewLogin);
-  });
-
-  btnBackToWelcome.addEventListener('click', (e) => {
-    e.preventDefault();
-    let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante');
-    if (btnFlotante) btnFlotante.remove();
-    if (isReadOnlyMode) {
-      isReadOnlyMode = false;
-      switchView(viewFuncionarioDashboard);
     } else {
-      switchView(viewWelcome);
+      res.json({ success: false, message: "No se encontró ningún contrato con esa referencia en SECOP II." });
     }
-  });
-
-  btnLogoutButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      currentUserRole = null;
-      currentUserData = null;
-      isReadOnlyMode = false;
-      let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante');
-      if (btnFlotante) btnFlotante.remove();
-      switchView(viewWelcome);
-    });
-  });
-
-  btnSavePreliminary.addEventListener('click', async () => {
-    await enviarActaASharePoint(false);
-  });
-
-  btnSubmitLogin.addEventListener('click', async () => {
-    const cedula = inputLoginCedula.value.trim();
-    if (!cedula) {
-      alert('Por favor, ingresa tu número de documento.');
-      return;
-    }
-
-    loginLoader.classList.remove('hidden');
-    btnSubmitLogin.disabled = true;
-
-    try {
-      if (currentUserRole === 'contratista') {
-        const response = await fetch(`${BACKEND_URL}/api/login-contratista?cedula=${encodeURIComponent(cedula)}`);
-        const resData = await response.json();
-
-        if (resData.success && resData.exists) {
-          currentUserData = {
-            idSharePoint: resData.idSharePoint,
-            cedula: cedula,
-            nombre: resData.nombre,
-            contract: resData.contract,
-            objeto: resData.objeto,
-            supervisor: resData.supervisor, 
-            estado: resData.estado,
-            correo: resData.correo,
-            dependencia: resData.dependencia,
-            lineamientos: resData.lineamientos,
-            recomendaciones: resData.recomendaciones
-          };
-
-          const respHijos = await fetch(`${BACKEND_URL}/api/obtener-detalles-hijos?cedula=${encodeURIComponent(cedula)}`);
-          const dataHijos = await respHijos.json();
-          if(dataHijos.success) {
-            listadoAcciones = dataHijos.acciones || [];
-          }
-
-          document.getElementById('welcome-contratista').innerText = `BIENVENIDO(A), ${currentUserData.nombre.toUpperCase()}`;
-          document.getElementById('dash-num-contrato').innerText = currentUserData.contract;
-          document.getElementById('dash-objeto-contrato').innerText = currentUserData.objeto;
-          
-          const labelEstado = document.getElementById('dash-estado-acta');
-          labelEstado.innerText = currentUserData.estado.toUpperCase();
-          labelEstado.className = currentUserData.estado === 'Finalizado' ? "badge badge-success" : "badge badge-alert";
-          
-          isReadOnlyMode = false;
-          switchView(viewContratistaDashboard);
-        } else {
-          alert('❌ Tu documento no se encuentra habilitado por Talento Humano.');
-        }
-      } else if (currentUserRole === 'funcionario') {
-        const badgeRol = document.getElementById('badge-rol-funcionario');
-        const sectionTH = document.getElementById('section-th-actions');
-        if (cedula === '123') {
-          badgeRol.innerText = 'Perfil: Talento Humano (Superusuario)';
-          sectionTH.classList.remove('hidden');
-        } else {
-          badgeRol.innerText = 'Perfil: Supervisor / Dirección Técnica';
-          sectionTH.classList.add('hidden');
-        }
-        await consultarContratosEnVivo();
-        switchView(viewFuncionarioDashboard);
-      }
-    } catch (error) {
-      alert('❌ Error consultando autenticación.');
-    } finally {
-      loginLoader.classList.add('hidden');
-      btnSubmitLogin.disabled = false;
-    }
-  });
-
-  btnEmpezar.addEventListener('click', () => {
-    isReadOnlyMode = false;
-    ajustarModoLecturaFormulario(false);
-
-    document.getElementById('cedula').value = currentUserData.cedula;
-    document.getElementById('nombreContratista').value = currentUserData.nombre;
-    document.getElementById('numeroContrato').value = currentUserData.contract;
-    document.getElementById('objetoContrato').value = currentUserData.objeto;
-    document.getElementById('supervisor').value = currentUserData.supervisor; 
-    document.getElementById('correoContratista').value = currentUserData.correo || '';
-    
-    const selectDep = document.getElementById('dependencia');
-    let valorDep = currentUserData.dependencia ? currentUserData.dependencia.trim() : 'Dirección General';
-    if (!Array.from(selectDep.options).some(opt => opt.value === valorDep)) {
-      const optNueva = document.createElement('option');
-      optNueva.value = valorDep;
-      optNueva.text = valorDep;
-      selectDep.add(optNueva);
-    }
-    selectDep.value = valorDep;
-
-    document.getElementById('lineamientos').value = currentUserData.lineamientos || '';
-    document.getElementById('recomendaciones-acciones').value = currentUserData.recomendaciones || '';
-
-    renderTableAcciones();
-
-    tabButtons.forEach(btn => btn.classList.remove('active'));
-    tabPanels.forEach(pnl => pnl.classList.remove('active'));
-    tabButtons[0].classList.add('active');
-    document.getElementById('tab-general').classList.add('active');
-
-    switchView(viewFormularioTransferencia);
-  });
-
-  tabButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      const targetTab = button.getAttribute('data-tab');
-      tabButtons.forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
-      tabPanels.forEach(panel => panel.classList.remove('active'));
-      document.getElementById(`tab-${targetTab}`).classList.add('active');
-    });
-  });
-
-  window.openModal = function(modalType) {
-    if(isReadOnlyMode) return; 
-    let targetId = '';
-    if(modalType === 'modal-accion') targetId = 'modal-acciones';
-    if(modalType === 'modal-asunto') targetId = 'modal-asuntos';
-    if(modalType === 'modal-sistema') targetId = 'modal-sistemas';
-    if(modalType === 'modal-directorio') targetId = 'modal-directorio';
-    const modal = document.getElementById(targetId);
-    if(modal) modal.classList.add('active');
-  }
-
-  window.closeModal = function(modalId) {
-    const modal = document.getElementById(modalId);
-    if(modal) modal.classList.remove('active');
-  }
-
-  document.getElementById('form-modal-acciones').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const nuevaAccion = {
-      proceso: document.getElementById('modal-acc-proceso').value,
-      prioridad: document.getElementById('modal-acc-prioridad').value,
-      productos: document.getElementById('modal-acc-productos').value,
-      accionConocimiento: document.getElementById('modal-acc-conocimiento')?.value || 'No registrada', 
-      ejecucion: document.getElementById('modal-acc-ejecucion').value,
-      fecha: document.getElementById('modal-acc-fecha').value,
-      ruta: document.getElementById('modal-acc-ruta').value,
-      obs: document.getElementById('modal-acc-obs').value || 'Ninguna'
-    };
-    listadoAcciones.push(nuevaAccion);
-    renderTableAcciones();
-    document.getElementById('form-modal-acciones').reset();
-    closeModal('modal-acciones');
-  });
-
-  function renderTableAcciones() {
-    const tbody = document.getElementById('table-acciones-body');
-    tbody.innerHTML = '';
-    if(listadoAcciones.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" class="text-muted text-center">No se han agregado registros.</td></tr>`;
-      return;
-    }
-    listadoAcciones.forEach(item => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><strong>${item.proceso}</strong></td>
-        <td><span class="badge ${item.prioridad === 'Alta' ? 'badge-danger' : 'badge-alert'}">${item.prioridad}</span></td>
-        <td>${item.productos}</td>
-        <td>${item.accionConocimiento}</td>
-        <td><small>${item.ejecucion}</small></td>
-        <td><a href="${item.ruta}" target="_blank" class="btn-link">Ver repositorio</a></td>
-        <td><small>${item.obs}</small></td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function renderTableGeneric(elementId, dataset, fields) {
-    const tbody = document.getElementById(elementId);
-    tbody.innerHTML = '';
-    if(dataset.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="${fields.length}" class="text-muted text-center">No se han agregado registros.</td></tr>`;
-      return;
-    }
-    dataset.forEach(item => {
-      const tr = document.createElement('tr');
-      let html = '';
-      fields.forEach(f => { html += `<td>${item[f]}</td>`; });
-      tr.innerHTML = html;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function renderTableAsuntos() { renderTableGeneric('table-asuntos-body', listadoAsuntos, ['tramite', 'estado', 'entidad', 'accionesPendientes', 'fecha']); }
-  function renderTableSistemas() { renderTableGeneric('table-sistemas-body', listadoSistemas, ['nombre', 'usuario', 'contrasena', 'obs']); }
-  function renderTableDirectorio() { renderTableGeneric('table-directorio-body', listadoDirectorio, ['nombre', 'tel', 'correo', 'tipo', 'entidad', 'reco']); }
-
-  document.getElementById('btn-buscar-secop').addEventListener('click', async () => {
-    const contratoInput = document.getElementById('search-contrato').value.trim();
-    const loader = document.getElementById('secop-loader');
-    const resultBox = document.getElementById('secop-result-box');
-    if (!contratoInput) {
-      alert('⚠️ Por favor, ingresa una referencia de contrato.');
-      return;
-    }
-    loader.classList.remove('hidden');
-    resultBox.classList.add('hidden');
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/buscar-secop?contrato=${encodeURIComponent(contratoInput)}`);
-      const data = await response.json();
-      if (data.success) {
-        document.getElementById('secop-res-nombre').textContent = data.nombre;
-        document.getElementById('secop-res-cedula').textContent = data.cedula;
-        document.getElementById('secop-res-objeto').textContent = data.objeto;
-        window.contratoTemporalValidado = {
-          cedula: data.cedula,
-          nombre: data.nombre,
-          contrato: contratoInput,
-          objeto: data.objeto,
-          nombreSupervisor: data.nombreSupervisor,
-          cedulaSupervisor: data.cedulaSupervisor,
-          fechaInicio: data.fechaFirma
-        };
-        resultBox.classList.remove('hidden');
-      } else {
-        alert(`❌ ${data.message || 'Contrato no encontrado.'}`);
-      }
-    } catch (error) {
-      alert('❌ Error de comunicación.');
-    } finally {
-      loader.classList.add('hidden');
-    }
-  });
-
-  document.getElementById('btn-confirmar-habilitacion').addEventListener('click', async () => {
-    if (window.contratoTemporalValidado) {
-      const payloadHabilitar = {
-        contrato: window.contratoTemporalValidado.contrato,
-        contratista: window.contratoTemporalValidado.nombre,
-        cedula: window.contratoTemporalValidado.cedula,
-        objeto: window.contratoTemporalValidado.objeto,
-        supervisor: window.contratoTemporalValidado.nombreSupervisor,
-        fechaInicio: window.contratoTemporalValidado.fechaInicio
-      };
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/habilitar-contrato`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payloadHabilitar)
-        });
-        const resData = await response.json();
-        if (resData.success) {
-          alert('🎉 ¡CONTRATO INYECTADO EN SHAREPOINT CON ÉXITO!');
-          await consultarContratosEnVivo();
-          document.getElementById('secop-result-box').classList.add('hidden');
-          document.getElementById('search-contrato').value = '';
-        }
-      } catch (error) {
-        alert('❌ Error de comunicación.');
-      }
-    }
-  });
-
-  async function consultarContratosEnVivo() {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/contratos`);
-      const resData = await response.json();
-      if (resData.success) {
-        listadoMonitoreo = resData.data;
-        poblarTablaSeguimientoFuncionarios();
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  async function enviarActaASharePoint(isFinalSubmit) {
-    const payload = {
-      idSharePoint: currentUserData.idSharePoint, 
-      datosGenerales: {
-        cedula: document.getElementById('cedula').value,
-        nombreContratista: document.getElementById('nombreContratista').value,
-        numeroContrato: document.getElementById('numeroContrato').value,
-        supervisor: document.getElementById('supervisor').value,
-        objetoContrato: document.getElementById('objetoContrato').value,
-        correoContratista: document.getElementById('correoContratista').value,
-        dependencia: document.getElementById('dependencia').value,
-        lineamientos: document.getElementById('lineamientos').value,
-        recomendacionesAcciones: document.getElementById('recomendaciones-acciones').value,
-        isFinal: isFinalSubmit
-      },
-      acciones: listadoAcciones,
-      asuntos: listadoAsuntos,
-      sistemas: listadoSistemas,
-      directorio: listadoDirectorio
-    };
-
-    if (!payload.datosGenerales.correoContratista || !payload.datosGenerales.dependencia) {
-      alert('⚠️ Por favor completa el Correo Electrónico y la Dependencia.');
-      return;
-    }
-
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/save-acta`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const resData = await response.json();
-      if (resData.success) {
-        if (isFinalSubmit) {
-          alert('🔒 ¡ACTA FINALIZADA E INYECTADA CON ÉXITO!');
-          switchView(viewWelcome);
-        } else {
-          alert('💾 ¡Progreso preliminar guardado en SharePoint de forma persistente!');
-          switchView(viewContratistaDashboard);
-        }
-      } else {
-        const detalleError = resData.detail ? (resData.detail.message || JSON.stringify(resData.detail)) : resData.message;
-        alert(`❌ Error al guardar en SharePoint: ${detalleError}`);
-      }
-    } catch (error) {
-      alert('❌ Error de comunicación.');
-    }
-  }
-
-  document.getElementById('btn-submit-final').addEventListener('click', async () => {
-    await enviarActaASharePoint(true);
-  });
-
-  function ajustarModoLecturaFormulario(isReadOnly) {
-    const inputs = viewFormularioTransferencia.querySelectorAll('input, select, textarea');
-    inputs.forEach(el => {
-      if(el.id !== 'btn-back-to-welcome') { el.disabled = isReadOnly; }
-    });
-    const btnSave = document.getElementById('btn-save-preliminary');
-    const btnSubmit = document.getElementById('btn-submit-final');
-    const btnAdders = viewFormularioTransferencia.querySelectorAll('.btn-add-row');
-    if(isReadOnly) {
-      if(btnSave) btnSave.classList.add('hidden');
-      if(btnSubmit) btnSubmit.classList.add('hidden');
-      btnAdders.forEach(b => b.classList.add('hidden'));
-    } else {
-      if(btnSave) btnSave.classList.remove('hidden');
-      if(btnSubmit) btnSubmit.classList.remove('hidden');
-      btnAdders.forEach(b => b.classList.remove('hidden'));
-    }
-  }
-
-  function poblarTablaSeguimientoFuncionarios() {
-    const tbody = document.getElementById('table-tracking-body');
-    tbody.innerHTML = '';
-    if (listadoMonitoreo.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay actas registradas.</td></tr>`;
-      return;
-    }
-
-    listadoMonitoreo.forEach((reg, index) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><strong>${reg.name || 'Sin nombre'}</strong></td>
-        <td>${reg.contract}</td>
-        <td>${reg.boss || 'Sin asignar'}</td>
-        <td><span class="badge ${reg.status === 'FINALIZADO' ? 'badge-success' : 'badge-alert'}">${reg.status}</span></td>
-        <td>
-          <button class="btn-action-view" data-index="${index}">👁️ Ver</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    document.querySelectorAll('.btn-action-view').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const index = e.target.getAttribute('data-index');
-        const actaSeleccionada = listadoMonitoreo[index];
-
-        limpiarCamposAuditoria(); 
-        isReadOnlyMode = true;
-        ajustarModoLecturaFormulario(true);
-        inyectarBotonRegresoAuditoria();
-
-        document.getElementById('cedula').value = actaSeleccionada.cedula || '';
-        document.getElementById('nombreContratista').value = actaSeleccionada.name || '';
-        document.getElementById('numeroContrato').value = actaSeleccionada.contract || '';
-        document.getElementById('objetoContrato').value = actaSeleccionada.objeto || ''; 
-        document.getElementById('supervisor').value = actaSeleccionada.boss || '';
-        document.getElementById('correoContratista').value = actaSeleccionada.correo || ''; 
-        document.getElementById('lineamientos').value = actaSeleccionada.lineamientos || '';
-        document.getElementById('recomendaciones-acciones').value = actaSeleccionada.recomendaciones || '';
-        
-        const selectDep = document.getElementById('dependencia');
-        let valorDep = actaSeleccionada.dependencia ? actaSeleccionada.dependencia.trim() : 'Dirección General';
-        if (!Array.from(selectDep.options).some(opt => opt.value === valorDep)) {
-          const optNueva = document.createElement('option');
-          optNueva.value = valorDep;
-          optNueva.text = valorDep;
-          selectDep.add(optNueva);
-        }
-        selectDep.value = valorDep;
-
-        const responseHijos = await fetch(`${BACKEND_URL}/api/obtener-detalles-hijos?cedula=${encodeURIComponent(actaSeleccionada.cedula)}`);
-        const dataHijos = await responseHijos.json();
-        if(dataHijos.success) {
-          listadoAcciones = dataHijos.acciones || [];
-          renderTableAcciones();
-        }
-
-        tabButtons.forEach(b => b.classList.remove('active'));
-        tabPanels.forEach(p => p.classList.remove('active'));
-        tabButtons[0].classList.add('active');
-        document.getElementById('tab-general').classList.add('active');
-
-        switchView(viewFormularioTransferencia);
-        
-        setTimeout(() => {
-          window.scrollTo({ top: 0, behavior: 'instant' });
-        }, 80);
-      });
-    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error al conectarse con el SECOP II." });
   }
 });
+
+// ==========================================
+// RUTA: CREACIÓN INICIAL POR TALENTO HUMANO (HABILITACIÓN)
+// ==========================================
+app.post('/api/habilitar-contrato', async (req, res) => {
+  const { contrato, contratista, cedula, objeto, supervisor, fechaInicio } = req.body;
+  if (!contrato || !cedula) {
+    return res.status(400).json({ success: false, message: 'Faltan datos obligatorios.' });
+  }
+  try {
+    const token = await getMicrosoftGraphToken();
+    const graphBaseUrl = `https://graph.microsoft.com/v1.0/sites/${SITE_ID}/lists`;
+    
+    const habilitarPayload = {
+      fields: {
+        Title: contrato, 
+        Supervisor: supervisor,
+        Objetocontractual: objeto,
+        Fechadeiniciodelcontrato: fechaInicio || '',
+        Contratista: contratista,
+        NIT_x002f_CC: String(cedula).trim(),
+        Estado: 'Sin diligenciar'
+      }
+    };
+    await axios.post(`${graphBaseUrl}/${LIST_ID_GENERAL}/items`, habilitarPayload, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+    });
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    return res.status(500).json({ success: false, detail: error.response?.data?.error || error.message });
+  }
+});
+
+// ==========================================
+// RUTA: OBTENER TODOS LOS CONTRATOS EN VIVO 
+// ==========================================
+app.get('/api/contratos', async (req, res) => {
+  try {
+    const token = await getMicrosoftGraphToken();
+    const url = `https://graph.microsoft.com/v1.0/sites/${SITE_ID}/lists/${LIST_ID_GENERAL}/items?expand=fields`;
+    const response = await axios.get(url, { headers: { 'Authorization': `Bearer ${token}` } });
+    
+    const listaFormateada = response.data.value.map(item => ({
+      idSharePoint: item.id,
+      contract: item.fields.Title,
+      boss: item.fields.Supervisor,
+      objeto: item.fields.Objetocontractual, 
+      name: item.fields.Contratista,
+      cedula: item.fields.NIT_x002f_CC,
+      status: item.fields.Estado ? item.fields.Estado.toUpperCase() : 'SIN DILIGENCIAR',
+      lineamientos: item.fields.Lineamientos || '',
+      recomendaciones: item.fields.Recomendaciones || '',
+      dependencia: item.fields.Dependencia || '',
+      correo: item.fields.CorreoContratista || ''
+    }));
+    res.json({ success: true, data: listaFormateada });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error trayendo datos de SharePoint.' });
+  }
+});
+
+// ==========================================
+// RUTA: OBTENER DETALLES HIJOS FILTRADOS POR CEDULARELACION
+// ==========================================
+app.get('/api/obtener-detalles-hijos', async (req, res) => {
+  const { cedula } = req.query;
+  if (!cedula) return res.status(400).json({ success: false, message: "Falta la cédula." });
+
+  try {
+    const token = await getMicrosoftGraphToken();
+    const graphBaseUrl = `https://graph.microsoft.com/v1.0/sites/${SITE_ID}/lists`;
+    const strCedula = String(cedula).trim();
+
+    // 1. Cargar y filtrar Acciones
+    const resAcciones = await axios.get(`${graphBaseUrl}/${LIST_ID_ACCIONES}/items?expand=fields`, { headers: { 'Authorization': `Bearer ${token}` } });
+    const acciones = resAcciones.data.value
+      .filter(item => String(item.fields.CedulaRelacion).trim() === strCedula)
+      .map(item => ({
+        proceso: item.fields.Title,
+        prioridad: item.fields.Prioridad,
+        productos: item.fields.Productosentrega,
+        accionConocimiento: item.fields.Acci_x00f3_nparalatransferenciad || 'No registrada',
+        ejecucion: item.fields.escribac_x00f3_mosellev_x00f3_a || '',
+        fecha: item.fields.Fechaenqueseejecut_x00f3_laacci_ || '',
+        ruta: item.fields.Ruta_x0028_s_x0029_dondereposa_x,
+        obs: item.fields.Observaciones || ''
+      }));
+
+    // 2. Cargar y filtrar Asuntos
+    const resAsuntos = await axios.get(`${graphBaseUrl}/${LIST_ID_ASUNTOS}/items?expand=fields`, { headers: { 'Authorization': `Bearer ${token}` } });
+    const asuntos = resAsuntos.data.value
+      .filter(item => String(item.fields.CedulaRelacion).trim() === strCedula)
+      .map(item => ({
+        tramite: item.fields.Title,
+        estado: item.fields.Estado,
+        entidad: item.fields.Entidad_x002f_Dependencia,
+        accionesPendientes: item.fields.Accionespendientesporrealizar,
+        fecha: item.fields.Fechal_x00ed_mite || ''
+      }));
+
+    // 3. Cargar y filtrar Sistemas
+    const resSistemas = await axios.get(`${graphBaseUrl}/${LIST_ID_SISTEMAS}/items?expand=fields`, { headers: { 'Authorization': `Bearer ${token}` } });
+    const sistemas = resSistemas.data.value
+      .filter(item => String(item.fields.CedulaRelacion).trim() === strCedula)
+      .map(item => ({
+        nombre: item.fields.Title,
+        usuario: item.fields.Usuario,
+        contrasena: item.fields.Contrase_x00f1_a,
+        obs: item.fields.Observaciones || ''
+      }));
+
+    // 4. Cargar y filtrar Directorio
+    const resDirectorio = await axios.get(`${graphBaseUrl}/${LIST_ID_DIRECTORIO}/items?expand=fields`, { headers: { 'Authorization': `Bearer ${token}` } });
+    const directorio = resDirectorio.data.value
+      .filter(item => String(item.fields.CedulaRelacion).trim() === strCedula)
+      .map(item => ({
+        nombre: item.fields.Title,
+        tel: item.fields.Tel_x00e9_fono,
+        correo: item.fields.E_x002d_Mail,
+        tipo: item.fields.Tipodecontacto,
+        entidad: item.fields.Entidad_x002f_Dependencia,
+        reco: item.fields.Recomendaciones || ''
+      }));
+
+    res.json({ success: true, acciones, asuntos, sistemas, directorio });
+  } catch (error) {
+    res.status(500).json({ success: false, detail: error.message });
+  }
+});
+
+// ==========================================
+// RUTA: LOGIN CONTRATISTA
+// ==========================================
+app.get('/api/login-contratista', async (req, res) => {
+  const { cedula } = req.query;
+  try {
+    const token = await getMicrosoftGraphToken();
+    const url = `https://graph.microsoft.com/v1.0/sites/${SITE_ID}/lists/${LIST_ID_GENERAL}/items?expand=fields`;
+    const response = await axios.get(url, { headers: { 'Authorization': `Bearer ${token}` } });
+    
+    const match = response.data.value.find(item => {
+      const nitFila = item.fields.NIT_x002f_CC ? String(item.fields.NIT_x002f_CC).trim() : '';
+      return nitFila === String(cedula).trim();
+    });
+    
+    if (match) {
+      res.json({
+        success: true,
+        exists: true,
+        idSharePoint: match.id,
+        contract: match.fields.Title,
+        supervisor: match.fields.Supervisor || 'No registrado',
+        objeto: match.fields.Objetocontractual,
+        nombre: match.fields.Contratista,
+        cedula: match.fields.NIT_x002f_CC,
+        estado: match.fields.Estado || 'Sin diligenciar',
+        correo: match.fields.CorreoContratista || '',
+        dependencia: match.fields.Dependencia || '',
+        lineamientos: match.fields.Lineamientos || '', 
+        recomendaciones: match.fields.Recomendaciones || ''
+      });
+    } else {
+      res.json({ success: true, exists: false });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, detail: error.message });
+  }
+});
+
+// ==========================================
+// RUTA: SAVE-ACTA CON PERSISTENCIA Y RELACIÓN TRANSACCIONAL
+// ==========================================
+app.post('/api/save-acta', async (req, res) => {
+  const { idSharePoint, datosGenerales, acciones, asuntos, sistemas, directorio } = req.body;
+  if (!idSharePoint) return res.status(400).json({ success: false, message: 'Falta el ID de registro.' });
+
+  try {
+    const token = await getMicrosoftGraphToken();
+    const graphBaseUrl = `https://graph.microsoft.com/v1.0/sites/${SITE_ID}/lists`;
+    const strCedula = String(datosGenerales.cedula).trim();
+
+    // 1. Actualizar STC_General
+    const generalPayload = {
+      fields: {
+        Title: datosGenerales.numeroContrato,
+        Supervisor: datosGenerales.supervisor,
+        Objetocontractual: datosGenerales.objetoContrato,
+        Dependencia: datosGenerales.dependencia, 
+        Contratista: datosGenerales.nombreContratista,
+        Fechadediligenciamiento: datosGenerales.isFinal ? new Date().toISOString().split('T')[0] : '',
+        NIT_x002f_CC: strCedula,
+        Lineamientos: datosGenerales.lineamientos || '',
+        Recomendaciones: datosGenerales.recomendacionesAcciones || '',
+        CorreoContratista: datosGenerales.correoContratista,
+        Estado: datosGenerales.isFinal ? 'Finalizado' : 'En diligenciamiento'
+      }
+    };
+    await axios.patch(`${graphBaseUrl}/${LIST_ID_GENERAL}/items/${idSharePoint}`, generalPayload, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+    });
+
+    // 2. Transacción de Limpieza y Guardado para ACCIONES
+    const rAcc = await axios.get(`${graphBaseUrl}/${LIST_ID_ACCIONES}/items?expand=fields`, { headers: { 'Authorization': `Bearer ${token}` } });
+    await Promise.all(rAcc.data.value.filter(f => String(f.fields.CedulaRelacion).trim() === strCedula).map(f => 
+      axios.delete(`${graphBaseUrl}/${LIST_ID_ACCIONES}/items/${f.id}`, { headers: { 'Authorization': `Bearer ${token}` } })
+    ));
+    if (acciones && acciones.length > 0) {
+      for (const item of acciones) {
+        const f = {
+          Title: item.proceso, CedulaRelacion: strCedula, Prioridad: item.prioridad, Productosentrega: item.productos,
+          Acci_x00f3_nparalatransferenciad: item.accionConocimiento, escribac_x00f3_mosellev_x00f3_a: item.ejecucion, Ruta_x0028_s_x0029_dondereposa_x: item.ruta, Observaciones: item.obs
+        };
+        if (item.fecha && item.fecha.trim() !== "") f.Fechaenqueseejecut_x00f3_laacci_ = item.fecha;
+        await axios.post(`${graphBaseUrl}/${LIST_ID_ACCIONES}/items`, { fields: f }, { headers: { 'Authorization': `Bearer ${token}` } });
+      }
+    }
+
+    // 3. Transacción de Limpieza y Guardado para ASUNTOS
+    const rAsu = await axios.get(`${graphBaseUrl}/${LIST_ID_ASUNTOS}/items?expand=fields`, { headers: { 'Authorization': `Bearer ${token}` } });
+    await Promise.all(rAsu.data.value.filter(f => String(f.fields.CedulaRelacion).trim() === strCedula).map(f => 
+      axios.delete(`${graphBaseUrl}/${LIST_ID_ASUNTOS}/items/${f.id}`, { headers: { 'Authorization': `Bearer ${token}` } })
+    ));
+    if (asuntos && asuntos.length > 0) {
+      for (const item of asuntos) {
+        const f = { Title: item.tramite, CedulaRelacion: strCedula, Estado: item.estado, Entidad_x002f_Dependencia: item.entidad, Accionespendientesporrealizar: item.accionesPendientes };
+        if (item.fecha && item.fecha.trim() !== "") f.Fechal_x00ed_mite = item.fecha;
+        await axios.post(`${graphBaseUrl}/${LIST_ID_ASUNTOS}/items`, { fields: f }, { headers: { 'Authorization': `Bearer ${token}` } });
+      }
+    }
+
+    // 4. Transacción de Limpieza y Guardado para SISTEMAS
+    const rSis = await axios.get(`${graphBaseUrl}/${LIST_ID_SISTEMAS}/items?expand=fields`, { headers: { 'Authorization': `Bearer ${token}` } });
+    await Promise.all(rSis.data.value.filter(f => String(f.fields.CedulaRelacion).trim() === strCedula).map(f => 
+      axios.delete(`${graphBaseUrl}/${LIST_ID_SISTEMAS}/items/${f.id}`, { headers: { 'Authorization': `Bearer ${token}` } })
+    ));
+    if (sistemas && sistemas.length > 0) {
+      for (const item of sistemas) {
+        const f = { Title: item.nombre, CedulaRelacion: strCedula, Usuario: item.usuario, Contrase_x00f1_a: item.contrasena, Observaciones: item.obs };
+        await axios.post(`${graphBaseUrl}/${LIST_ID_SISTEMAS}/items`, { fields: f }, { headers: { 'Authorization': `Bearer ${token}` } });
+      }
+    }
+
+    // 5. Transacción de Limpieza y Guardado para DIRECTORIO
+    const rDir = await axios.get(`${graphBaseUrl}/${LIST_ID_DIRECTORIO}/items?expand=fields`, { headers: { 'Authorization': `Bearer ${token}` } });
+    await Promise.all(rDir.data.value.filter(f => String(f.fields.CedulaRelacion).trim() === strCedula).map(f => 
+      axios.delete(`${graphBaseUrl}/${LIST_ID_DIRECTORIO}/items/${f.id}`, { headers: { 'Authorization': `Bearer ${token}` } })
+    ));
+    if (directorio && directorio.length > 0) {
+      for (const item of directorio) {
+        const f = { Title: item.nombre, CedulaRelacion: strCedula, Tel_x00e9_fono: item.tel, E_x002d_Mail: item.correo, Tipodecontacto: item.tipo, Entidad_x002f_Dependencia: item.entidad, Recomendaciones: item.reco };
+        await axios.post(`${graphBaseUrl}/${LIST_ID_DIRECTORIO}/items`, { fields: f }, { headers: { 'Authorization': `Bearer ${token}` } });
+      }
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    return res.status(500).json({ success: false, detail: error.response?.data?.error || error.message });
+  }
+});
+
+export default app;
