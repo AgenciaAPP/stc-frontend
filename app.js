@@ -3,6 +3,7 @@ const BACKEND_URL = 'https://stc-backend-nine.vercel.app';
 let currentUserRole = null; 
 let currentUserData = null; 
 let isReadOnlyMode = false; 
+let loggedSupervisorCedula = ''; // Almacena de forma segura la cédula del supervisor o TH en sesión
 
 let listadoAcciones = [];
 let listadoAsuntos = [];
@@ -83,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnLogoutButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      currentUserRole = null; currentUserData = null; isReadOnlyMode = false;
+      currentUserRole = null; currentUserData = null; isReadOnlyMode = false; loggedSupervisorCedula = '';
       let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante'); if (btnFlotante) btnFlotante.remove();
       switchView(viewWelcome);
     });
@@ -91,13 +92,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnSavePreliminary.addEventListener('click', async () => { await enviarActaASharePoint(false); });
 
+  // INYECTADO: Flujo dinámico de autenticación y ruteo dinámico con Cédula Maestra 123
   btnSubmitLogin.addEventListener('click', async () => {
     const cedula = inputLoginCedula.value.trim();
     if (!cedula) { alert('⚠️ Por favor, ingresa tu número de documento.'); return; }
     loginLoader.classList.remove('hidden'); btnSubmitLogin.disabled = true;
 
     try {
-      if (currentUserData === null || currentUserRole === 'contratista') {
+      if (currentUserRole === 'funcionario') {
+        const sectionTH = document.getElementById('section-th-actions');
+        loggedSupervisorCedula = cedula; // Guardamos en sesión para filtrar las peticiones GET en vivo
+
+        if (cedula === '123') {
+          document.getElementById('badge-rol-funcionario').innerText = 'Perfil: Talento Humano (Superusuario)';
+          if (sectionTH) sectionTH.classList.remove('hidden');
+        } else {
+          document.getElementById('badge-rol-funcionario').innerText = 'Perfil: Supervisor / Dirección Técnica';
+          if (sectionTH) sectionTH.classList.add('hidden');
+        }
+        
+        await consultarContratosEnVivo(); 
+        switchView(viewFuncionarioDashboard);
+        return; // Detiene la ejecución limpia para evitar interferencias
+      }
+
+      if (currentUserRole === 'contratista') {
         const response = await fetch(`${BACKEND_URL}/api/login-contratista?cedula=${encodeURIComponent(cedula)}`);
         const resData = await response.json();
 
@@ -127,21 +146,11 @@ document.addEventListener('DOMContentLoaded', () => {
           
           isReadOnlyMode = false; switchView(viewContratistaDashboard);
         } else {
-          alert('❌ Tu documento no se encuentra habilitado.');
+          alert('❌ Tu documento no se encuentra registrado ni habilitado por Talento Humano.');
         }
-      } else if (currentUserRole === 'funcionario') {
-        const sectionTH = document.getElementById('section-th-actions');
-        if (cedula === '123') {
-          document.getElementById('badge-rol-funcionario').innerText = 'Perfil: Talento Humano (Superusuario)';
-          sectionTH.classList.remove('hidden');
-        } else {
-          document.getElementById('badge-rol-funcionario').innerText = 'Perfil: Supervisor / Dirección Técnica';
-          sectionTH.classList.add('hidden');
-        }
-        await consultarContratosEnVivo(); switchView(viewFuncionarioDashboard);
       }
     } catch (error) {
-      alert('❌ Error consultando autenticación.');
+      alert('❌ Error consultando la pasarela de autenticación central.');
     } finally {
       loginLoader.classList.add('hidden'); btnSubmitLogin.disabled = false;
     }
@@ -260,7 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     listadoAcciones.forEach(item => {
       const tr = document.createElement('tr');
-      // SOLUCIÓN COMPLETA: Muestra la Ruta Repositorio como texto plano limpio
       tr.innerHTML = `
         <td><strong>${item.proceso}</strong></td>
         <td><span class="badge ${item.prioridad === 'Alta' ? 'badge-danger' : 'badge-alert'}">${item.prioridad}</span></td>
@@ -293,19 +301,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!contratoInput) { alert('⚠️ Ingresa una referencia de contrato.'); return; }
     loader.classList.remove('hidden'); resultBox.classList.add('hidden');
     try {
-      const response = await fetch(`${BACKEND_URL}/api/buscar-secop?contract=${encodeURIComponent(contratoInput)}`);
+      const response = await fetch(`${BACKEND_URL}/api/buscar-secop?contrato=${encodeURIComponent(contratoInput)}`);
       const data = await response.json();
       if (data.success) {
         document.getElementById('secop-res-nombre').textContent = data.nombre; document.getElementById('secop-res-cedula').textContent = data.cedula; document.getElementById('secop-res-objeto').textContent = data.objeto;
-        window.contratoTemporalValidado = { cedula: data.cedula, nombre: data.nombre, contrato: contratoInput, objeto: data.objeto, nombreSupervisor: data.nombreSupervisor, cedulaSupervisor: data.cedulaSupervisor, fechaInicio: data.fechaFirma };
+        window.contratoTemporalValidado = { 
+          cedula: data.cedula, nombre: data.nombre, contrato: contratoInput, objeto: data.objeto, 
+          nombreSupervisor: data.nombreSupervisor, cedulaSupervisor: data.cedulaSupervisor, fechaInicio: data.fechaFirma 
+        };
         resultBox.classList.remove('hidden');
       } else { alert(`❌ ${data.message || 'Contrato no encontrado.'}`); }
     } catch (error) { alert('❌ Error de comunicación.'); } finally { loader.classList.add('hidden'); }
   });
 
+  // INYECTADO: Envío transaccional de la cédula del supervisor desde el validador del SECOP II
   document.getElementById('btn-confirmar-habilitacion').addEventListener('click', async () => {
     if (window.contratoTemporalValidado) {
-      const p = { contrato: window.contratoTemporalValidado.contract || window.contratoTemporalValidado.contrato, contratista: window.contratoTemporalValidado.nombre, cedula: window.contratoTemporalValidado.cedula, objeto: window.contratoTemporalValidado.objeto, supervisor: window.contratoTemporalValidado.nombreSupervisor, fechaInicio: window.contratoTemporalValidado.fechaInicio };
+      const p = { 
+        contrato: window.contratoTemporalValidado.contrato, 
+        contratista: window.contratoTemporalValidado.nombre, 
+        cedula: window.contratoTemporalValidado.cedula, 
+        objeto: window.contratoTemporalValidado.objeto, 
+        supervisor: window.contratoTemporalValidado.nombreSupervisor, 
+        cedulaSupervisor: window.contratoTemporalValidado.cedulaSupervisor, 
+        fechaInicio: window.contratoTemporalValidado.fechaInicio 
+      };
       try {
         const response = await fetch(`${BACKEND_URL}/api/habilitar-contrato`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
         const resData = await response.json();
@@ -314,9 +334,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // INYECTADO: Envío adjunto de la credencial en sesión para el filtrado dinámico del backend
   async function consultarContratosEnVivo() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/contratos`); const resData = await response.json();
+      const response = await fetch(`${BACKEND_URL}/api/contratos?queryCedula=${encodeURIComponent(loggedSupervisorCedula)}`); 
+      const resData = await response.json();
       if (resData.success) { listadoMonitoreo = resData.data; poblarTablaSeguimientoFuncionarios(); }
     } catch (e) { console.error(e); }
   }
@@ -364,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function poblarTablaSeguimientoFuncionarios() {
     const tbody = document.getElementById('table-tracking-body'); tbody.innerHTML = '';
-    if (listadoMonitoreo.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay actas registradas.</td></tr>`; return; }
+    if (listadoMonitoreo.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay actas registradas para este perfil de supervisión.</td></tr>`; return; }
 
     listadoMonitoreo.forEach((reg, index) => {
       const tr = document.createElement('tr');
@@ -408,7 +430,6 @@ document.addEventListener('DOMContentLoaded', () => {
         tabButtons[0].classList.add('active'); document.getElementById('tab-general').classList.add('active');
 
         switchView(viewFormularioTransferencia);
-        
         setTimeout(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, 50);
       });
     });
