@@ -42,7 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
     targetView.classList.add('active');
   }
 
-  function limpiarCamposFormulario() {
+  // SOLUCIÓN PUNTO 3: Limpieza profunda controlada (EXCLUSIVA PARA AUDITORÍA)
+  function limpiarCamposAuditoria() {
     listadoAcciones = [];
     listadoAsuntos = [];
     listadoSistemas = [];
@@ -58,6 +59,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const inputs = viewFormularioTransferencia.querySelectorAll('input');
     inputs.forEach(i => i.value = '');
+  }
+
+  // SOLUCIÓN PUNTO 1: Creación dinámica del botón de regreso flotante para Auditoría
+  function inyectarBotonRegresoAuditoria() {
+    let btnExistente = document.getElementById('btn-regresar-auditoria-flotante');
+    if (btnExistente) btnExistente.remove();
+
+    if (isReadOnlyMode) {
+      const btnRegresar = document.createElement('button');
+      btnRegresar.id = 'btn-regresar-auditoria-flotante';
+      btnRegresar.innerText = '⬅️ Volver al Panel de Monitoreo';
+      btnRegresar.style.position = 'fixed';
+      btnRegresar.style.top = '20px';
+      btnRegresar.style.right = '20px';
+      btnRegresar.style.zIndex = '9999';
+      btnRegresar.style.padding = '12px 20px';
+      btnRegresar.style.backgroundColor = '#0056b3';
+      btnRegresar.style.color = '#fff';
+      btnRegresar.style.border = 'none';
+      btnRegresar.style.borderRadius = '5px';
+      btnRegresar.style.cursor = 'pointer';
+      btnRegresar.style.fontWeight = 'bold';
+      btnRegresar.style.boxShadow = '0px 4px 6px rgba(0,0,0,0.1)';
+
+      btnRegresar.addEventListener('click', (e) => {
+        e.preventDefault();
+        isReadOnlyMode = false;
+        btnRegresar.remove(); // Limpia el botón al salir
+        switchView(viewFuncionarioDashboard);
+      });
+
+      document.body.appendChild(btnRegresar);
+    }
   }
 
   btnRoleContratista.addEventListener('click', () => {
@@ -76,12 +110,13 @@ document.addEventListener('DOMContentLoaded', () => {
     switchView(viewLogin);
   });
 
-  // SOLUCIÓN PUNTO 1: CONTROL INMUTABLE EN EL EVENTO CLICK PARA REGRESAR
   btnBackToWelcome.addEventListener('click', (e) => {
     e.preventDefault();
+    let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante');
+    if (btnFlotante) btnFlotante.remove();
+
     if (isReadOnlyMode) {
       isReadOnlyMode = false;
-      btnBackToWelcome.innerText = "Cerrar Sesión"; 
       switchView(viewFuncionarioDashboard);
     } else {
       switchView(viewWelcome);
@@ -93,6 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
       currentUserRole = null;
       currentUserData = null;
       isReadOnlyMode = false;
+      let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante');
+      if (btnFlotante) btnFlotante.remove();
       switchView(viewWelcome);
     });
   });
@@ -117,8 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const resData = await response.json();
 
         if (resData.success && resData.exists) {
-          limpiarCamposFormulario();
-
+          // NOTA: No llamamos a la función de limpieza aquí para no borrar la pestaña de acciones local del contratista (Punto 3)
           currentUserData = {
             idSharePoint: resData.idSharePoint,
             cedula: cedula,
@@ -180,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('supervisor').value = currentUserData.supervisor; 
     document.getElementById('correoContratista').value = currentUserData.correo || '';
     
-    // SOLUCIÓN PUNTO 2: Forzado Dinámico y Limpieza de la Opcion Inmobiliaria
+    // SOLUCIÓN PUNTO 2: Forzado previo de la opción en el selector antes del render
     const selectDep = document.getElementById('dependencia');
     let valorDep = currentUserData.dependencia ? currentUserData.dependencia.trim() : 'Dirección General';
     
@@ -532,23 +568,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const index = e.target.getAttribute('data-index');
         const actaSeleccionada = listadoMonitoreo[index];
 
-        limpiarCamposFormulario(); 
+        // Ejecuta la limpieza EXCLUSIVAMENTE para la auditoría (Punto 3 resuelto)
+        limpiarCamposAuditoria(); 
 
         isReadOnlyMode = true;
         ajustarModoLecturaFormulario(true);
         
-        // SOLUCIÓN PUNTO 1 (Garantía de Texto): Forzado directo en la propiedad
-        btnBackToWelcome.innerText = "⬅️ Volver al Panel";
+        // Inyecta el botón de regreso flotante infalible (Punto 1 resuelto)
+        inyectarBotonRegresoAuditoria();
 
         document.getElementById('cedula').value = actaSeleccionada.cedula || '';
         document.getElementById('nombreContratista').value = actaSeleccionada.name || '';
         document.getElementById('numeroContrato').value = actaSeleccionada.contract || '';
-        document.getElementById('objetoContrato').value = actaSeleccionada.objeto || ''; // SOLUCIÓN PUNTO 1 (Objeto en Auditoría)
+        document.getElementById('objetoContrato').value = actaSeleccionada.objeto || ''; 
         document.getElementById('supervisor').value = actaSeleccionada.boss || '';
+        document.getElementById('correoContratista').value = actaSeleccionada.correo || ''; // Mapeo correcto de correo en auditoría (Punto 1 resuelto)
         document.getElementById('lineamientos').value = actaSeleccionada.lineamientos || '';
         document.getElementById('recomendaciones-acciones').value = actaSeleccionada.recomendaciones || '';
         
-        // SOLUCIÓN PUNTO 2 (Consistencia): Limpieza estricta de la Dependencia
+        // Carga forzada de la Dependencia
         const selectDep = document.getElementById('dependencia');
         let valorDep = actaSeleccionada.dependencia ? actaSeleccionada.dependencia.trim() : 'Dirección General';
         if (!Array.from(selectDep.options).some(opt => opt.value === valorDep)) {
