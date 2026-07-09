@@ -42,15 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function limpiarCamposAuditoria() {
-    listadoAcciones = [];
-    listadoAsuntos = [];
-    listadoSistemas = [];
-    listadoDirectorio = [];
-    
-    renderTableAcciones();
-    renderTableAsuntos();
-    renderTableSistemas();
-    renderTableDirectorio();
+    listadoAcciones = []; listadoAsuntos = []; listadoSistemas = []; listadoDirectorio = [];
+    renderTableAcciones(); renderTableAsuntos(); renderTableSistemas(); renderTableDirectorio();
 
     viewFormularioTransferencia.querySelectorAll('textarea, input').forEach(el => el.value = '');
   }
@@ -63,32 +56,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const btnRegresar = document.createElement('button');
       btnRegresar.id = 'btn-regresar-auditoria-flotante';
       btnRegresar.innerText = '⬅️ Volver al Panel de Monitoreo';
-      btnRegresar.style.position = 'fixed';
-      btnRegresar.style.top = '20px';
-      btnRegresar.style.right = '20px';
-      btnRegresar.style.zIndex = '9999';
-      btnRegresar.style.padding = '12px 20px';
-      btnRegresar.style.backgroundColor = '#0056b3';
-      btnRegresar.style.color = '#fff';
-      btnRegresar.style.border = 'none';
-      btnRegresar.style.borderRadius = '5px';
-      btnRegresar.style.cursor = 'pointer';
-      btnRegresar.style.fontWeight = 'bold';
+      btnRegresar.style.position = 'fixed'; btnRegresar.style.top = '20px'; btnRegresar.style.right = '20px'; btnRegresar.style.zIndex = '9999';
+      btnRegresar.style.padding = '12px 20px'; btnRegresar.style.backgroundColor = '#0056b3'; btnRegresar.style.color = '#fff';
+      btnRegresar.style.border = 'none'; btnRegresar.style.borderRadius = '5px'; btnRegresar.style.cursor = 'pointer'; btnRegresar.style.fontWeight = 'bold';
       btnRegresar.style.boxShadow = '0px 4px 6px rgba(0,0,0,0.1)';
 
       btnRegresar.addEventListener('click', (e) => {
-        e.preventDefault();
-        isReadOnlyMode = false;
-        btnRegresar.remove(); 
-        switchView(viewFuncionarioDashboard);
+        e.preventDefault(); isReadOnlyMode = false; btnRegresar.remove(); switchView(viewFuncionarioDashboard);
       });
       document.body.appendChild(btnRegresar);
     }
   }
 
-  // ==========================================
-  // BLOQUE SEGURO: ACTIVACIÓN DE ROLES DESDE LA BIENVENIDA
-  // ==========================================
   btnRoleContratista.addEventListener('click', () => {
     currentUserRole = 'contratista';
     loginTitle.innerText = 'INGRESAR COMO CONTRATISTA';
@@ -107,40 +86,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnBackToWelcome.addEventListener('click', (e) => {
     e.preventDefault();
-    let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante');
-    if (btnFlotante) btnFlotante.remove();
-    if (isReadOnlyMode) {
-      isReadOnlyMode = false;
-      switchView(viewFuncionarioDashboard);
-    } else {
-      switchView(viewWelcome);
-    }
+    let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante'); if (btnFlotante) btnFlotante.remove();
+    if (isReadOnlyMode) { isReadOnlyMode = false; switchView(viewFuncionarioDashboard); } else { switchView(viewWelcome); }
   });
 
   btnLogoutButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      currentUserRole = null;
-      currentUserData = null;
-      isReadOnlyMode = false;
-      let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante');
-      if (btnFlotante) btnFlotante.remove();
+      currentUserRole = null; currentUserData = null; isReadOnlyMode = false;
+      let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante'); if (btnFlotante) btnFlotante.remove();
       switchView(viewWelcome);
     });
   });
 
-  btnSavePreliminary.addEventListener('click', async () => {
-    await enviarActaASharePoint(false);
-  });
+  btnSavePreliminary.addEventListener('click', async () => { await enviarActaASharePoint(false); });
 
   btnSubmitLogin.addEventListener('click', async () => {
     const cedula = inputLoginCedula.value.trim();
-    if (!cedula) {
-      alert('⚠️ Por favor, ingresa tu número de documento.');
-      return;
-    }
+    if (!cedula) { alert('⚠️ Por favor, ingresa tu número de documento.'); return; }
 
-    loginLoader.classList.remove('hidden');
-    btnSubmitLogin.disabled = true;
+    loginLoader.classList.remove('hidden'); btnSubmitLogin.disabled = true;
 
     try {
       if (currentUserRole === 'contratista') {
@@ -149,17 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (resData.success && resData.exists) {
           currentUserData = {
-            idSharePoint: resData.idSharePoint,
-            cedula: cedula,
-            nombre: resData.nombre,
-            contract: resData.contract,
-            objeto: resData.objeto,
-            supervisor: resData.supervisor, 
-            estado: resData.estado,
-            correo: resData.correo,
-            dependencia: resData.dependencia,
-            lineamientos: resData.lineamientos,
-            recomendaciones: resData.recomendaciones
+            idSharePoint: resData.idSharePoint, cedula: cedula, nombre: resData.nombre, contract: resData.contract, objeto: resData.objeto,
+            supervisor: resData.supervisor, estado: resData.estado, correo: resData.correo, dependencia: resData.dependencia,
+            lineamientos: resData.lineamientos, recomendaciones: resData.recomendaciones
           };
 
           const respHijos = await fetch(`${BACKEND_URL}/api/obtener-detalles-hijos?cedula=${encodeURIComponent(cedula)}`);
@@ -179,10 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
           labelEstado.innerText = currentUserData.estado.toUpperCase();
           labelEstado.className = currentUserData.estado === 'Finalizado' ? "badge badge-success" : "badge badge-alert";
           
-          isReadOnlyMode = false;
-          switchView(viewContratistaDashboard);
+          isReadOnlyMode = false; switchView(viewContratistaDashboard);
         } else {
-          alert('❌ Tu documento no se encuentra registrado ni habilitado por Talento Humano.');
+          alert('❌ Tu documento no se encuentra habilitado por Talento Humano.');
         }
       } else if (currentUserRole === 'funcionario') {
         const sectionTH = document.getElementById('section-th-actions');
@@ -193,20 +148,17 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('badge-rol-funcionario').innerText = 'Perfil: Supervisor / Dirección Técnica';
           sectionTH.classList.add('hidden');
         }
-        await consultarContratosEnVivo();
-        switchView(viewFuncionarioDashboard);
+        await consultarContratosEnVivo(); switchView(viewFuncionarioDashboard);
       }
     } catch (error) {
-      alert('❌ Ocurrió un error consultando la autenticación central.');
+      alert('❌ Error consultando autenticación.');
     } finally {
-      loginLoader.classList.add('hidden');
-      btnSubmitLogin.disabled = false;
+      loginLoader.classList.add('hidden'); btnSubmitLogin.disabled = false;
     }
   });
 
   btnEmpezar.addEventListener('click', () => {
-    isReadOnlyMode = false;
-    ajustarModoLecturaFormulario(false);
+    isReadOnlyMode = false; ajustarModoLecturaFormulario(false);
 
     document.getElementById('cedula').value = currentUserData.cedula;
     document.getElementById('nombreContratista').value = currentUserData.nombre;
@@ -218,25 +170,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectDep = document.getElementById('dependencia');
     let valorDep = currentUserData.dependencia ? currentUserData.dependencia.trim() : 'Dirección General';
     if (!Array.from(selectDep.options).some(opt => opt.value === valorDep)) {
-      const optNueva = document.createElement('option');
-      optNueva.value = valorDep;
-      optNueva.text = valorDep;
-      selectDep.add(optNueva);
+      const optNueva = document.createElement('option'); optNueva.value = valorDep; optNueva.text = valorDep; selectDep.add(optNueva);
     }
     selectDep.value = valorDep;
 
     document.getElementById('lineamientos').value = currentUserData.lineamientos || '';
     document.getElementById('recomendaciones-acciones').value = currentUserData.recomendaciones || '';
 
-    renderTableAcciones();
-    renderTableAsuntos();
-    renderTableSistemas();
-    renderTableDirectorio();
+    renderTableAcciones(); renderTableAsuntos(); renderTableSistemas(); renderTableDirectorio();
 
-    tabButtons.forEach(btn => btn.classList.remove('active'));
-    tabPanels.forEach(pnl => pnl.classList.remove('active'));
-    tabButtons[0].classList.add('active');
-    document.getElementById('tab-general').classList.add('active');
+    tabButtons.forEach(btn => btn.classList.remove('active')); tabPanels.forEach(pnl => pnl.classList.remove('active'));
+    tabButtons[0].classList.add('active'); document.getElementById('tab-general').classList.add('active');
 
     switchView(viewFormularioTransferencia);
   });
@@ -244,10 +188,8 @@ document.addEventListener('DOMContentLoaded', () => {
   tabButtons.forEach(button => {
     button.addEventListener('click', () => {
       const targetTab = button.getAttribute('data-tab');
-      tabButtons.forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
-      tabPanels.forEach(panel => panel.classList.remove('active'));
-      document.getElementById(`tab-${targetTab}`).classList.add('active');
+      tabButtons.forEach(btn => btn.classList.remove('active')); button.classList.add('active');
+      tabPanels.forEach(panel => panel.classList.remove('active')); document.getElementById(`tab-${targetTab}`).classList.add('active');
     });
   });
 
@@ -258,81 +200,55 @@ document.addEventListener('DOMContentLoaded', () => {
     if(modalType === 'modal-asunto') targetId = 'modal-asuntos';
     if(modalType === 'modal-sistema') targetId = 'modal-sistemas';
     if(modalType === 'modal-directorio') targetId = 'modal-directorio';
-    const modal = document.getElementById(targetId);
-    if(modal) modal.classList.add('active');
+    const modal = document.getElementById(targetId); if(modal) modal.classList.add('active');
   }
 
   window.closeModal = function(modalId) {
-    const modal = document.getElementById(modalId);
-    if(modal) modal.classList.remove('active');
+    const modal = document.getElementById(modalId); if(modal) modal.classList.remove('active');
   }
 
+  // SOLUCIÓN PUNTO 1: Captura completa incluyendo "Acción para la transferencia de conocimiento"
   document.getElementById('form-modal-acciones').addEventListener('submit', (e) => {
     e.preventDefault();
     listadoAcciones.push({
-      proceso: document.getElementById('modal-acc-proceso').value,
+      proceso: document.getElementById('modal-acc-proceso').value, // Proceso clave
       prioridad: document.getElementById('modal-acc-prioridad').value,
       productos: document.getElementById('modal-acc-productos').value,
-      accionConocimiento: document.getElementById('modal-acc-conocimiento')?.value || 'No registrada', 
+      accionConocimiento: document.getElementById('modal-acc-conocimiento')?.value || 'No registrada', // Nuevo campo
       ejecucion: document.getElementById('modal-acc-ejecucion').value,
       fecha: document.getElementById('modal-acc-fecha').value,
       ruta: document.getElementById('modal-acc-ruta').value,
       obs: document.getElementById('modal-acc-obs').value || 'Ninguna'
     });
-    renderTableAcciones();
-    document.getElementById('form-modal-acciones').reset();
-    closeModal('modal-acciones');
+    renderTableAcciones(); document.getElementById('form-modal-acciones').reset(); closeModal('modal-acciones');
   });
 
   document.getElementById('form-modal-asuntos').addEventListener('submit', (e) => {
     e.preventDefault();
     listadoAsuntos.push({
-      tramite: document.getElementById('modal-asu-tramite').value,
-      estado: document.getElementById('modal-asu-estado').value,
-      entidad: document.getElementById('modal-asu-entidad').value,
-      accionesPendientes: document.getElementById('modal-asu-acciones-pendientes').value,
-      fecha: document.getElementById('modal-asu-fecha').value
+      tramite: document.getElementById('modal-asu-tramite').value, estado: document.getElementById('modal-asu-estado').value, entidad: document.getElementById('modal-asu-entidad').value,
+      accionesPendientes: document.getElementById('modal-asu-acciones-pendientes').value, fecha: document.getElementById('modal-asu-fecha').value
     });
-    renderTableAsuntos();
-    document.getElementById('form-modal-asuntos').reset();
-    closeModal('modal-asuntos');
+    renderTableAsuntos(); document.getElementById('form-modal-asuntos').reset(); closeModal('modal-asuntos');
   });
 
   document.getElementById('form-modal-sistemas').addEventListener('submit', (e) => {
     e.preventDefault();
-    listadoSistemas.push({
-      nombre: document.getElementById('modal-sis-nombre').value,
-      usuario: document.getElementById('modal-sis-usuario').value,
-      contrasena: document.getElementById('modal-sis-pass').value,
-      obs: document.getElementById('modal-sis-obs').value || 'Ninguna'
-    });
-    renderTableSistemas();
-    document.getElementById('form-modal-sistemas').reset();
-    closeModal('modal-sistemas');
+    listadoSistemas.push({ nombre: document.getElementById('modal-sis-nombre').value, usuario: document.getElementById('modal-sis-usuario').value, contrasena: document.getElementById('modal-sis-pass').value, obs: document.getElementById('modal-sis-obs').value || 'Ninguna' });
+    renderTableSistemas(); document.getElementById('form-modal-sistemas').reset(); closeModal('modal-sistemas');
   });
 
   document.getElementById('form-modal-directorio').addEventListener('submit', (e) => {
     e.preventDefault();
-    listadoDirectorio.push({
-      nombre: document.getElementById('modal-dir-nombre').value,
-      tel: document.getElementById('modal-dir-tel').value,
-      correo: document.getElementById('modal-dir-correo').value,
-      tipo: document.getElementById('modal-dir-tipo').value,
-      entidad: document.getElementById('modal-dir-entidad').value,
-      reco: document.getElementById('modal-dir-reco').value || 'Ninguna'
-    });
-    renderTableDirectorio();
-    document.getElementById('form-modal-directorio').reset();
-    closeModal('modal-directorio');
+    listadoDirectorio.push({ nombre: document.getElementById('modal-dir-nombre').value, tel: document.getElementById('modal-dir-tel').value, correo: document.getElementById('modal-dir-correo').value, tipo: document.getElementById('modal-dir-tipo').value, entidad: document.getElementById('modal-dir-entidad').value, reco: document.getElementById('modal-dir-reco').value || 'Ninguna' });
+    renderTableDirectorio(); document.getElementById('form-modal-directorio').reset(); closeModal('modal-directorio');
   });
 
+  // SOLUCIÓN PUNTO 1: Renderizado completo con los 8 títulos institucionales en la tabla
   function renderTableAcciones() {
-    const tbody = document.getElementById('table-acciones-body');
-    tbody.innerHTML = '';
-    if(listadoAcciones.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No se han agregado registros.</td></tr>`;
-      return;
-    }
+    const tbody = document.getElementById('table-acciones-body'); tbody.innerHTML = '';
+    if(listadoAcciones.length === 0) { tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Ningún registro.</td></tr>`; return; }
+    
     listadoAcciones.forEach(item => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -340,8 +256,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <td><span class="badge ${item.prioridad === 'Alta' ? 'badge-danger' : 'badge-alert'}">${item.prioridad}</span></td>
         <td>${item.productos}</td>
         <td>${item.accionConocimiento}</td>
-        <td><small>${item.ejecucion || item.execution || ''}</small></td>
-        <td><a href="${item.ruta}" target="_blank" class="btn-link">Ver repositorio</a></td>
+        <td><small>${item.ejecucion}</small></td>
+        <td><small>${item.fecha || 'Sin fecha'}</small></td>
+        <td><a href="${item.ruta}" target="_blank" class="btn-link">Ver evidencia</a></td>
         <td><small>${item.obs}</small></td>
       `;
       tbody.appendChild(tr);
@@ -349,18 +266,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderTableGeneric(elementId, dataset, fields) {
-    const tbody = document.getElementById(elementId);
-    tbody.innerHTML = '';
-    if(dataset.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="${fields.length}" class="text-center text-muted">No se han agregado registros.</td></tr>`;
-      return;
-    }
+    const tbody = document.getElementById(elementId); tbody.innerHTML = '';
+    if(dataset.length === 0) { tbody.innerHTML = `<tr><td colspan="${fields.length}" class="text-center text-muted">Ningún registro.</td></tr>`; return; }
     dataset.forEach(item => {
-      const tr = document.createElement('tr');
-      let html = '';
-      fields.forEach(f => { html += `<td>${item[f]}</td>`; });
-      tr.innerHTML = html;
-      tbody.appendChild(tr);
+      const tr = document.createElement('tr'); let html = ''; fields.forEach(f => { html += `<td>${item[f]}</td>`; }); tr.innerHTML = html; tbody.appendChild(tr);
     });
   }
 
@@ -370,187 +279,94 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btn-buscar-secop').addEventListener('click', async () => {
     const contratoInput = document.getElementById('search-contrato').value.trim();
-    const loader = document.getElementById('secop-loader');
-    const resultBox = document.getElementById('secop-result-box');
-    if (!contratoInput) {
-      alert('⚠️ Por favor, ingresa una referencia de contrato primero.');
-      return;
-    }
-    loader.classList.remove('hidden');
-    resultBox.classList.add('hidden');
+    const loader = document.getElementById('secop-loader'); const resultBox = document.getElementById('secop-result-box');
+    if (!contratoInput) { alert('⚠️ Ingresa una referencia de contrato.'); return; }
+    loader.classList.remove('hidden'); resultBox.classList.add('hidden');
     try {
       const response = await fetch(`${BACKEND_URL}/api/buscar-secop?contrato=${encodeURIComponent(contratoInput)}`);
       const data = await response.json();
       if (data.success) {
-        document.getElementById('secop-res-nombre').textContent = data.nombre;
-        document.getElementById('secop-res-cedula').textContent = data.cedula;
-        document.getElementById('secop-res-objeto').textContent = data.objeto;
-        window.contratoTemporalValidado = {
-          cedula: data.cedula,
-          nombre: data.nombre,
-          contrato: contratoInput,
-          objeto: data.objeto,
-          nombreSupervisor: data.nombreSupervisor,
-          cedulaSupervisor: data.cedulaSupervisor,
-          fechaInicio: data.fechaFirma
-        };
+        document.getElementById('secop-res-nombre').textContent = data.nombre; document.getElementById('secop-res-cedula').textContent = data.cedula; document.getElementById('secop-res-objeto').textContent = data.objeto;
+        window.contratoTemporalValidado = { cedula: data.cedula, nombre: data.nombre, contrato: contratoInput, objeto: data.objeto, nombreSupervisor: data.nombreSupervisor, cedulaSupervisor: data.cedulaSupervisor, fechaInicio: data.fechaFirma };
         resultBox.classList.remove('hidden');
-      } else {
-        alert(`❌ ${data.message || 'Contrato no encontrado.'}`);
-      }
-    } catch (error) {
-      alert('❌ Error de comunicación con el servidor.');
-    } finally {
-      loader.classList.add('hidden');
-    }
+      } else { alert(`❌ ${data.message || 'Contrato no encontrado.'}`); }
+    } catch (error) { alert('❌ Error de comunicación.'); } finally { loader.classList.add('hidden'); }
   });
 
   document.getElementById('btn-confirmar-habilitacion').addEventListener('click', async () => {
     if (window.contratoTemporalValidado) {
-      const p = {
-        contrato: window.contratoTemporalValidado.contract || window.contratoTemporalValidado.contrato,
-        contratista: window.contratoTemporalValidado.nombre,
-        cedula: window.contratoTemporalValidado.cedula,
-        objeto: window.contratoTemporalValidado.objeto,
-        supervisor: window.contratoTemporalValidado.nombreSupervisor,
-        fechaInicio: window.contratoTemporalValidado.fechaInicio
-      };
+      const p = { contrato: window.contratoTemporalValidado.contract || window.contratoTemporalValidado.contrato, contratista: window.contratoTemporalValidado.nombre, cedula: window.contratoTemporalValidado.cedula, objeto: window.contratoTemporalValidado.objeto, supervisor: window.contratoTemporalValidado.nombreSupervisor, fechaInicio: window.contratoTemporalValidado.fechaInicio };
       try {
-        const response = await fetch(`${BACKEND_URL}/api/habilitar-contrato`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(p)
-        });
+        const response = await fetch(`${BACKEND_URL}/api/habilitar-contrato`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
         const resData = await response.json();
-        if (resData.success) {
-          alert('🎉 ¡CONTRATO INYECTADO EN SHAREPOINT CON ÉXITO INSTITUCIONAL!');
-          await consultarContratosEnVivo();
-          document.getElementById('secop-result-box').classList.add('hidden');
-          document.getElementById('search-contrato').value = '';
-        }
-      } catch (error) {
-        alert('❌ Error de comunicación.');
-      }
+        if (resData.success) { alert('🎉 ¡CONTRATO INYECTADO EN SHAREPOINT CON ÉXITO!'); await consultarContratosEnVivo(); document.getElementById('secop-result-box').classList.add('hidden'); document.getElementById('search-contrato').value = ''; }
+      } catch (error) { alert('❌ Error de comunicación.'); }
     }
   });
 
   async function consultarContratosEnVivo() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/contratos`);
-      const resData = await response.json();
-      if (resData.success) {
-        listadoMonitoreo = resData.data;
-        poblarTablaSeguimientoFuncionarios();
-      }
-    } catch (e) {
-      console.error(e);
-    }
+      const response = await fetch(`${BACKEND_URL}/api/contratos`); const resData = await response.json();
+      if (resData.success) { listadoMonitoreo = resData.data; poblarTablaSeguimientoFuncionarios(); }
+    } catch (e) { console.error(e); }
   }
 
   async function enviarActaASharePoint(isFinalSubmit) {
     const payload = {
       idSharePoint: currentUserData.idSharePoint, 
       datosGenerales: {
-        cedula: document.getElementById('cedula').value,
-        nombreContratista: document.getElementById('nombreContratista').value,
-        numeroContrato: document.getElementById('numeroContrato').value,
-        supervisor: document.getElementById('supervisor').value,
-        objetoContrato: document.getElementById('objetoContrato').value,
-        correoContratista: document.getElementById('correoContratista').value,
-        dependencia: document.getElementById('dependencia').value,
-        lineamientos: document.getElementById('lineamientos').value,
-        recomendacionesAcciones: document.getElementById('recomendaciones-acciones').value,
+        cedula: document.getElementById('cedula').value, nombreContratista: document.getElementById('nombreContratista').value, numeroContrato: document.getElementById('numeroContrato').value,
+        supervisor: document.getElementById('supervisor').value, objetoContrato: document.getElementById('objetoContrato').value, correoContratista: document.getElementById('correoContratista').value,
+        dependencia: document.getElementById('dependencia').value, lineamientos: document.getElementById('lineamientos').value, recomendacionesAcciones: document.getElementById('recomendaciones-acciones').value,
         isFinal: isFinalSubmit
       },
-      acciones: listadoAcciones,
-      asuntos: listadoAsuntos,
-      sistemas: listadoSistemas,
-      directorio: listadoDirectorio
+      acciones: listadoAcciones, asuntos: listadoAsuntos, sistemas: listadoSistemas, directorio: listadoDirectorio
     };
 
-    if (!payload.datosGenerales.correoContratista || !payload.datosGenerales.dependencia) {
-      alert('⚠️ Por favor completa el Correo Electrónico y la Dependencia.');
-      return;
-    }
+    if (!payload.datosGenerales.correoContratista || !payload.datosGenerales.dependencia) { alert('⚠️ Por favor completa el Correo y la Dependencia.'); return; }
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/save-acta`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const response = await fetch(`${BACKEND_URL}/api/save-acta`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const resData = await response.json();
       if (resData.success) {
-        if (isFinalSubmit) {
-          alert('🔒 ¡ACTA FINALIZADA E INYECTADA EN SHAREPOINT CON ÉXITO!');
-          switchView(viewWelcome);
-        } else {
-          alert('💾 ¡Progreso preliminar guardado en SharePoint de forma persistente!');
-          switchView(viewContratistaDashboard);
-        }
+        if (isFinalSubmit) { alert('🔒 ¡ACTA FINALIZADA E INYECTADA CON ÉXITO!'); switchView(viewWelcome); }
+        else { alert('💾 ¡Progreso preliminar guardado en SharePoint de forma persistente!'); switchView(viewContratistaDashboard); }
       } else {
         const detalleError = resData.detail ? (resData.detail.message || JSON.stringify(resData.detail)) : resData.message;
         alert(`❌ Error al guardar en SharePoint: ${detalleError}`);
       }
-    } catch (error) {
-      alert('❌ Error de comunicación.');
-    }
+    } catch (error) { alert('❌ Error de comunicación.'); }
   }
 
-  document.getElementById('btn-submit-final').addEventListener('click', async () => {
-    await enviarActaASharePoint(true);
-  });
+  document.getElementById('btn-submit-final').addEventListener('click', async () => { await enviarActaASharePoint(true); });
 
   function ajustarModoLecturaFormulario(isReadOnly) {
     const inputs = viewFormularioTransferencia.querySelectorAll('input, select, textarea');
-    inputs.forEach(el => {
-      if(el.id !== 'btn-back-to-welcome') { el.disabled = isReadOnly; }
-    });
-    const btnSave = document.getElementById('btn-save-preliminary');
-    const btnSubmit = document.getElementById('btn-submit-final');
+    inputs.forEach(el => { if(el.id !== 'btn-back-to-welcome') { el.disabled = isReadOnly; } });
+    const btnSave = document.getElementById('btn-save-preliminary'); const btnSubmit = document.getElementById('btn-submit-final');
     const btnAdders = viewFormularioTransferencia.querySelectorAll('.btn-add-row');
     if(isReadOnly) {
-      if(btnSave) btnSave.classList.add('hidden');
-      if(btnSubmit) btnSubmit.classList.add('hidden');
-      btnAdders.forEach(b => b.classList.add('hidden'));
+      if(btnSave) btnSave.classList.add('hidden'); if(btnSubmit) btnSubmit.classList.add('hidden'); btnAdders.forEach(b => b.classList.add('hidden'));
     } else {
-      if(btnSave) btnSave.classList.remove('hidden');
-      if(btnSubmit) btnSubmit.classList.remove('hidden');
-      btnAdders.forEach(b => b.classList.remove('hidden'));
+      if(btnSave) btnSave.classList.remove('hidden'); if(btnSubmit) btnSubmit.classList.remove('hidden'); btnAdders.forEach(b => b.classList.remove('hidden'));
     }
   }
 
   function poblarTablaSeguimientoFuncionarios() {
-    const tbody = document.getElementById('table-tracking-body');
-    tbody.innerHTML = '';
-    if (listadoMonitoreo.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay actas registradas.</td></tr>`;
-      return;
-    }
+    const tbody = document.getElementById('table-tracking-body'); tbody.innerHTML = '';
+    if (listadoMonitoreo.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No hay actas registradas.</td></tr>`; return; }
 
     listadoMonitoreo.forEach((reg, index) => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><strong>${reg.name || 'Sin nombre'}</strong></td>
-        <td>${reg.contract}</td>
-        <td>${reg.boss || 'Sin asignar'}</td>
-        <td><span class="badge ${reg.status === 'FINALIZADO' ? 'badge-success' : 'badge-alert'}">${reg.status}</span></td>
-        <td>
-          <button class="btn-action-view" data-index="${index}">👁️ Ver</button>
-        </td>
-      `;
+      tr.innerHTML = `<td><strong>${reg.name || 'Sin nombre'}</strong></td><td>${reg.contract}</td><td>${reg.boss || 'Sin asignar'}</td><td><span class="badge ${reg.status === 'FINALIZADO' ? 'badge-success' : 'badge-alert'}">${reg.status}</span></td><td><button class="btn-action-view" data-index="${index}">👁️ Ver</button></td>`;
       tbody.appendChild(tr);
     });
 
     document.querySelectorAll('.btn-action-view').forEach(btn => {
       btn.addEventListener('click', async (e) => {
-        const index = e.target.getAttribute('data-index');
-        const actaSeleccionada = listadoMonitoreo[index];
+        const index = e.target.getAttribute('data-index'); const actaSeleccionada = listadoMonitoreo[index];
 
-        limpiarCamposAuditoria(); 
-        isReadOnlyMode = true;
-        ajustarModoLecturaFormulario(true);
-        inyectarBotonRegresoAuditoria();
+        limpiarCamposAuditoria(); isReadOnlyMode = true; ajustarModoLecturaFormulario(true); inyectarBotonRegresoAuditoria();
 
         document.getElementById('cedula').value = actaSeleccionada.cedula || '';
         document.getElementById('nombreContratista').value = actaSeleccionada.name || '';
@@ -561,13 +377,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('lineamientos').value = actaSeleccionada.lineamientos || '';
         document.getElementById('recomendaciones-acciones').value = actaSeleccionada.recomendaciones || '';
         
-        const selectDep = document.getElementById('dependencia');
-        let valorDep = actaSeleccionada.dependencia ? actaSeleccionada.dependencia.trim() : 'Dirección General';
+        const selectDep = document.getElementById('dependencia'); let valorDep = actaSeleccionada.dependencia ? actaSeleccionada.dependencia.trim() : 'Dirección General';
         if (!Array.from(selectDep.options).some(opt => opt.value === valorDep)) {
-          const optNueva = document.createElement('option');
-          optNueva.value = valorDep;
-          optNueva.text = valorDep;
-          selectDep.add(optNueva);
+          const optNueva = document.createElement('option'); optNueva.value = valorDep; optNueva.text = valorDep; selectDep.add(optNueva);
         }
         selectDep.value = valorDep;
 
@@ -579,22 +391,14 @@ document.addEventListener('DOMContentLoaded', () => {
           listadoSistemas = dataHijos.sistemas || [];
           listadoDirectorio = dataHijos.directorio || [];
           
-          renderTableAcciones();
-          renderTableAsuntos();
-          renderTableSistemas();
-          renderTableDirectorio();
+          renderTableAcciones(); renderTableAsuntos(); renderTableSistemas(); renderTableDirectorio();
         }
 
-        tabButtons.forEach(b => b.classList.remove('active'));
-        tabPanels.forEach(p => p.classList.remove('active'));
-        tabButtons[0].classList.add('active');
-        document.getElementById('tab-general').classList.add('active');
+        tabButtons.forEach(b => b.classList.remove('active')); tabPanels.forEach(p => p.classList.remove('active'));
+        tabButtons[0].classList.add('active'); document.getElementById('tab-general').classList.add('active');
 
         switchView(viewFormularioTransferencia);
-        
-        setTimeout(() => {
-          window.scrollTo({ top: 0, behavior: 'instant' });
-        }, 80);
+        setTimeout(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, 80);
       });
     });
   }
