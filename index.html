@@ -291,7 +291,7 @@
         <div id="section-th-actions" class="management-box hidden">
           <h4>Habilitar Nuevo Contratista para Transferencia</h4>
           <div class="search-container">
-            <input type="text" id="search-contrato" placeholder="Ingresa la Referencia del Contrato (Ej: PS2026001)">
+            <input type="text" id="search-contrato" maxlength="255" placeholder="Ingresa la Referencia del Contrato (Ej: PS2026001)">
             <button id="btn-buscar-secop" class="btn-primary">Consultar SECOP</button>
           </div>
           <div id="secop-loader" class="loader hidden">Consultando base de datos gubernamental...</div>
@@ -335,7 +335,7 @@
       <form id="form-modal-acciones" class="modal-body">
         <div class="form-group">
           <label>Proceso clave / Acción de transferencia ejecutada</label>
-          <textarea id="modal-acc-proceso" rows="3" required placeholder="Describe la acción realizada..."></textarea>
+          <textarea id="modal-acc-proceso" rows="3" required maxlength="255" placeholder="Describe la acción realizada (Máximo 255 caracteres)..."></textarea>
         </div>
         <div class="form-group">
           <label>Prioridad</label>
@@ -402,7 +402,7 @@
       <form id="form-modal-asuntos" class="modal-body">
         <div class="form-group">
           <label>Asunto pendiente de trámite o en trámite</label>
-          <textarea id="modal-asu-tramite" rows="3" required placeholder="Describe the asunto o trámite..."></textarea>
+          <textarea id="modal-asu-tramite" rows="3" required maxlength="255" placeholder="Describe el asunto o trámite (Máximo 255 caracteres)..."></textarea>
         </div>
         <div class="form-group">
           <label>Estado actual</label>
@@ -441,7 +441,7 @@
       <form id="form-modal-sistemas" class="modal-body">
         <div class="form-group">
           <label>Sistema / aplicativo</label>
-          <input type="text" id="modal-sis-nombre" required placeholder="Ej: ArcGIS Online, Sagicc, Power BI">
+          <input type="text" id="modal-sis-nombre" required maxlength="255" placeholder="Ej: ArcGIS Online, Sagicc, Power BI">
         </div>
         <div class="form-group">
           <label>Usuario</label>
@@ -469,7 +469,7 @@
       <form id="form-modal-directorio" class="modal-body">
         <div class="form-group">
           <label>Nombre</label>
-          <input type="text" id="modal-dir-nombre" required placeholder="Nombre completo del contacto">
+          <input type="text" id="modal-dir-nombre" required maxlength="255" placeholder="Nombre completo del contacto">
         </div>
         <div class="form-group">
           <label>Teléfono</label>
