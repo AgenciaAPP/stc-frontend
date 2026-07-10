@@ -161,8 +161,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // AJUSTADO: Validación dinámica de modo lectura inmediato si el contratista ya finalizó su acta
   btnEmpezar.addEventListener('click', () => {
-    isReadOnlyMode = false; ajustarModoLecturaFormulario(false);
+    const yaFinalizado = currentUserData && currentUserData.estado === 'Finalizado';
+    isReadOnlyMode = yaFinalizado; 
+    ajustarModoLecturaFormulario(yaFinalizado);
 
     document.getElementById('cedula').value = currentUserData.cedula;
     document.getElementById('nombreContratista').value = currentUserData.nombre;
@@ -247,6 +250,25 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTableDirectorio(); document.getElementById('form-modal-directorio').reset(); closeModal('modal-directorio');
   });
 
+  // FUNCIONES DE ELIMINACIÓN LOCAL TRANSACCIONAL
+  window.eliminarFilaAccion = function(index) {
+    if(isReadOnlyMode) return;
+    listadoAcciones.splice(index, 1); renderTableAcciones();
+  };
+  window.eliminarFilaAsunto = function(index) {
+    if(isReadOnlyMode) return;
+    listadoAsuntos.splice(index, 1); renderTableAsuntos();
+  };
+  window.eliminarFilaSistema = function(index) {
+    if(isReadOnlyMode) return;
+    listadoSistemas.splice(index, 1); renderTableSistemas();
+  };
+  window.eliminarFilaContacto = function(index) {
+    if(isReadOnlyMode) return;
+    listadoDirectorio.splice(index, 1); renderTableDirectorio();
+  };
+
+  // AJUSTADO: Renderizado robusto de 9 columnas incluyendo la columna transaccional de borrado
   function renderTableAcciones() {
     const tableContainer = document.getElementById('table-acciones-body').parentElement;
     
@@ -261,6 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <th>FECHA EJECUCIÓN</th>
           <th>RUTA REPOSITORIO</th>
           <th>OBSERVACIONES</th>
+          ${!isReadOnlyMode ? '<th>ACCIONES</th>' : ''}
         </tr>
       </thead>
       <tbody id="table-acciones-body"></tbody>
@@ -268,11 +291,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const tbody = document.getElementById('table-acciones-body');
     if(listadoAcciones.length === 0) { 
-      tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Ningún registro agregado.</td></tr>`; 
+      tbody.innerHTML = `<tr><td colspan="${!isReadOnlyMode ? '9' : '8'}" class="text-center text-muted">Ningún registro agregado.</td></tr>`; 
       return; 
     }
     
-    listadoAcciones.forEach(item => {
+    listadoAcciones.forEach((item, index) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong>${item.proceso}</strong></td>
@@ -283,22 +306,60 @@ document.addEventListener('DOMContentLoaded', () => {
         <td><small>${item.fecha || 'Sin registrar'}</small></td>
         <td><small>${item.ruta || 'Sin registrar'}</small></td>
         <td><small>${item.obs}</small></td>
+        ${!isReadOnlyMode ? `<td><button type="button" class="btn-delete-row" onclick="eliminarFilaAccion(${index})" style="background-color:#dc3545; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">🗑️ Eliminar</button></td>` : ''}
       `;
       tbody.appendChild(tr);
     });
   }
 
-  function renderTableGeneric(elementId, dataset, fields) {
-    const tbody = document.getElementById(elementId); tbody.innerHTML = '';
-    if(dataset.length === 0) { tbody.innerHTML = `<tr><td colspan="${fields.length}" class="text-center text-muted">Ningún registro.</td></tr>`; return; }
-    dataset.forEach(item => {
-      const tr = document.createElement('tr'); let html = ''; fields.forEach(f => { html += `<td>${item[f]}</td>`; }); tr.innerHTML = html; tbody.appendChild(tr);
+  // AJUSTADO: Inyección dinámica de botones de borrado para las subtablas genéricas
+  function renderTableAsuntos() {
+    const tbody = document.getElementById('table-asuntos-body');
+    const thParent = tbody.parentElement.querySelector('thead tr');
+    if(thParent && !thParent.querySelector('.col-action-head') && !isReadOnlyMode) {
+      const th = document.createElement('th'); th.className = 'col-action-head'; th.innerText = 'ACCIONES'; thParent.appendChild(th);
+    }
+    tbody.innerHTML = '';
+    if(listadoAsuntos.length === 0) { tbody.innerHTML = `<tr><td colspan="${!isReadOnlyMode ? '6' : '5'}" class="text-center text-muted">Ningún registro.</td></tr>`; return; }
+    listadoAsuntos.forEach((item, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${item.tramite}</td><td>${item.estado}</td><td>${item.entidad}</td><td>${item.accionesPendientes}</td><td>${item.fecha}</td>
+      ${!isReadOnlyMode ? `<td><button type="button" onclick="eliminarFilaAsunto(${index})" style="background-color:#dc3545; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">🗑️ Borrar</button></td>` : ''}`;
+      tbody.appendChild(tr);
     });
   }
 
-  function renderTableAsuntos() { renderTableGeneric('table-asuntos-body', listadoAsuntos, ['tramite', 'estado', 'entidad', 'accionesPendientes', 'fecha']); }
-  function renderTableSistemas() { renderTableGeneric('table-sistemas-body', listadoSistemas, ['nombre', 'usuario', 'contrasena', 'obs']); }
-  function renderTableDirectorio() { renderTableGeneric('table-directorio-body', listadoDirectorio, ['nombre', 'tel', 'correo', 'tipo', 'entidad', 'reco']); }
+  function renderTableSistemas() {
+    const tbody = document.getElementById('table-sistemas-body');
+    const thParent = tbody.parentElement.querySelector('thead tr');
+    if(thParent && !thParent.querySelector('.col-action-head') && !isReadOnlyMode) {
+      const th = document.createElement('th'); th.className = 'col-action-head'; th.innerText = 'ACCIONES'; thParent.appendChild(th);
+    }
+    tbody.innerHTML = '';
+    if(listadoSistemas.length === 0) { tbody.innerHTML = `<tr><td colspan="${!isReadOnlyMode ? '5' : '4'}" class="text-center text-muted">Ningún registro.</td></tr>`; return; }
+    listadoSistemas.forEach((item, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${item.nombre}</td><td>${item.usuario}</td><td>${item.contrasena}</td><td>${item.obs}</td>
+      ${!isReadOnlyMode ? `<td><button type="button" onclick="eliminarFilaSistema(${index})" style="background-color:#dc3545; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">🗑️ Borrar</button></td>` : ''}`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderTableDirectorio() {
+    const tbody = document.getElementById('table-directorio-body');
+    const thParent = tbody.parentElement.querySelector('thead tr');
+    if(thParent && !thParent.querySelector('.col-action-head') && !isReadOnlyMode) {
+      const th = document.createElement('th'); th.className = 'col-action-head'; th.innerText = 'ACCIONES'; thParent.appendChild(th);
+    }
+    tbody.innerHTML = '';
+    if(listadoDirectorio.length === 0) { tbody.innerHTML = `<tr><td colspan="${!isReadOnlyMode ? '7' : '6'}" class="text-center text-muted">Ningún registro.</td></tr>`; return; }
+    listadoDirectorio.forEach((item, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${item.nombre}</td><td>${item.tel}</td><td>${item.correo}</td><td>${item.tipo}</td><td>${item.entidad}</td><td>${item.reco}</td>
+      ${!isReadOnlyMode ? `<td><button type="button" onclick="eliminarFilaContacto(${index})" style="background-color:#dc3545; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">🗑️ Borrar</button></td>` : ''}`;
+      tbody.appendChild(tr);
+    });
+  }
 
   document.getElementById('btn-buscar-secop').addEventListener('click', async () => {
     const contratoInput = document.getElementById('search-contrato').value.trim();
@@ -311,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.success) {
         document.getElementById('secop-res-nombre').textContent = data.nombre; document.getElementById('secop-res-cedula').textContent = data.cedula; document.getElementById('secop-res-objeto').textContent = data.objeto;
         window.contratoTemporalValidado = { 
-          cedula: data.cedula, nombre: data.nombre, contrato: contratoInput, objeto: data.objeto, 
+          cedula: data.cedula, nombre: data.nombre, contract: contratoInput, objeto: data.objeto, 
           nombreSupervisor: data.nombreSupervisor, cedulaSupervisor: data.cedulaSupervisor, fechaInicio: data.fechaFirma 
         };
         resultBox.classList.remove('hidden');
@@ -319,11 +380,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) { alert('❌ Error de comunicación.'); } finally { loader.classList.add('hidden'); }
   });
 
-  // CORREGIDO HABILITACIÓN: Pasa la variable 'cedulaSupervisor' de forma relacional al inyectar el contrato
   document.getElementById('btn-confirmar-habilitacion').addEventListener('click', async () => {
     if (window.contratoTemporalValidado) {
       const p = { 
-        contrato: window.contratoTemporalValidado.contrato, 
+        contrato: window.contratoTemporalValidado.contract, 
         contratista: window.contratoTemporalValidado.nombre, 
         cedula: window.contratoTemporalValidado.cedula, 
         objeto: window.contratoTemporalValidado.objeto, 
@@ -339,7 +399,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // CORREGIDO MONITOREO: Si la API de Vercel retorna un código de error de bloqueo, la función detiene el acceso
   async function consultarContratosEnVivo() {
     try {
       const response = await fetch(`${BACKEND_URL}/api/contratos?queryCedula=${encodeURIComponent(loggedSupervisorCedula)}`); 
@@ -382,8 +441,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch(`${BACKEND_URL}/api/save-acta`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const resData = await response.json();
       if (resData.success) {
-        if (isFinalSubmit) { alert('🔒 ¡ACTA FINALIZADA E INYECTADA CON ÉXITO!'); switchView(viewWelcome); }
-        else { alert('💾 ¡Progreso preliminar guardado en SharePoint de forma persistente!'); switchView(viewContratistaDashboard); }
+        if (isFinalSubmit) { 
+          alert('🔒 ¡ACTA FINALIZADA E INYECTADA CON ÉXITO!'); 
+          currentUserData.estado = 'Finalizado'; // Forzado de estado local inmediato
+          switchView(viewWelcome); 
+        } else { 
+          alert('💾 ¡Progreso preliminar guardado en SharePoint de forma persistente!'); 
+          switchView(viewContratistaDashboard); 
+        }
       } else {
         const detalleError = resData.detail ? (resData.detail.message || JSON.stringify(resData.detail)) : resData.message;
         alert(`❌ Error al guardar en SharePoint: ${detalleError}`);
@@ -399,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSave = document.getElementById('btn-save-preliminary'); const btnSubmit = document.getElementById('btn-submit-final');
     const btnAdders = viewFormularioTransferencia.querySelectorAll('.btn-add-row');
     if(isReadOnly) {
-      if(btnSave) btnSave.classList.add('hidden'); if(btnSubmit) btnSubmit.classList.add('hidden'); btnAdders.forEach(b => b.classList.add('hidden'));
+      if(btnSave) btnSave.classList.add('hidden'); if(btnSubmit) btnSubmit.add('hidden'); btnAdders.forEach(b => b.classList.add('hidden'));
     } else {
       if(btnSave) btnSave.classList.remove('hidden'); if(btnSubmit) btnSubmit.classList.remove('hidden'); btnAdders.forEach(b => b.classList.remove('hidden'));
     }
