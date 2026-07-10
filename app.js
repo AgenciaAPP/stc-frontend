@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnBackToWelcome = document.getElementById('btn-back-to-welcome');
   const btnLogoutButtons = document.querySelectorAll('.btn-logout');
   const btnSavePreliminary = document.getElementById('btn-save-preliminary');
+  const btnDescargarPDFGlobal = document.getElementById('btn-descargar-pdf-global');
 
   const loginTitle = document.getElementById('login-title');
   const loginInstruction = document.getElementById('login-instruction');
@@ -61,6 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ELIMINACIÓN DEL BOTÓN DINÁMICO DE REGRESO DEL CONTRATISTA
     let btnRegresarContratista = document.getElementById('btn-regresar-dinamico-contratista');
     if(btnRegresarContratista) btnRegresarContratista.remove();
+
+    if(btnDescargarPDFGlobal) btnDescargarPDFGlobal.classList.add('hidden');
   }
 
   function inyectarBotonRegresoAuditoria() {
@@ -188,8 +191,10 @@ document.addEventListener('DOMContentLoaded', () => {
     isReadOnlyMode = yaFinalizado; 
     ajustarModoLecturaFormulario(yaFinalizado);
 
-    // INYECCIÓN DINÁMICA: Crea un botón de salida para el contratista si está visualizando su acta en Modo Lectura
+    // ACTIVACIÓN VISIBLE BOTÓN PDF GLOBAL CONTRATISTA
     if(yaFinalizado) {
+      if(btnDescargarPDFGlobal) btnDescargarPDFGlobal.classList.remove('hidden');
+
       let btnSaveContainer = document.getElementById('btn-save-preliminary').parentElement;
       let btnRegresarExistente = document.getElementById('btn-regresar-dinamico-contratista');
       if(btnRegresarExistente) btnRegresarExistente.remove();
@@ -199,6 +204,8 @@ document.addEventListener('DOMContentLoaded', () => {
       btnRegresarContratista.style.padding = '10px 20px'; btnRegresarContratista.style.backgroundColor = '#6c757d'; btnRegresarContratista.style.color = '#fff'; btnRegresarContratista.style.border = 'none'; btnRegresarContratista.style.borderRadius = '4px'; btnRegresarContratista.style.fontWeight = 'bold'; btnRegresarContratista.style.cursor = 'pointer'; btnRegresarContratista.style.marginLeft = '10px';
       btnRegresarContratista.onclick = function() { btnRegresarContratista.remove(); switchView(viewContratistaDashboard); };
       btnSaveContainer.appendChild(btnRegresarContratista);
+    } else {
+      if(btnDescargarPDFGlobal) btnDescargarPDFGlobal.classList.add('hidden');
     }
 
     document.getElementById('cedula').value = currentUserData.cedula;
@@ -246,11 +253,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.closeModal = function(modalId) {
     const modal = document.getElementById(modalId); if(modal) modal.classList.remove('active');
-    // CORREGIDO: Al cerrar el modal se limpian los índices para no alterar el flujo estándar
     editIndexAccion = -1; editIndexAsunto = -1; editIndexSistema = -1; editIndexDirectorio = -1;
   }
 
-  // CORREGIDO: Lógica de guardado seguro mediante actualización o adición por punteros de índice
   document.getElementById('form-modal-acciones').addEventListener('submit', (e) => {
     e.preventDefault();
     const nuevaAccion = {
@@ -286,13 +291,11 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTableDirectorio(); document.getElementById('form-modal-directorio').reset(); closeModal('modal-directorio');
   });
 
-  // SISTEMA DE ELIMINACIÓN LOCAL TRANSACCIONAL DE FILAS
   window.eliminarFilaAccion = function(index) { if(!isReadOnlyMode) { listadoAcciones.splice(index, 1); renderTableAcciones(); } };
   window.eliminarFilaAsunto = function(index) { if(!isReadOnlyMode) { listadoAsuntos.splice(index, 1); renderTableAsuntos(); } };
   window.eliminarFilaSistema = function(index) { if(!isReadOnlyMode) { listadoSistemas.splice(index, 1); renderTableSistemas(); } };
   window.eliminarFilaContacto = function(index) { if(!isReadOnlyMode) { listadoDirectorio.splice(index, 1); renderTableDirectorio(); } };
 
-  // CORREGIDO: Carga los datos en el modal pero NO borra la fila, permitiendo cancelaciones sin pérdida de registros
   window.editarFilaAccion = function(index) {
     if(isReadOnlyMode) return;
     const item = listadoAcciones[index];
@@ -418,7 +421,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { alert('❌ Error de red consultando la matriz de contratos.'); return false; }
   }
 
-  // ENGRANAJE DE REAPERTURA DE ACTAS DESDE EL ROL DE SUPERVISIÓN
   window.reabrirActaSupervisor = async function(idSharePoint) {
     if(!confirm("¿Estás seguro de reabrir esta Acta? Esto le devolverá los permisos de edición al contratista.")) return;
     try {
@@ -492,7 +494,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         limpiarCamposAuditoria(); isReadOnlyMode = true; ajustarModoLecturaFormulario(true); inyectarBotonRegresoAuditoria();
 
-        // INYECCIÓN DINÁMICA EXCLUSIVA PARA EL ROL DE FUNCIONARIO SUPERVISOR
+        // ACTIVA EL BOTÓN DE EXPORTACIÓN PDF PARA EL SUPERVISOR SI EL REGISTRO YA ESTÁ CERRADO
+        if(actaSeleccionada.status === 'FINALIZADO') {
+          if(btnDescargarPDFGlobal) btnDescargarPDFGlobal.classList.remove('hidden');
+        } else {
+          if(btnDescargarPDFGlobal) btnDescargarPDFGlobal.classList.add('hidden');
+        }
+
         if(actaSeleccionada.status === 'FINALIZADO' && currentUserRole === 'funcionario') {
           let btnSaveContainer = document.getElementById('btn-save-preliminary').parentElement;
           let btnReabrirExistente = document.getElementById('btn-reabrir-dinamico-supervisor');
@@ -504,6 +512,19 @@ document.addEventListener('DOMContentLoaded', () => {
           btnReabrir.onclick = function() { reabrirActaSupervisor(actaSeleccionada.idSharePoint); };
           btnSaveContainer.appendChild(btnReabrir);
         }
+
+        // CONTEXTO DE CONTRATO COMPLETO PARA EL MODULO DE IMPRESIÓN
+        currentUserData = {
+          cedula: actaSeleccionada.cedula,
+          nombre: actaSeleccionada.name,
+          contract: actaSeleccionada.contract,
+          supervisor: actaSeleccionada.boss,
+          objeto: actaSeleccionada.objeto,
+          dependencia: actaSeleccionada.dependencia,
+          estado: actaSeleccionada.status,
+          lineamientos: actaSeleccionada.lineamientos,
+          recomendaciones: actaSeleccionada.recomendaciones
+        };
 
         document.getElementById('cedula').value = actaSeleccionada.cedula || '';
         document.getElementById('nombreContratista').value = actaSeleccionada.name || '';
@@ -527,7 +548,6 @@ document.addEventListener('DOMContentLoaded', () => {
           renderTableAcciones(); renderTableAsuntos(); renderTableSistemas(); renderTableDirectorio();
         }
 
-        // REPARACIÓN QUIRÚRGICA: Limpieza estricta de las clases .active sobre los componentes correctos .tab-panel
         tabButtons.forEach(b => b.classList.remove('active')); 
         tabPanels.forEach(p => p.classList.remove('active'));
         
@@ -538,5 +558,267 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, 50);
       });
     });
+  }
+
+  // =========================================================================
+  // MOTOR DE GENERACIÓN PDF: MAQUETADO DE LA PLANTILLA OFICIAL FO-GITH-060
+  // =========================================================================
+  async function exportarFormatoOficialPDF() {
+    if (!currentUserData) { alert("❌ No hay datos de contrato en memoria."); return; }
+
+    const fechaHoy = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    // MAPEADO COMPLETO E ITERATIVO DE SUBTABLAS HTML CON LOS ARREGLOS EN SESIÓN
+    let htmlRowsAcciones = '';
+    if(listadoAcciones.length === 0) {
+      htmlRowsAcciones = `<tr><td colspan="7" style="border: 1px solid #000; padding: 4px; text-align:center; color:#555;">Ninguna acción de transferencia registrada.</td></tr>`;
+    } else {
+      listadoAcciones.forEach(item => {
+        htmlRowsAcciones += `
+          <tr>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.proceso}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px; text-align:center;">${item.prioridad}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.productos}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.accionConocimiento}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.ejecucion}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px; text-align:center;">${item.fecha || '---'}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px; word-break:break-all; max-width:180px;">${item.ruta}</td>
+          </tr>`;
+      });
+    }
+
+    let htmlRowsAsuntos = '';
+    if(listadoAsuntos.length === 0) {
+      htmlRowsAsuntos = `<tr><td colspan="5" style="border: 1px solid #000; padding: 4px; text-align:center; color:#555;">Ningún asunto pendiente registrado.</td></tr>`;
+    } else {
+      listadoAsuntos.forEach(item => {
+        htmlRowsAsuntos += `
+          <tr>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.tramite}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px; text-align:center;">${item.estado}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.entidad}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.accionesPendientes}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px; text-align:center;">${item.fecha || '---'}</td>
+          </tr>`;
+      });
+    }
+
+    let htmlRowsSistemas = '';
+    if(listadoSistemas.length === 0) {
+      htmlRowsSistemas = `<tr><td colspan="4" style="border: 1px solid #000; padding: 4px; text-align:center; color:#555;">Ningún acceso a sistemas registrado.</td></tr>`;
+    } else {
+      listadoSistemas.forEach(item => {
+        htmlRowsSistemas += `
+          <tr>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.nombre}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.usuario}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.contrasena}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.obs || 'Ninguna'}</td>
+          </tr>`;
+      });
+    }
+
+    let htmlRowsDirectorio = '';
+    if(listadoDirectorio.length === 0) {
+      htmlRowsDirectorio = `<tr><td colspan="6" style="border: 1px solid #000; padding: 4px; text-align:center; color:#555;">Ningún contacto clave registrado.</td></tr>`;
+    } else {
+      listadoDirectorio.forEach(item => {
+        htmlRowsDirectorio += `
+          <tr>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.nombre}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px; text-align:center;">${item.tel}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.correo}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px; text-align:center;">${item.tipo}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.entidad}</td>
+            <td style="border:1px solid #000; padding:4px; font-size:8px;">${item.reco || 'Ninguna'}</td>
+          </tr>`;
+      });
+    }
+
+    // ENSAMBLADO DINÁMICO DE CONTENIDO UTILIZANDO LAS CLASES NATIVAS DEL FORMATO INSTITUCIONAL
+    const elementoImpresion = document.createElement('div');
+    elementoImpresion.style.padding = '12px';
+    elementoImpresion.innerHTML = `
+      <style>
+          body { font-family: 'Segoe UI', Arial, sans-serif; color: #000000; line-height: 1.3; font-size: 9px; }
+          .tabla-oficial { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+          .tabla-oficial td { border: 1px solid #000000; padding: 4px; font-size: 8px; font-weight: bold; text-align: center; vertical-align: middle; }
+          .logo-space { width: 18%; background-color: #FFFFFF; padding: 6px !important; }
+          .logo-img { max-width: 100%; height: auto; max-height: 55px; display: block; margin: 0 auto; }
+          .header-bloque { background-color: #F2F2F2; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 9px; padding: 4px; border: 1px solid #000000; margin-top: 10px; }
+          table.datos-tabla { width: 100%; border-collapse: collapse; margin-bottom: 0px; }
+          table.datos-tabla td, table.datos-tabla th { border: 1px solid #000000; padding: 4px; vertical-align: top; }
+          table.datos-tabla th { background-color: #F2F2F2; font-weight: bold; text-align: center; font-size: 8px; }
+          .label-fija { font-weight: bold; background-color: #F2F2F2; width: 15%; }
+          .nota-pie { border: 1px solid #000000; padding: 6px; font-size: 8px; font-weight: bold; margin-top: 15px; text-align: justify; }
+          .salto-pagina { page-break-before: always; }
+      </style>
+
+      <table class="tabla-oficial">
+          <tr>
+              <td rowspan="2" class="logo-space">
+                  <img src="https://github.com/AgenciaAPP/Imagenes-Varias/blob/main/logoencabezado.png?raw=true" alt="Logo Alcaldía de Medellín - Agencia APP" class="logo-img">
+              </td>
+              <td style="font-size: 9px; width: 57%; text-align:center;">
+                  PROCESO<br>GESTIÓN INTEGRAL DEL TALENTO HUMANO
+              </td>
+              <td style="width: 25%; font-weight: normal; text-align: left;">
+                  <strong>Código:</strong> FO-GITH-060<br>
+                  <hr style="margin: 2px 0; border: 0; border-top: 1px solid #000;">
+                  <strong>Versión:</strong> 1
+              </td>
+          </tr>
+          <tr>
+              <td style="font-size: 9px; text-align:center;">
+                  FORMATO<br>TRANSFERENCIA DE CONOCIMIENTO GENERADO EN EL MARCO DE CONTRATOS CON PERSONAS NATURALES O JURÍDICAS
+              </td>
+              <td style="font-weight: normal; text-align: left;">
+                  <strong>Fecha de entrada en vigencia:</strong> 08/05/2026
+              </td>
+          </tr>
+      </table>
+
+      <table class="datos-tabla">
+          <tr>
+              <td class="label-fija">Contrato No.</td>
+              <td style="font-weight: bold; width: 35%; color: #1e3a8a;">${currentUserData.contract || '---'}</td>
+              <td class="label-fija">Supervisor</td>
+              <td style="width: 35%;">${currentUserData.supervisor || '---'}</td>
+          </tr>
+          <tr>
+              <td class="label-fija">Objeto contractual</td>
+              <td colspan="3" style="text-align: justify;">${currentUserData.objeto || '---'}</td>
+          </tr>
+          <tr>
+              <td class="label-fija">Fecha de inicio del contrato</td>
+              <td>---</td>
+              <td class="label-fija">Dependencia (Dirección o Subdirección)</td>
+              <td>${currentUserData.dependencia || '---'}</td>
+          </tr>
+          <tr>
+              <td class="label-fija">Contratista</td>
+              <td>${currentUserData.nombre || '---'}</td>
+              <td class="label-fija">Fecha de diligenciamiento</td>
+              <td>${fechaHoy}</td>
+          </tr>
+          <tr>
+              <td class="label-fija">NIT/CC</td>
+              <td colspan="3">${currentUserData.cedula || '---'}</td>
+          </tr>
+      </table>
+
+      <div class="header-bloque">Acciones de Transferencia de Conocimiento del Contratista</div>
+      <table class="datos-tabla">
+          <thead>
+              <tr>
+                  <th style="width:20%;">Proceso clave</th>
+                  <th style="width:7%;">Prioridad</th>
+                  <th style="width:15%;">Productos entrega</th>
+                  <th style="width:15%;">Acción transferencia</th>
+                  <th style="width:20%;">Evidencias / Ejecución</th>
+                  <th style="width:8%;">Fecha</th>
+                  <th style="width:15%;">Ruta Repositorio</th>
+              </tr>
+          </thead>
+          <tbody>${htmlRowsAcciones}</tbody>
+      </table>
+
+      <div class="header-bloque">Asuntos Pendientes o en Trámite</div>
+      <table class="datos-tabla">
+          <thead>
+              <tr>
+                  <th>Asunto pendiente o en trámite</th>
+                  <th>Estado Actual</th>
+                  <th>Entidad / Dependencia</th>
+                  <th>Acciones pendientes por realizar</th>
+                  <th>Fecha Límite</th>
+              </tr>
+          </thead>
+          <tbody>${htmlRowsAsuntos}</tbody>
+      </table>
+
+      <div class="header-bloque">Accesos a Sistemas / Aplicativos</div>
+      <table class="datos-tabla">
+          <thead>
+              <tr>
+                  <th>Sistema / aplicativo</th>
+                  <th>Usuario</th>
+                  <th>Contraseña</th>
+                  <th>Observaciones</th>
+              </tr>
+          </thead>
+          <tbody>${htmlRowsSistemas}</tbody>
+      </table>
+
+      <div class="header-bloque">Directorio de Contactos Claves Relacionados con el Alcance del Contrato</div>
+      <table class="datos-tabla">
+          <thead>
+              <tr>
+                  <th>Nombre</th>
+                  <th>Teléfono</th>
+                  <th>Email</th>
+                  <th>Tipo de contacto</th>
+                  <th>Entidad / dependencia</th>
+                  <th>Recomendaciones</th>
+              </tr>
+          </thead>
+          <tbody>${htmlRowsDirectorio}</tbody>
+      </table>
+
+      <div class="header-bloque">Lineamientos Técnicos, Normativos u Operativos Esenciales</div>
+      <table class="datos-tabla">
+          <tr><td style="padding: 6px; text-align: justify; min-height: 45px; white-space: pre-line;">${document.getElementById('lineamientos').value || 'Ninguno registrado.'}</td></tr>
+      </table>
+
+      <div class="salto-pagina"></div>
+
+      <div class="header-bloque">Recomendaciones y Observaciones</div>
+      <table class="datos-tabla">
+          <tr><td style="padding: 6px; text-align: justify; min-height: 60px; white-space: pre-line;">${document.getElementById('recomendaciones-acciones').value || 'Ninguna recomendación registrada.'}</td></tr>
+      </table>
+
+      <table class="datos-tabla" style="margin-top: 40px; border: none; width:100%;">
+          <tr style="border: none;">
+              <td style="width: 50%; border: none; padding-top: 40px; font-size:9px;">Firma contratista: ___________________________</td>
+              <td style="width: 50%; border: none; padding-top: 40px; font-size:9px;">C.C./NIT: ___________________________</td>
+          </tr>
+          <tr style="border: none;">
+              <td colspan="2" style="border: none; padding-top: 5px; font-weight: bold; font-size:9px;">Nombre del Contratista: ${currentUserData.nombre.toUpperCase()}</td>
+          </tr>
+          <tr style="border: none;">
+              <td style="width: 50%; border: none; padding-top: 40px; font-size:9px;">Firma supervisor: ___________________________</td>
+              <td style="width: 50%; border: none; padding-top: 40px; font-size:9px;">C.C. ___________________________</td>
+          </tr>
+          <tr style="border: none;">
+              <td colspan="2" style="border: none; padding-top: 5px; font-weight: bold; font-size:9px;">Nombre del Supervisor del Contrato: ${currentUserData.supervisor.toUpperCase()}</td>
+          </tr>
+          <tr style="border: none;">
+              <td style="width: 50%; border: none; padding-top: 40px; font-size:9px;">Firma del servidor Público del nivel directivo: ___________________________</td>
+              <td style="width: 50%; border: none; padding-top: 40px; font-size:9px;">C.C. ___________________________</td>
+          </tr>
+          <tr style="border: none;">
+              <td colspan="2" style="border: none; padding-top: 5px; font-weight: bold; font-size:9px;">Nombre del servidor Público del nivel directivo: ____________________________________________________</td>
+          </tr>
+      </table>
+
+      <div class="nota-pie">
+          Nota: Este formato debidamente diligenciado debe ser remitido por el supervisor junto con las evidencias de la transferencia del conocimiento . Las evidencias de las acciones de transferencia deberán ser almacenadas en la carpeta asignada por el supervisor la cual deberá ser almacenada en el OneDrive.
+      </div>
+    `;
+
+    // 4. CONFIGURACIÓN DEL CONTROLADOR DE IMPRESIÓN EN ORIENTACIÓN HORIZONTAL (LANDSCAPE)
+    const opcionesConfig = {
+      margin:       10,
+      filename:     `FO-GITH-060_STC_${currentUserData.contract}_${currentUserData.cedula}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' }
+    };
+
+    html2pdf().set(opcionesConfig).from(elementoImpresion).save();
+  }
+
+  if(btnDescargarPDFGlobal) {
+    btnDescargarPDFGlobal.addEventListener('click', exportarFormatoOficialPDF);
   }
 });
