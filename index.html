@@ -6,6 +6,9 @@
   <title>STC - Agencia APP</title>
   <link href="https://fonts.cdnfonts.com/css/metropolis" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  
+  <!-- SCRIPT INYECTADO: LIBRERÍA DE AUTOMATIZACIÓN E IMPRESIÓN DEL REPORTE PDF INSTITUCIONAL -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -81,14 +84,19 @@
 
     <section id="view-formulario-transferencia" class="view-panel">
       
+      <!-- CONTENEDOR MODIFICADO: Agrupación flexible de pestañas junto con botones de guardado y descarga PDF -->
       <div class="form-sticky-header">
         <nav class="tabs-nav">
           <button class="tab-btn active" data-tab="general">1. Datos Generales</button>
           <button class="tab-btn" data-tab="acciones">2. Acciones</button>
           <button class="tab-btn" data-tab="asuntos">3. Asuntos</button>
-          <button class="tab-btn" data-tab="sistemas">4. Sistemas</button> <button class="tab-btn" data-tab="directorio">5. Directorio y finalizar</button>
+          <button class="tab-btn" data-tab="sistemas">4. Sistemas</button> 
+          <button class="tab-btn" data-tab="directorio">5. Directorio y finalizar</button>
         </nav>
-        <button id="btn-save-preliminary" class="btn-preliminary">💾 Guardar Progreso y Salir</button>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button id="btn-descargar-pdf-global" class="btn-primary hidden" style="background-color: #28a745; font-weight: bold; cursor: pointer;">📄 Descargar Reporte PDF</button>
+          <button id="btn-save-preliminary" class="btn-preliminary">💾 Guardar Progreso y Salir</button>
+        </div>
       </div>
 
       <section id="tab-general" class="tab-panel active">
