@@ -57,6 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ELIMINACIÓN DEL BOTÓN DINÁMICO DE SUPERVISOR AL LIMPIAR LA VISTA
     let btnReabrirExistente = document.getElementById('btn-reabrir-dinamico-supervisor');
     if(btnReabrirExistente) btnReabrirExistente.remove();
+
+    // ELIMINACIÓN DEL BOTÓN DINÁMICO DE REGRESO DEL CONTRATISTA
+    let btnRegresarContratista = document.getElementById('btn-regresar-dinamico-contratista');
+    if(btnRegresarContratista) btnRegresarContratista.remove();
   }
 
   function inyectarBotonRegresoAuditoria() {
@@ -87,14 +91,16 @@ document.addEventListener('DOMContentLoaded', () => {
     currentUserRole = 'funcionario'; loginTitle.innerText = 'INGRESAR COMO FUNCIONARIO'; inputLoginCedula.value = ''; switchView(viewLogin);
   });
 
+  // CORREGIDO: Redirección inteligente. Si no hay sesión de datos de usuario activa, regresa siempre al Welcome principal.
   btnBackToWelcome.addEventListener('click', (e) => {
     e.preventDefault();
     let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante'); if (btnFlotante) btnFlotante.remove();
     let btnReabrirExistente = document.getElementById('btn-reabrir-dinamico-supervisor'); if(btnReabrirExistente) btnReabrirExistente.remove();
+    let btnRegresarContratista = document.getElementById('btn-regresar-dinamico-contratista'); if(btnRegresarContratista) btnRegresarContratista.remove();
     
     if (isReadOnlyMode && currentUserRole === 'funcionario') { isReadOnlyMode = false; switchView(viewFuncionarioDashboard); } 
-    else if (currentUserRole === 'contratista') { switchView(viewContratistaDashboard); }
-    else { switchView(viewWelcome); }
+    else if (currentUserRole === 'contratista' && currentUserData !== null) { switchView(viewContratistaDashboard); }
+    else { currentUserRole = null; currentUserData = null; switchView(viewWelcome); }
   });
 
   btnLogoutButtons.forEach(btn => {
@@ -102,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentUserRole = null; currentUserData = null; isReadOnlyMode = false; loggedSupervisorCedula = '';
       let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante'); if (btnFlotante) btnFlotante.remove();
       let btnReabrirExistente = document.getElementById('btn-reabrir-dinamico-supervisor'); if(btnReabrirExistente) btnReabrirExistente.remove();
+      let btnRegresarContratista = document.getElementById('btn-regresar-dinamico-contratista'); if(btnRegresarContratista) btnRegresarContratista.remove();
       switchView(viewWelcome);
     });
   });
@@ -175,11 +182,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // CORREGIDO: El contratista SIEMPRE entra a ver su formulario, congelándose de forma interna solo si está finalizado (Modo Lectura Permisivo)
+  // AJUSTADO: El contratista SIEMPRE entra a ver su formulario, congelándose de forma interna solo si está finalizado (Modo Lectura Permisivo)
   btnEmpezar.addEventListener('click', () => {
     const yaFinalizado = currentUserData && currentUserData.estado.toUpperCase() === 'FINALIZADO';
     isReadOnlyMode = yaFinalizado; 
     ajustarModoLecturaFormulario(yaFinalizado);
+
+    // INYECCIÓN DINÁMICA: Crea un botón de salida para el contratista si está visualizando su acta en Modo Lectura
+    if(yaFinalizado) {
+      let btnSaveContainer = document.getElementById('btn-save-preliminary').parentElement;
+      let btnRegresarExistente = document.getElementById('btn-regresar-dinamico-contratista');
+      if(btnRegresarExistente) btnRegresarExistente.remove();
+
+      let btnRegresarContratista = document.createElement('button');
+      btnRegresarContratista.id = 'btn-regresar-dinamico-contratista'; btnRegresarContratista.type = 'button'; btnRegresarContratista.innerText = '⬅️ Volver al Tablero';
+      btnRegresarContratista.style.padding = '10px 20px'; btnRegresarContratista.style.backgroundColor = '#6c757d'; btnRegresarContratista.style.color = '#fff'; btnRegresarContratista.style.border = 'none'; btnRegresarContratista.style.borderRadius = '4px'; btnRegresarContratista.style.fontWeight = 'bold'; btnRegresarContratista.style.cursor = 'pointer'; btnRegresarContratista.style.marginLeft = '10px';
+      btnRegresarContratista.onclick = function() { btnRegresarContratista.remove(); switchView(viewContratistaDashboard); };
+      btnSaveContainer.appendChild(btnRegresarContratista);
+    }
 
     document.getElementById('cedula').value = currentUserData.cedula;
     document.getElementById('nombreContratista').value = currentUserData.nombre;
