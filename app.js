@@ -259,9 +259,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('form-modal-acciones').addEventListener('submit', (e) => {
     e.preventDefault();
     const nuevaAccion = {
-      proceso: document.getElementById('modal-acc-proceso').value, prioridad: document.getElementById('modal-acc-prioridad').value, productos: document.getElementById('modal-acc-productos').value,
-      accionConocimiento: document.getElementById('modal-acc-conocimiento')?.value || 'No registrada', ejecucion: document.getElementById('modal-acc-ejecucion').value,
-      fecha: document.getElementById('modal-acc-fecha').value, ruta: document.getElementById('modal-acc-ruta').value, obs: document.getElementById('modal-acc-obs').value || 'Ninguna'
+      proceso: document.getElementById('modal-acc-proceso').value, 
+      prioridad: document.getElementById('modal-acc-prioridad').value, 
+      productos: document.getElementById('modal-acc-productos').value,
+      accionConocimiento: document.getElementById('modal-acc-conocimiento').value, 
+      ejecucion: document.getElementById('modal-acc-ejecucion').value,
+      fecha: document.getElementById('modal-acc-fecha').value, 
+      ruta: document.getElementById('modal-acc-ruta').value, 
+      obs: document.getElementById('modal-acc-obs').value || 'Ninguna'
     };
     if (editIndexAccion >= 0) { listadoAcciones[editIndexAccion] = nuevaAccion; editIndexAccion = -1; } else { listadoAcciones.push(nuevaAccion); }
     renderTableAcciones(); document.getElementById('form-modal-acciones').reset(); closeModal('modal-acciones');
@@ -303,7 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('modal-acc-proceso').value = item.proceso;
     document.getElementById('modal-acc-prioridad').value = item.prioridad;
     document.getElementById('modal-acc-productos').value = item.productos;
-    if(document.getElementById('modal-acc-conocimiento')) document.getElementById('modal-acc-conocimiento').value = item.accionConocimiento;
+    if(document.getElementById('modal-acc-conocimiento')) document.getElementById('modal-acc-conocimiento').value = item.accionConocimiento || '';
     document.getElementById('modal-acc-ejecucion').value = item.ejecucion;
     document.getElementById('modal-acc-fecha').value = item.fecha;
     document.getElementById('modal-acc-ruta').value = item.ruta;
@@ -357,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(listadoAcciones.length === 0) { tbody.innerHTML = `<tr><td colspan="${!isReadOnlyMode ? '9' : '8'}" class="text-center text-muted">Ningún registro agregado.</td></tr>`; return; }
     listadoAcciones.forEach((item, index) => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td><strong>${item.proceso}</strong></td><td><span class="badge ${item.prioridad === 'Alta' ? 'badge-danger' : 'badge-alert'}">${item.prioridad}</span></td><td>${item.productos}</td><td>${item.accionConocimiento}</td><td><small>${item.ejecucion}</small></td><td><small>${item.fecha || 'Sin registrar'}</small></td><td><small>${item.ruta || 'Sin registrar'}</small></td><td><small>${item.obs}</small></td>
+      tr.innerHTML = `<td><strong>${item.proceso}</strong></td><td><span class="badge ${item.prioridad === 'Alta' ? 'badge-danger' : 'badge-alert'}">${item.prioridad}</span></td><td>${item.productos}</td><td><span class="badge badge-neutral" style="background-color:#e9ecef; color:#495057; font-weight:bold; padding:4px 8px; border-radius:4px; font-size:7.5px;">${item.accionConocimiento || 'No registrada'}</span></td><td><small>${item.ejecucion}</small></td><td><small>${item.fecha || 'Sin registrar'}</small></td><td><small>${item.ruta || 'Sin registrar'}</small></td><td><small>${item.obs}</small></td>
       ${!isReadOnlyMode ? `<td><button type="button" onclick="editarFilaAccion(${index})" style="background-color:#007bff; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer; margin-right:4px;">✏️</button><button type="button" onclick="eliminarFilaAccion(${index})" style="background-color:#dc3545; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">🗑️</button></td>` : ''}`;
       tbody.appendChild(tr);
     });
