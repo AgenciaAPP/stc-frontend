@@ -345,6 +345,29 @@
             <option value="Baja">Baja</option>
           </select>
         </div>
+        
+        <!-- CAMPO AJUSTADO: Selección única institucional para Acción de Transferencia de Conocimiento -->
+        <div class="form-group">
+          <label>Acción para la transferencia de conocimiento</label>
+          <select id="modal-acc-conocimiento" required>
+            <option value="">Seleccione una opción...</option>
+            <option value="Conferencia">Conferencia</option>
+            <option value="Taller">Taller</option>
+            <option value="Infografía">Infografía</option>
+            <option value="Video">Video</option>
+            <option value="Audio">Audio</option>
+            <option value="Cartilla">Cartilla</option>
+            <option value="Clases prácticas">Clases prácticas</option>
+            <option value="Flujograma">Flujograma</option>
+            <option value="Guías">Guías</option>
+            <option value="Instructivos">Instructivos</option>
+            <option value="Informe de transferencia de conocimiento">Informe de transferencia de conocimiento</option>
+            <option value="Acta">Acta</option>
+            <option value="Otro (especificar en la descripción)">Otro (especificar en la descripción)</option>
+            <option value="Ninguno">Ninguno</option>
+          </select>
+        </div>
+
         <div class="form-group">
           <label>Productos entrega</label>
           <input type="text" id="modal-acc-productos" required placeholder="Actividad o producto asociado">
@@ -379,7 +402,7 @@
       <form id="form-modal-asuntos" class="modal-body">
         <div class="form-group">
           <label>Asunto pendiente de trámite o en trámite</label>
-          <textarea id="modal-asu-tramite" rows="3" required placeholder="Describe el asunto o trámite..."></textarea>
+          <textarea id="modal-asu-tramite" rows="3" required placeholder="Describe the asunto o trámite..."></textarea>
         </div>
         <div class="form-group">
           <label>Estado actual</label>
