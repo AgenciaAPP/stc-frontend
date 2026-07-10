@@ -11,6 +11,12 @@ let listadoSistemas = [];
 let listadoDirectorio = [];
 let listadoMonitoreo = [];
 
+// VARIABLES GLOBALES PARA EL CONTROL DE EDICIÓN SEGURO
+let editIndexAccion = -1;
+let editIndexAsunto = -1;
+let editIndexSistema = -1;
+let editIndexDirectorio = -1;
+
 document.addEventListener('DOMContentLoaded', () => {
   
   const viewWelcome = document.getElementById('view-welcome');
@@ -44,8 +50,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function limpiarCamposAuditoria() {
     listadoAcciones = []; listadoAsuntos = []; listadoSistemas = []; listadoDirectorio = [];
+    editIndexAccion = -1; editIndexAsunto = -1; editIndexSistema = -1; editIndexDirectorio = -1;
     renderTableAcciones(); renderTableAsuntos(); renderTableSistemas(); renderTableDirectorio();
     viewFormularioTransferencia.querySelectorAll('textarea, input').forEach(el => el.value = '');
+
+    // ELIMINACIÓN DEL BOTÓN DINÁMICO DE SUPERVISOR AL LIMPIAR LA VISTA
+    let btnReabrirExistente = document.getElementById('btn-reabrir-dinamico-supervisor');
+    if(btnReabrirExistente) btnReabrirExistente.remove();
   }
 
   function inyectarBotonRegresoAuditoria() {
@@ -79,6 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
   btnBackToWelcome.addEventListener('click', (e) => {
     e.preventDefault();
     let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante'); if (btnFlotante) btnFlotante.remove();
+    let btnReabrirExistente = document.getElementById('btn-reabrir-dinamico-supervisor'); if(btnReabrirExistente) btnReabrirExistente.remove();
+    
     if (isReadOnlyMode && currentUserRole === 'funcionario') { isReadOnlyMode = false; switchView(viewFuncionarioDashboard); } 
     else if (currentUserRole === 'contratista') { switchView(viewContratistaDashboard); }
     else { switchView(viewWelcome); }
@@ -88,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       currentUserRole = null; currentUserData = null; isReadOnlyMode = false; loggedSupervisorCedula = '';
       let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante'); if (btnFlotante) btnFlotante.remove();
+      let btnReabrirExistente = document.getElementById('btn-reabrir-dinamico-supervisor'); if(btnReabrirExistente) btnReabrirExistente.remove();
       switchView(viewWelcome);
     });
   });
@@ -147,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
           
           const labelEstado = document.getElementById('dash-estado-acta');
           labelEstado.innerText = currentUserData.estado.toUpperCase();
-          labelEstado.className = currentUserData.estado === 'FINALIZADO' ? "badge badge-success" : "badge badge-alert";
+          labelEstado.className = currentUserData.estado.toUpperCase() === 'FINALIZADO' ? "badge badge-success" : "badge badge-alert";
           
           switchView(viewContratistaDashboard);
         } else {
@@ -161,9 +175,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // AJUSTADO: El contratista SIEMPRE entra a ver su formulario, congelándose de forma interna solo si está finalizado (Modo Lectura Permisivo)
+  // CORREGIDO: El contratista SIEMPRE entra a ver su formulario, congelándose de forma interna solo si está finalizado (Modo Lectura Permisivo)
   btnEmpezar.addEventListener('click', () => {
-    const yaFinalizado = currentUserData && currentUserData.estado === 'FINALIZADO';
+    const yaFinalizado = currentUserData && currentUserData.estado.toUpperCase() === 'FINALIZADO';
     isReadOnlyMode = yaFinalizado; 
     ajustarModoLecturaFormulario(yaFinalizado);
 
@@ -212,48 +226,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.closeModal = function(modalId) {
     const modal = document.getElementById(modalId); if(modal) modal.classList.remove('active');
+    // CORREGIDO: Al cerrar el modal se limpian los índices para no alterar el flujo estándar
+    editIndexAccion = -1; editIndexAsunto = -1; editIndexSistema = -1; editIndexDirectorio = -1;
   }
 
+  // CORREGIDO: Lógica de guardado seguro mediante actualización o adición por punteros de índice
   document.getElementById('form-modal-acciones').addEventListener('submit', (e) => {
     e.preventDefault();
-    listadoAcciones.push({
+    const nuevaAccion = {
       proceso: document.getElementById('modal-acc-proceso').value, prioridad: document.getElementById('modal-acc-prioridad').value, productos: document.getElementById('modal-acc-productos').value,
       accionConocimiento: document.getElementById('modal-acc-conocimiento')?.value || 'No registrada', ejecucion: document.getElementById('modal-acc-ejecucion').value,
       fecha: document.getElementById('modal-acc-fecha').value, ruta: document.getElementById('modal-acc-ruta').value, obs: document.getElementById('modal-acc-obs').value || 'Ninguna'
-    });
+    };
+    if (editIndexAccion >= 0) { listadoAcciones[editIndexAccion] = nuevaAccion; editIndexAccion = -1; } else { listadoAcciones.push(nuevaAccion); }
     renderTableAcciones(); document.getElementById('form-modal-acciones').reset(); closeModal('modal-acciones');
   });
 
   document.getElementById('form-modal-asuntos').addEventListener('submit', (e) => {
     e.preventDefault();
-    listadoAsuntos.push({
+    const nuevoAsunto = {
       tramite: document.getElementById('modal-asu-tramite').value, estado: document.getElementById('modal-asu-estado').value, entidad: document.getElementById('modal-asu-entidad').value,
       accionesPendientes: document.getElementById('modal-asu-acciones-pendientes').value, fecha: document.getElementById('modal-asu-fecha').value
-    });
+    };
+    if (editIndexAsunto >= 0) { listadoAsuntos[editIndexAsunto] = nuevoAsunto; editIndexAsunto = -1; } else { listadoAsuntos.push(nuevoAsunto); }
     renderTableAsuntos(); document.getElementById('form-modal-asuntos').reset(); closeModal('modal-asuntos');
   });
 
   document.getElementById('form-modal-sistemas').addEventListener('submit', (e) => {
     e.preventDefault();
-    listadoSistemas.push({ nombre: document.getElementById('modal-sis-nombre').value, usuario: document.getElementById('modal-sis-usuario').value, contrasena: document.getElementById('modal-sis-pass').value, obs: document.getElementById('modal-sis-obs').value || 'Ninguna' });
+    const nuevoSistema = { nombre: document.getElementById('modal-sis-nombre').value, usuario: document.getElementById('modal-sis-usuario').value, contrasena: document.getElementById('modal-sis-pass').value, obs: document.getElementById('modal-sis-obs').value || 'Ninguna' };
+    if (editIndexSistema >= 0) { listadoSistemas[editIndexSistema] = nuevoSistema; editIndexSistema = -1; } else { listadoSistemas.push(nuevoSistema); }
     renderTableSistemas(); document.getElementById('form-modal-sistemas').reset(); closeModal('modal-sistemas');
   });
 
   document.getElementById('form-modal-directorio').addEventListener('submit', (e) => {
     e.preventDefault();
-    listadoDirectorio.push({ nombre: document.getElementById('modal-dir-nombre').value, tel: document.getElementById('modal-dir-tel').value, correo: document.getElementById('modal-dir-correo').value, tipo: document.getElementById('modal-dir-tipo').value, entidad: document.getElementById('modal-dir-entidad').value, reco: document.getElementById('modal-dir-reco').value || 'Ninguna' });
+    const nuevoContacto = { nombre: document.getElementById('modal-dir-nombre').value, tel: document.getElementById('modal-dir-tel').value, correo: document.getElementById('modal-dir-correo').value, tipo: document.getElementById('modal-dir-tipo').value, entidad: document.getElementById('modal-dir-entidad').value, reco: document.getElementById('modal-dir-reco').value || 'Ninguna' };
+    if (editIndexDirectorio >= 0) { listadoDirectorio[editIndexDirectorio] = nuevoContacto; editIndexDirectorio = -1; } else { listadoDirectorio.push(nuevoContacto); }
     renderTableDirectorio(); document.getElementById('form-modal-directorio').reset(); closeModal('modal-directorio');
   });
 
-  // SISTEMA DE ELIMINACIÓN Y EDICIÓN LOCAL TRANSACCIONAL DE FILAS
+  // SISTEMA DE ELIMINACIÓN LOCAL TRANSACCIONAL DE FILAS
   window.eliminarFilaAccion = function(index) { if(!isReadOnlyMode) { listadoAcciones.splice(index, 1); renderTableAcciones(); } };
   window.eliminarFilaAsunto = function(index) { if(!isReadOnlyMode) { listadoAsuntos.splice(index, 1); renderTableAsuntos(); } };
   window.eliminarFilaSistema = function(index) { if(!isReadOnlyMode) { listadoSistemas.splice(index, 1); renderTableSistemas(); } };
   window.eliminarFilaContacto = function(index) { if(!isReadOnlyMode) { listadoDirectorio.splice(index, 1); renderTableDirectorio(); } };
 
+  // CORREGIDO: Carga los datos en el modal pero NO borra la fila, permitiendo cancelaciones sin pérdida de registros
   window.editarFilaAccion = function(index) {
     if(isReadOnlyMode) return;
     const item = listadoAcciones[index];
+    editIndexAccion = index; 
     document.getElementById('modal-acc-proceso').value = item.proceso;
     document.getElementById('modal-acc-prioridad').value = item.prioridad;
     document.getElementById('modal-acc-productos').value = item.productos;
@@ -262,40 +285,43 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('modal-acc-fecha').value = item.fecha;
     document.getElementById('modal-acc-ruta').value = item.ruta;
     document.getElementById('modal-acc-obs').value = item.obs === 'Ninguna' ? '' : item.obs;
-    listadoAcciones.splice(index, 1); renderTableAcciones(); openModal('modal-accion');
+    openModal('modal-accion');
   };
 
   window.editarFilaAsunto = function(index) {
     if(isReadOnlyMode) return;
     const item = listadoAsuntos[index];
+    editIndexAsunto = index;
     document.getElementById('modal-asu-tramite').value = item.tramite;
     document.getElementById('modal-asu-estado').value = item.estado;
     document.getElementById('modal-asu-entidad').value = item.entidad;
     document.getElementById('modal-asu-acciones-pendientes').value = item.accionesPendientes;
     document.getElementById('modal-asu-fecha').value = item.fecha;
-    listadoAsuntos.splice(index, 1); renderTableAsuntos(); openModal('modal-asunto');
+    openModal('modal-asunto');
   };
 
   window.editarFilaSistema = function(index) {
     if(isReadOnlyMode) return;
     const item = listadoSistemas[index];
+    editIndexSistema = index;
     document.getElementById('modal-sis-nombre').value = item.nombre;
     document.getElementById('modal-sis-usuario').value = item.usuario;
     document.getElementById('modal-sis-pass').value = item.contrasena;
     document.getElementById('modal-sis-obs').value = item.obs === 'Ninguna' ? '' : item.obs;
-    listadoSistemas.splice(index, 1); renderTableSistemas(); openModal('modal-sistema');
+    openModal('modal-sistema');
   };
 
   window.editarFilaContacto = function(index) {
     if(isReadOnlyMode) return;
     const item = listadoDirectorio[index];
+    editIndexDirectorio = index;
     document.getElementById('modal-dir-nombre').value = item.nombre;
     document.getElementById('modal-dir-tel').value = item.tel;
     document.getElementById('modal-dir-correo').value = item.correo;
     document.getElementById('modal-dir-tipo').value = item.tipo;
     document.getElementById('modal-dir-entidad').value = item.entidad;
     document.getElementById('modal-dir-reco').value = item.reco === 'Ninguna' ? '' : item.reco;
-    listadoDirectorio.splice(index, 1); renderTableDirectorio(); openModal('modal-directorio');
+    openModal('modal-directorio');
   };
 
   function renderTableAcciones() {
@@ -446,8 +472,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         limpiarCamposAuditoria(); isReadOnlyMode = true; ajustarModoLecturaFormulario(true); inyectarBotonRegresoAuditoria();
 
-        // INYECCIÓN DINÁMICA REAPERTURA: Muestra el botón dorado al auditar actas finalizadas
-        if(actaSeleccionada.status === 'FINALIZADO') {
+        // INYECCIÓN DINÁMICA EXCLUSIVA PARA EL ROL DE FUNCIONARIO SUPERVISOR
+        if(actaSeleccionada.status === 'FINALIZADO' && currentUserRole === 'funcionario') {
           let btnSaveContainer = document.getElementById('btn-save-preliminary').parentElement;
           let btnReabrirExistente = document.getElementById('btn-reabrir-dinamico-supervisor');
           if(btnReabrirExistente) btnReabrirExistente.remove();
@@ -457,8 +483,6 @@ document.addEventListener('DOMContentLoaded', () => {
           btnReabrir.style.padding = '10px 20px'; btnReabrir.style.backgroundColor = '#ffc107'; btnReabrir.style.color = '#000'; btnReabrir.style.border = 'none'; btnReabrir.style.borderRadius = '4px'; btnReabrir.style.fontWeight = 'bold'; btnReabrir.style.cursor = 'pointer'; btnReabrir.style.marginLeft = '10px';
           btnReabrir.onclick = function() { reabrirActaSupervisor(actaSeleccionada.idSharePoint); };
           btnSaveContainer.appendChild(btnReabrir);
-        } else {
-          let btnReabrirExistente = document.getElementById('btn-reabrir-dinamico-supervisor'); if(btnReabrirExistente) btnReabrirExistente.remove();
         }
 
         document.getElementById('cedula').value = actaSeleccionada.cedula || '';
@@ -483,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
           renderTableAcciones(); renderTableAsuntos(); renderTableSistemas(); renderTableDirectorio();
         }
 
-        // CORRECCIÓN QUIRÚRGICA: Normalización de clases de pestañas en la SPA para evitar que se congele la vista
+        // REPARACIÓN QUIRÚRGICA: Limpieza estricta de las clases .active sobre los componentes correctos .tab-panel
         tabButtons.forEach(b => b.classList.remove('active')); 
         tabPanels.forEach(p => p.classList.remove('active'));
         
