@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnSavePreliminary.addEventListener('click', async () => { await enviarActaASharePoint(false); });
 
-  // INYECTADO: Flujo dinámico de autenticación y ruteo dinámico con Cédula Maestra 123
+  // CORREGIDO: Flujo dinámico de autenticación restrictiva y ruteo dinámico con Cédula Maestra 123
   btnSubmitLogin.addEventListener('click', async () => {
     const cedula = inputLoginCedula.value.trim();
     if (!cedula) { alert('⚠️ Por favor, ingresa tu número de documento.'); return; }
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (currentUserRole === 'funcionario') {
         const sectionTH = document.getElementById('section-th-actions');
-        loggedSupervisorCedula = cedula; // Guardamos en sesión para filtrar las peticiones GET en vivo
+        loggedSupervisorCedula = cedula; // Guardamos temporalmente en sesión para evaluar la petición
 
         if (cedula === '123') {
           document.getElementById('badge-rol-funcionario').innerText = 'Perfil: Talento Humano (Superusuario)';
@@ -111,9 +111,14 @@ document.addEventListener('DOMContentLoaded', () => {
           if (sectionTH) sectionTH.classList.add('hidden');
         }
         
-        await consultarContratosEnVivo(); 
-        switchView(viewFuncionarioDashboard);
-        return; // Detiene la ejecución limpia para evitar interferencias
+        // El login depende directamente de la validación estricta del backend
+        const loginExitoso = await consultarContratosEnVivo(); 
+        if (loginExitoso) {
+          switchView(viewFuncionarioDashboard);
+        } else {
+          loggedSupervisorCedula = ''; // Limpiamos credencial errónea si falla
+        }
+        return; 
       }
 
       if (currentUserRole === 'contratista') {
@@ -314,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) { alert('❌ Error de comunicación.'); } finally { loader.classList.add('hidden'); }
   });
 
-  // INYECTADO: Envío transaccional de la cédula del supervisor desde el validador del SECOP II
+  // CORREGIDO HABILITACIÓN: Pasa la variable 'cedulaSupervisor' de forma relacional al inyectar el contrato
   document.getElementById('btn-confirmar-habilitacion').addEventListener('click', async () => {
     if (window.contratoTemporalValidado) {
       const p = { 
@@ -334,13 +339,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // INYECTADO: Envío adjunto de la credencial en sesión para el filtrado dinámico del backend
+  // CORREGIDO MONITOREO: Si la API de Vercel retorna un código de error de bloqueo, la función detiene el acceso
   async function consultarContratosEnVivo() {
     try {
       const response = await fetch(`${BACKEND_URL}/api/contratos?queryCedula=${encodeURIComponent(loggedSupervisorCedula)}`); 
+      
+      if (!response.ok) {
+        const errData = await response.json();
+        alert(`❌ ${errData.message || 'Acceso denegado.'}`);
+        return false;
+      }
+      
       const resData = await response.json();
-      if (resData.success) { listadoMonitoreo = resData.data; poblarTablaSeguimientoFuncionarios(); }
-    } catch (e) { console.error(e); }
+      if (resData.success) { 
+        listadoMonitoreo = resData.data; 
+        poblarTablaSeguimientoFuncionarios(); 
+        return true;
+      }
+      return false;
+    } catch (e) { 
+      console.error(e);
+      alert('❌ Error de red consultando la matriz de contratos.');
+      return false;
+    }
   }
 
   async function enviarActaASharePoint(isFinalSubmit) {
@@ -418,11 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const responseHijos = await fetch(`${BACKEND_URL}/api/obtener-detalles-hijos?cedula=${encodeURIComponent(actaSeleccionada.cedula)}`);
         const dataHijos = await responseHijos.json();
         if(dataHijos.success) {
-          listadoAcciones = dataHijos.acciones || [];
-          listadoAsuntos = dataHijos.asuntos || [];
-          listadoSistemas = dataHijos.sistemas || [];
-          listadoDirectorio = dataHijos.directorio || [];
-          
+          listadoAcciones = dataHijos.acciones || []; listadoAsuntos = dataHijos.asuntos || []; listadoSistemas = dataHijos.sistemas || []; listadoDirectorio = dataHijos.directorio || [];
           renderTableAcciones(); renderTableAsuntos(); renderTableSistemas(); renderTableDirectorio();
         }
 
