@@ -663,31 +663,34 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // CONTENEDOR MAQUETADO MEDIANTE TABLAS CSS NATIVAS PARA REPETICIÓN AUTOMÁTICA DE ENCABEZADO
     const elementoImpresion = document.createElement('div');
-    elementoImpresion.style.padding = '4px';
+    elementoImpresion.style.padding = '2px';
     elementoImpresion.innerHTML = `
       <style>
           @page { size: letter landscape; margin: 10mm 10mm 15mm 10mm; }
+          
+          /* RESET DE CONTROL DE BORDES: Forzar cálculo interno para evitar desbordes */
+          * { box-sizing: border-box; -webkit-box-sizing: border-box; }
+          
           body { font-family: 'Segoe UI', Arial, sans-serif; color: #000000; line-height: 1.3; font-size: 9px; }
           
-          /* Estructura Maestra de Impresión */
-          .contenedor-impresion-raiz { width: 100%; display: table; border-collapse: collapse; }
+          /* Estructura Maestra de Impresión Ajustada */
+          .contenedor-impresion-raiz { width: 99.4%; display: table; border-collapse: collapse; margin: 0 auto; }
           .grupo-encabezado-pdf { display: table-header-group; }
           .grupo-cuerpo-pdf { display: table-row-group; }
           .fila-maestra-pdf { display: table-row; }
           .celda-maestra-pdf { display: table-cell; width: 100%; }
 
-          /* Tabla de Encabezado Original HTML */
-          .tabla-oficial { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+          /* Tabla de Encabezado Original HTML Blindada */
+          .tabla-oficial { width: 100%; border-collapse: collapse; margin-bottom: 12px; table-layout: fixed; }
           .tabla-oficial td { border: 1px solid #000000; padding: 4px; font-size: 8px; font-weight: bold; text-align: center; vertical-align: middle; }
           .logo-space { width: 18%; background-color: #FFFFFF; padding: 6px !important; }
           .logo-img { max-width: 100%; height: auto; max-height: 52px; display: block; margin: 0 auto; }
           
           /* Estilos de Bloques y Tablas de Datos */
           .header-bloque { background-color: #F2F2F2; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 9px; padding: 4px; border: 1px solid #000000; margin-top: 10px; margin-bottom: 0px; page-break-inside: avoid; }
-          table.datos-tabla { width: 100%; border-collapse: collapse; margin-bottom: 0px; }
-          table.datos-tabla td, table.datos-tabla th { border: 1px solid #000000; padding: 4px; vertical-align: top; }
+          table.datos-tabla { width: 100%; border-collapse: collapse; margin-bottom: 0px; table-layout: fixed; }
+          table.datos-tabla td, table.datos-tabla th { border: 1px solid #000000; padding: 4px; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; }
           table.datos-tabla th { background-color: #F2F2F2; font-weight: bold; text-align: center; font-size: 8px; }
           .label-fija { font-weight: bold; background-color: #F2F2F2; width: 15%; }
           .nota-pie { border: 1px solid #000000; padding: 6px; font-size: 8px; font-weight: bold; margin-top: 15px; text-align: justify; page-break-inside: avoid; }
@@ -695,7 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </style>
 
       <div class="contenedor-impresion-raiz">
-          <!-- 1. GRUPO ENCABEZADO: Se repetirá automáticamente en la parte superior de cada página -->
+          <!-- 1. GRUPO ENCABEZADO: Se repetirá automáticamente en la parte superior de cada página con márgenes perfectos -->
           <div class="grupo-encabezado-pdf">
               <div class="fila-maestra-pdf">
                   <div class="celda-maestra-pdf">
@@ -726,16 +729,16 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
           </div>
 
-          <!-- 2. GRUPO CUERPO: Contenido dinámico del formulario que fluirá y se paginará de forma nativa -->
+          <!-- 2. GRUPO CUERPO: Contenido dinámico encajado con simetría en el margen derecho -->
           <div class="grupo-cuerpo-pdf">
               <div class="fila-maestra-pdf">
                   <div class="celda-maestra-pdf">
                       
                       <table class="datos-tabla">
                           <tr>
-                              <td class="label-fija">Contrato No.</td>
+                              <td class="label-fija" style="width: 15%;">Contrato No.</td>
                               <td style="font-weight: bold; width: 35%; color: #1e3a8a;">${currentUserData.contract || '---'}</td>
-                              <td class="label-fija">Supervisor</td>
+                              <td class="label-fija" style="width: 15%;">Supervisor</td>
                               <td style="width: 35%;">${currentUserData.supervisor || '---'}</td>
                           </tr>
                           <tr>
@@ -780,11 +783,11 @@ document.addEventListener('DOMContentLoaded', () => {
                       <table class="datos-tabla">
                           <thead>
                               <tr>
-                                  <th>Asunto pendiente o en trámite</th>
-                                  <th>Estado Actual</th>
-                                  <th>Entidad / Dependencia</th>
-                                  <th>Acciones pendientes por realizar</th>
-                                  <th>Fecha Límite</th>
+                                  <th style="width: 25%;">Asunto pendiente o en trámite</th>
+                                  <th style="width: 12%;">Estado Actual</th>
+                                  <th style="width: 20%;">Entidad / Dependencia</th>
+                                  <th style="width: 31%;">Acciones pendientes por realizar</th>
+                                  <th style="width: 12%;">Fecha Límite</th>
                               </tr>
                           </thead>
                           <tbody>${htmlRowsAsuntos}</tbody>
@@ -794,10 +797,10 @@ document.addEventListener('DOMContentLoaded', () => {
                       <table class="datos-tabla">
                           <thead>
                               <tr>
-                                  <th>Sistema / aplicativo</th>
-                                  <th>Usuario</th>
-                                  <th>Contraseña</th>
-                                  <th>Observaciones</th>
+                                  <th style="width: 25%;">Sistema / aplicativo</th>
+                                  <th style="width: 20%;">Usuario</th>
+                                  <th style="width: 20%;">Contraseña</th>
+                                  <th style="width: 35%;">Observaciones</th>
                               </tr>
                           </thead>
                           <tbody>${htmlRowsSistemas}</tbody>
@@ -807,12 +810,12 @@ document.addEventListener('DOMContentLoaded', () => {
                       <table class="datos-tabla">
                           <thead>
                               <tr>
-                                  <th>Nombre</th>
-                                  <th>Teléfono</th>
-                                  <th>Email</th>
-                                  <th>Tipo de contacto</th>
-                                  <th>Entidad / dependencia</th>
-                                  <th>Recomendaciones</th>
+                                  <th style="width: 20%;">Nombre</th>
+                                  <th style="width: 12%;">Teléfono</th>
+                                  <th style="width: 18%;">Email</th>
+                                  <th style="width: 15%;">Tipo de contacto</th>
+                                  <th style="width: 15%;">Entidad / dependencia</th>
+                                  <th style="width: 20%;">Recomendaciones</th>
                               </tr>
                           </thead>
                           <tbody>${htmlRowsDirectorio}</tbody>
@@ -864,7 +867,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    // CONFIGURACIÓN CENTRAL DE LA LIBRERÍA HTML2PDF
+    // CONFIGURACIÓN CENTRAL DE LA LIBRERÍA HTML2PDF (MÁRGENES FÍSICOS EQUILIBRADOS)
     const opcionesConfig = {
       margin:       10,
       filename:     `FO-GITH-060_STC_${currentUserData.contract}_${currentUserData.cedula}.pdf`,
@@ -873,7 +876,7 @@ document.addEventListener('DOMContentLoaded', () => {
       jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' }
     };
 
-    // PROCESAMIENTO QUIRÚRGICO DE PAGINACIÓN FLOTANTE SIN TOCAR LA TABLA HTML
+    // PROCESAMIENTO DE PAGINACIÓN FLOTANTE
     html2pdf().set(opcionesConfig).from(elementoImpresion).toPdf().get('pdf').then(function(pdf) {
       const totalPaginas = pdf.internal.getNumberOfPages();
       
@@ -883,7 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pdf.setFontSize(8);
         pdf.setFillColor(0, 0, 0);
         
-        // Estampa la numeración limpia únicamente en la esquina inferior derecha de cada página
+        // Estampa la numeración limpia perfectamente alineada
         pdf.text(`Página ${i} de ${totalPaginas}`, 259, 207, { align: "right" });
       }
     }).save();
