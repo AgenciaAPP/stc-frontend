@@ -420,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!correoIngresado) { alert('⚠️ Por favor ingresa el correo de notificación del contratista.'); return; }
 
       const p = { 
-        contrato: window.contratoTemporalValidado.contract, 
+        contrato: window.contratoTemporalValidated.contract || window.contratoTemporalValidado.contract, 
         contratista: window.contratoTemporalValidado.nombre, 
         cedula: window.contratoTemporalValidado.cedula, 
         objeto: window.contratoTemporalValidado.objeto, 
@@ -667,13 +667,13 @@ document.addEventListener('DOMContentLoaded', () => {
       <style>
           @page { size: letter landscape; margin: 10mm 10mm 15mm 10mm; }
           
-          /* RESET DE CONTROL DE BORDES: Forzar cálculo interno para evitar desbordes */
+          /* RESET DE CONTROL DE BORDES: Forzar cálculo interno estricto */
           * { box-sizing: border-box; -webkit-box-sizing: border-box; }
           
           body { font-family: 'Segoe UI', Arial, sans-serif; color: #000000; line-height: 1.3; font-size: 9px; }
           
-          /* Estructura Maestra de Impresión Ajustada */
-          .contenedor-impresion-raiz { width: 97%; display: table; border-collapse: collapse; margin: 0 auto; table-layout: fixed; }
+          /* ANCHO FIJO ABSOLUTO COMPLETO: Obliga al lienzo html2canvas a cerrar perfectamente los bordes a 1040px */
+          .contenedor-impresion-raiz { width: 1040px; display: table; border-collapse: collapse; margin: 0 auto; table-layout: fixed; }
           .grupo-encabezado-pdf { display: table-header-group; }
           .grupo-cuerpo-pdf { display: table-row-group; }
           .fila-maestra-pdf { display: table-row; }
@@ -727,7 +727,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
           </div>
 
-          <!-- 2. GRUPO CUERPO: Contenido dinámico encajado con simetría en el margen derecho -->
+          <!-- 2. GRUPO CUERPO -->
           <div class="grupo-cuerpo-pdf">
               <div class="fila-maestra-pdf">
                   <div class="celda-maestra-pdf">
@@ -865,16 +865,16 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    // CONFIGURACIÓN CENTRAL DE LA LIBRERÍA HTML2PDF
+    // CONFIGURACIÓN SÓLIDA SÍNCRONA DE LA LIBRERÍA
     const opcionesConfig = {
       margin:       10,
       filename:     `FO-GITH-060_STC_${currentUserData.contract}_${currentUserData.cedula}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, logging: false, width: elementoImpresion.offsetWidth },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
       jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' }
     };
 
-    // PROCESAMIENTO DE PAGINACIÓN FLOTANTE
+    // PROCESAMIENTO COMPLETO ASÍNCRONO SEGURO DE LA DESCARGA Y PAGINACIÓN
     html2pdf().set(opcionesConfig).from(elementoImpresion).toPdf().get('pdf').then(function(pdf) {
       const totalPaginas = pdf.internal.getNumberOfPages();
       
@@ -884,6 +884,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pdf.setFontSize(8);
         pdf.setFillColor(0, 0, 0);
         
+        // Estampa la numeración dinámica sin alterar el flujo DOM
         pdf.text(`Página ${i} de ${totalPaginas}`, 259, 207, { align: "right" });
       }
     }).save();
