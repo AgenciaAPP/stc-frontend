@@ -96,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
     currentUserRole = 'funcionario'; loginTitle.innerText = 'INGRESAR COMO FUNCIONARIO'; inputLoginCedula.value = ''; if(inputLoginPin) inputLoginPin.value = ''; switchView(viewLogin);
   });
 
-  // CORREGIDO: Redirección inteligente. Si no hay sesión de datos de usuario activa, regresa siempre al Welcome principal.
   btnBackToWelcome.addEventListener('click', (e) => {
     e.preventDefault();
     let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante'); if (btnFlotante) btnFlotante.remove();
@@ -200,13 +199,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // AJUSTADO: El contratista SIEMPRE entra a ver su formulario, congelándose de forma interna solo si está finalizado (Modo Lectura Permisivo)
   btnEmpezar.addEventListener('click', () => {
     const yaFinalizado = currentUserData && currentUserData.estado.toUpperCase() === 'FINALIZADO';
     isReadOnlyMode = yaFinalizado; 
     ajustarModoLecturaFormulario(yaFinalizado);
 
-    // ACTIVACIÓN VISIBLE BOTÓN PDF GLOBAL CONTRATISTA
     if(yaFinalizado) {
       if(btnDescargarPDFGlobal) btnDescargarPDFGlobal.classList.remove('hidden');
 
@@ -412,7 +409,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
       if (data.success) {
         document.getElementById('secop-res-nombre').textContent = data.nombre; document.getElementById('secop-res-cedula').textContent = data.cedula; document.getElementById('secop-res-objeto').textContent = data.objeto;
-        // Inicialización por defecto del correo para Lina en el input mapeado
         if (document.getElementById('secop-res-correo')) document.getElementById('secop-res-correo').value = '';
         window.contratoTemporalValidado = { cedula: data.cedula, nombre: data.nombre, contract: contratoInput, objeto: data.objeto, nombreSupervisor: data.nombreSupervisor, cedulaSupervisor: data.cedulaSupervisor, fechaInicio: data.fechaFirma };
         resultBox.classList.remove('hidden');
@@ -433,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
         supervisor: window.contratoTemporalValidado.nombreSupervisor, 
         cedulaSupervisor: window.contratoTemporalValidado.cedulaSupervisor, 
         fechaInicio: window.contratoTemporalValidado.fechaInicio,
-        correoNotificacion: correoIngresado // Captura y mapeo del input interactivo de Talento Humano
+        correoNotificacion: correoIngresado 
       };
       
       try {
@@ -529,7 +525,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         limpiarCamposAuditoria(); isReadOnlyMode = true; ajustarModoLecturaFormulario(true); inyectarBotonRegresoAuditoria();
 
-        // ACTIVA EL BOTÓN DE EXPORTACIÓN PDF PARA EL SUPERVISOR SI EL REGISTRO YA ESTÁ CERRADO
         if(actaSeleccionada.status === 'FINALIZADO') {
           if(btnDescargarPDFGlobal) btnDescargarPDFGlobal.classList.remove('hidden');
         } else {
@@ -548,7 +543,6 @@ document.addEventListener('DOMContentLoaded', () => {
           btnSaveContainer.appendChild(btnReabrir);
         }
 
-        // CONTEXTO DE CONTRATO COMPLETO PARA EL MODULO DE IMPRESIÓN
         currentUserData = {
           cedula: actaSeleccionada.cedula,
           nombre: actaSeleccionada.name,
@@ -603,7 +597,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fechaHoy = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-    // MAPEADO COMPLETO E ITERATIVO DE SUBTABLAS HTML CON LOS ARREGLOS EN SESIÓN
     let htmlRowsAcciones = '';
     if(listadoAcciones.length === 0) {
       htmlRowsAcciones = `<tr><td colspan="7" style="border: 1px solid #000; padding: 4px; text-align:center; color:#555;">Ninguna acción de transferencia registrada.</td></tr>`;
@@ -670,7 +663,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // ENSAMBLADO DINÁMICO DE CONTENIDO UTILIZANDO LAS CLASES NATIVAS DEL FORMATO INSTITUCIONAL
     const elementoImpresion = document.createElement('div');
     elementoImpresion.style.padding = '12px';
     elementoImpresion.innerHTML = `
@@ -692,7 +684,8 @@ document.addEventListener('DOMContentLoaded', () => {
       <table class="tabla-oficial">
           <tr>
               <td rowspan="2" class="logo-space">
-                  <img src="https://github.com/AgenciaAPP/Imagenes-Varias/blob/main/logoencabezado.png?raw=true" alt="Logo Alcaldía de Medellín - Agencia APP" class="logo-img">
+                  <!-- AJUSTE OPTIMIZADO CORS: Logo institucional plano de la Agencia APP -->
+                  <img src="https://raw.githubusercontent.com/AgenciaAPP/Imagenes-Varias/main/logoappencabezado.png" alt="Logo Alcaldía de Medellín - Agencia APP" class="logo-img">
               </td>
               <td style="font-size: 9px; width: 57%; text-align:center;">
                   PROCESO<br>GESTIÓN INTEGRAL DEL TALENTO HUMANO
@@ -841,7 +834,6 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    // 4. CONFIGURACIÓN DEL CONTROLADOR DE IMPRESIÓN EN ORIENTACIÓN HORIZONTAL (LANDSCAPE)
     const opcionesConfig = {
       margin:       10,
       filename:     `FO-GITH-060_STC_${currentUserData.contract}_${currentUserData.cedula}.pdf`,
