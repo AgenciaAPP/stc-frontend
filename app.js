@@ -665,13 +665,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const elementoImpresion = document.createElement('div');
     elementoImpresion.style.padding = '12px';
+    elementoImpresion.style.marginTop = '28px'; // Deja margen libre para el encabezado repetitivo superior
     elementoImpresion.innerHTML = `
       <style>
           body { font-family: 'Segoe UI', Arial, sans-serif; color: #000000; line-height: 1.3; font-size: 9px; }
-          .tabla-oficial { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-          .tabla-oficial td { border: 1px solid #000000; padding: 4px; font-size: 8px; font-weight: bold; text-align: center; vertical-align: middle; }
-          .logo-space { width: 18%; background-color: #FFFFFF; padding: 6px !important; }
-          .logo-img { max-width: 100%; height: auto; max-height: 55px; display: block; margin: 0 auto; }
           .header-bloque { background-color: #F2F2F2; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 9px; padding: 4px; border: 1px solid #000000; margin-top: 10px; }
           table.datos-tabla { width: 100%; border-collapse: collapse; margin-bottom: 0px; }
           table.datos-tabla td, table.datos-tabla th { border: 1px solid #000000; padding: 4px; vertical-align: top; }
@@ -680,31 +677,6 @@ document.addEventListener('DOMContentLoaded', () => {
           .nota-pie { border: 1px solid #000000; padding: 6px; font-size: 8px; font-weight: bold; margin-top: 15px; text-align: justify; }
           .salto-pagina { page-break-before: always; }
       </style>
-
-      <table class="tabla-oficial">
-          <tr>
-              <td rowspan="2" class="logo-space">
-                  <!-- AJUSTE OPTIMIZADO CORS: Logo institucional plano de la Agencia APP -->
-                  <img src="https://raw.githubusercontent.com/AgenciaAPP/Imagenes-Varias/main/logoappencabezado.png" alt="Logo Alcaldía de Medellín - Agencia APP" class="logo-img">
-              </td>
-              <td style="font-size: 9px; width: 57%; text-align:center;">
-                  PROCESO<br>GESTIÓN INTEGRAL DEL TALENTO HUMANO
-              </td>
-              <td style="width: 25%; font-weight: normal; text-align: left;">
-                  <strong>Código:</strong> FO-GITH-060<br>
-                  <hr style="margin: 2px 0; border: 0; border-top: 1px solid #000;">
-                  <strong>Versión:</strong> 1
-              </td>
-          </tr>
-          <tr>
-              <td style="font-size: 9px; text-align:center;">
-                  FORMATO<br>TRANSFERENCIA DE CONOCIMIENTO GENERADO EN EL MARCO DE CONTRATOS CON PERSONAS NATURALES O JURÍDICAS
-              </td>
-              <td style="font-weight: normal; text-align: left;">
-                  <strong>Fecha de entrada en vigencia:</strong> 08/05/2026
-              </td>
-          </tr>
-      </table>
 
       <table class="datos-tabla">
           <tr>
@@ -834,15 +806,64 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
+    // CONFIGURACIÓN DINÁMICA AVANZADA: ENCABEZADO REPETITIVO Y PAGINACIÓN NATIVA CORS
     const opcionesConfig = {
-      margin:       10,
+      margin:       [38, 10, 15, 10], // Margen amplio arriba (38mm) para que el header repetido no tape el contenido
       filename:     `FO-GITH-060_STC_${currentUserData.contract}_${currentUserData.cedula}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
       jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' }
     };
 
-    html2pdf().set(opcionesConfig).from(elementoImpresion).save();
+    // Pre-cargar la imagen en un canvas para garantizar renderizado asíncrono seguro en jsPDF
+    const logoImg = new Image();
+    logoImg.crossOrigin = "Anonymous";
+    logoImg.src = "https://raw.githubusercontent.com/AgenciaAPP/Imagenes-Varias/main/logoappencabezado.png";
+
+    logoImg.onload = function() {
+      html2pdf().set(opcionesConfig).from(elementoImpresion).toPdf().get('pdf').then(function(pdf) {
+        const totalPaginas = pdf.internal.getNumberOfPages();
+        
+        for (let i = 1; i <= totalPaginas; i++) {
+          pdf.setPage(i);
+          
+          // --- RENDERIZADO DEL ENCABEZADO OFICIAL REPETITIVO (Estructura de grilla FO-GITH-060) ---
+          pdf.setFillColor(255, 255, 255);
+          pdf.rect(10, 8, 259, 24, 'F'); // Limpiar fondo del header
+          
+          // Dibujar líneas y bordes negros del cuadro exterior
+          pdf.setDrawColor(0, 0, 0);
+          pdf.setLineWidth(0.23);
+          pdf.rect(10, 8, 259, 24); // Contorno principal
+          pdf.line(58, 8, 58, 32);   // Separador derecho del logo
+          pdf.line(205, 8, 205, 32); // Separador izquierdo de metadatos
+          pdf.line(58, 20, 259, 20); // División horizontal interna
+
+          // Inyectar el logo institucional pre-cargado de forma milimétrica
+          pdf.addImage(logoImg, 'PNG', 12, 10, 42, 20);
+
+          // Escribir textos del bloque central del encabezado
+          pdf.setFont("Helvetica", "Bold");
+          pdf.setFontSize(8);
+          pdf.text("PROCESO", 131, 12, { align: "center" });
+          pdf.text("GESTIÓN INTEGRAL DEL TALENTO HUMANO", 131, 16, { align: "center" });
+          pdf.text("FORMATO", 131, 24, { align: "center" });
+          pdf.setFontSize(7);
+          pdf.text("TRANSFERENCIA DE CONOCIMIENTO GENERADO EN EL MARCO DE CONTRATOS CON PERSONAS NATURALES O JURÍDICAS", 131, 28, { align: "center" });
+
+          // Escribir metadatos técnicos en el recuadro de la derecha
+          pdf.setFontSize(7);
+          pdf.text("Código: FO-GITH-060", 208, 12);
+          pdf.text("Versión: 1", 208, 16);
+          pdf.text("Fecha de entrada en vigencia: 08/05/2026", 208, 26);
+
+          // --- RENDERIZADO DEL PIE DE PÁGINA: NUMERACIÓN AUTOMÁTICA EN VIVO ---
+          pdf.setFont("Helvetica", "Normal");
+          pdf.setFontSize(8);
+          pdf.text(`Página ${i} de ${totalPaginas}`, 259, 208, { align: "right" });
+        }
+      }).save();
+    };
   }
 
   if(btnDescargarPDFGlobal) {
