@@ -3,8 +3,8 @@ const BACKEND_URL = 'https://stc-backend-nine.vercel.app';
 let currentUserRole = null; 
 let currentUserData = null; 
 let isReadOnlyMode = false; 
-let loggedSupervisorCedula = ''; // Almacena de forma segura la cédula del supervisor o TH en sesión
-let loggedSupervisorPin = '';    // Almacena de forma segura el PIN de sesión del funcionario
+let loggedSupervisorCedula = ''; 
+let loggedSupervisorPin = '';    
 
 let listadoAcciones = [];
 let listadoAsuntos = [];
@@ -57,11 +57,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTableAcciones(); renderTableAsuntos(); renderTableSistemas(); renderTableDirectorio();
     viewFormularioTransferencia.querySelectorAll('textarea, input').forEach(el => el.value = '');
 
-    // ELIMINACIÓN DEL BOTÓN DINÁMICO DE SUPERVISOR AL LIMPIAR LA VISTA
     let btnReabrirExistente = document.getElementById('btn-reabrir-dinamico-supervisor');
     if(btnReabrirExistente) btnReabrirExistente.remove();
 
-    // ELIMINACIÓN DEL BOTÓN DINÁMICO DE REGRESO DEL CONTRATISTA
     let btnRegresarContratista = document.getElementById('btn-regresar-dinamico-contratista');
     if(btnRegresarContratista) btnRegresarContratista.remove();
 
@@ -413,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.contratoTemporalValidado = { cedula: data.cedula, nombre: data.nombre, contract: contratoInput, objeto: data.objeto, nombreSupervisor: data.nombreSupervisor, cedulaSupervisor: data.cedulaSupervisor, fechaInicio: data.fechaFirma };
         resultBox.classList.remove('hidden');
       } else { alert(`❌ ${data.message || 'Contrato no encontrado.'}`); }
-    } catch (error) { alert('❌ Error de comunicación.'); } finally { loader.classList.add('hidden'); }
+    } catch (error) { alert('❌ Error de comunicación.'); } finally { loader.classList.remove('hidden'); }
   });
 
   document.getElementById('btn-confirmar-habilitacion').addEventListener('click', async () => {
@@ -675,7 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
           body { font-family: 'Segoe UI', Arial, sans-serif; color: #000000; line-height: 1.3; font-size: 9px; }
           
           /* Estructura Maestra de Impresión Ajustada */
-          .contenedor-impresion-raiz { width: 99.4%; display: table; border-collapse: collapse; margin: 0 auto; }
+          .contenedor-impresion-raiz { width: 97%; display: table; border-collapse: collapse; margin: 0 auto; table-layout: fixed; }
           .grupo-encabezado-pdf { display: table-header-group; }
           .grupo-cuerpo-pdf { display: table-row-group; }
           .fila-maestra-pdf { display: table-row; }
@@ -867,12 +865,12 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    // CONFIGURACIÓN CENTRAL DE LA LIBRERÍA HTML2PDF (MÁRGENES FÍSICOS EQUILIBRADOS)
+    // CONFIGURACIÓN CENTRAL DE LA LIBRERÍA HTML2PDF
     const opcionesConfig = {
       margin:       10,
       filename:     `FO-GITH-060_STC_${currentUserData.contract}_${currentUserData.cedula}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      html2canvas:  { scale: 2, useCORS: true, logging: false, width: elementoImpresion.offsetWidth },
       jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' }
     };
 
@@ -886,7 +884,6 @@ document.addEventListener('DOMContentLoaded', () => {
         pdf.setFontSize(8);
         pdf.setFillColor(0, 0, 0);
         
-        // Estampa la numeración limpia perfectamente alineada
         pdf.text(`Página ${i} de ${totalPaginas}`, 259, 207, { align: "right" });
       }
     }).save();
