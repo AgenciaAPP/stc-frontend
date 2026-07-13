@@ -4,6 +4,7 @@ let currentUserRole = null;
 let currentUserData = null; 
 let isReadOnlyMode = false; 
 let loggedSupervisorCedula = ''; // Almacena de forma segura la cédula del supervisor o TH en sesión
+let loggedSupervisorPin = '';    // Almacena de forma segura el PIN de sesión del funcionario
 
 let listadoAcciones = [];
 let listadoAsuntos = [];
@@ -35,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginTitle = document.getElementById('login-title');
   const loginInstruction = document.getElementById('login-instruction');
   const inputLoginCedula = document.getElementById('login-cedula');
+  const inputLoginPin = document.getElementById('login-pin');
   const btnSubmitLogin = document.getElementById('btn-submit-login');
   const loginLoader = document.getElementById('login-loader');
 
@@ -87,11 +89,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   btnRoleContratista.addEventListener('click', () => {
-    currentUserRole = 'contratista'; loginTitle.innerText = 'INGRESAR COMO CONTRATISTA'; inputLoginCedula.value = ''; switchView(viewLogin);
+    currentUserRole = 'contratista'; loginTitle.innerText = 'INGRESAR COMO CONTRATISTA'; inputLoginCedula.value = ''; if(inputLoginPin) inputLoginPin.value = ''; switchView(viewLogin);
   });
 
   btnRoleFuncionario.addEventListener('click', () => {
-    currentUserRole = 'funcionario'; loginTitle.innerText = 'INGRESAR COMO FUNCIONARIO'; inputLoginCedula.value = ''; switchView(viewLogin);
+    currentUserRole = 'funcionario'; loginTitle.innerText = 'INGRESAR COMO FUNCIONARIO'; inputLoginCedula.value = ''; if(inputLoginPin) inputLoginPin.value = ''; switchView(viewLogin);
   });
 
   // CORREGIDO: Redirección inteligente. Si no hay sesión de datos de usuario activa, regresa siempre al Welcome principal.
@@ -108,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnLogoutButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      currentUserRole = null; currentUserData = null; isReadOnlyMode = false; loggedSupervisorCedula = '';
+      currentUserRole = null; currentUserData = null; isReadOnlyMode = false; loggedSupervisorCedula = ''; loggedSupervisorPin = '';
       let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante'); if (btnFlotante) btnFlotante.remove();
       let btnReabrirExistente = document.getElementById('btn-reabrir-dinamico-supervisor'); if(btnReabrirExistente) btnReabrirExistente.remove();
       let btnRegresarContratista = document.getElementById('btn-regresar-dinamico-contratista'); if(btnRegresarContratista) btnRegresarContratista.remove();
@@ -120,13 +122,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnSubmitLogin.addEventListener('click', async () => {
     const cedula = inputLoginCedula.value.trim();
+    const pin = inputLoginPin ? inputLoginPin.value.trim() : '';
+    
     if (!cedula) { alert('⚠️ Por favor, ingresa tu número de documento.'); return; }
+    if (!pin) { alert('⚠️ Por favor, ingresa tu PIN de acceso de 4 dígitos.'); return; }
+    
     loginLoader.classList.remove('hidden'); btnSubmitLogin.disabled = true;
 
     try {
       if (currentUserRole === 'funcionario') {
         const sectionTH = document.getElementById('section-th-actions');
         loggedSupervisorCedula = cedula; 
+        loggedSupervisorPin = pin; 
 
         if (cedula === '123') {
           document.getElementById('badge-rol-funcionario').innerText = 'Perfil: Talento Humano (Superusuario)';
@@ -141,12 +148,20 @@ document.addEventListener('DOMContentLoaded', () => {
           switchView(viewFuncionarioDashboard);
         } else {
           loggedSupervisorCedula = ''; 
+          loggedSupervisorPin = '';
         }
         return; 
       }
 
       if (currentUserRole === 'contratista') {
-        const response = await fetch(`${BACKEND_URL}/api/login-contratista?cedula=${encodeURIComponent(cedula)}`);
+        const response = await fetch(`${BACKEND_URL}/api/login-contratista?cedula=${encodeURIComponent(cedula)}&pin=${encodeURIComponent(pin)}`);
+        
+        if (response.status === 401) {
+          const errData = await response.json();
+          alert(`❌ ${errData.message}`);
+          return;
+        }
+
         const resData = await response.json();
 
         if (resData.success && resData.exists) {
@@ -179,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     } catch (error) {
-      alert('❌ Error consultando la pasarela de autenticación central.');
+      alert('❌ Error consultando la pasarela de autenticación central o PIN incorrecto.');
     } finally {
       loginLoader.classList.add('hidden'); btnSubmitLogin.disabled = false;
     }
@@ -397,6 +412,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
       if (data.success) {
         document.getElementById('secop-res-nombre').textContent = data.nombre; document.getElementById('secop-res-cedula').textContent = data.cedula; document.getElementById('secop-res-objeto').textContent = data.objeto;
+        // Inicialización por defecto del correo para Lina en el input mapeado
+        if (document.getElementById('secop-res-correo')) document.getElementById('secop-res-correo').value = '';
         window.contratoTemporalValidado = { cedula: data.cedula, nombre: data.nombre, contract: contratoInput, objeto: data.objeto, nombreSupervisor: data.nombreSupervisor, cedulaSupervisor: data.cedulaSupervisor, fechaInicio: data.fechaFirma };
         resultBox.classList.remove('hidden');
       } else { alert(`❌ ${data.message || 'Contrato no encontrado.'}`); }
@@ -405,25 +422,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btn-confirmar-habilitacion').addEventListener('click', async () => {
     if (window.contratoTemporalValidado) {
-      const p = { contrato: window.contratoTemporalValidado.contract, contratista: window.contratoTemporalValidado.nombre, cedula: window.contratoTemporalValidado.cedula, objeto: window.contratoTemporalValidado.objeto, supervisor: window.contratoTemporalValidado.nombreSupervisor, cedulaSupervisor: window.contratoTemporalValidado.cedulaSupervisor, fechaInicio: window.contratoTemporalValidado.fechaInicio };
+      const correoIngresado = document.getElementById('secop-res-correo') ? document.getElementById('secop-res-correo').value.trim() : '';
+      if (!correoIngresado) { alert('⚠️ Por favor ingresa el correo de notificación del contratista.'); return; }
+
+      const p = { 
+        contrato: window.contratoTemporalValidado.contract, 
+        contratista: window.contratoTemporalValidado.nombre, 
+        cedula: window.contratoTemporalValidado.cedula, 
+        objeto: window.contratoTemporalValidado.objeto, 
+        supervisor: window.contratoTemporalValidado.nombreSupervisor, 
+        cedulaSupervisor: window.contratoTemporalValidado.cedulaSupervisor, 
+        fechaInicio: window.contratoTemporalValidado.fechaInicio,
+        correoNotificacion: correoIngresado // Captura y mapeo del input interactivo de Talento Humano
+      };
+      
       try {
         const response = await fetch(`${BACKEND_URL}/api/habilitar-contrato`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
         const resData = await response.json();
-        if (resData.success) { alert('🎉 ¡CONTRATO INYECTADO EN SHAREPOINT CON ÉXITO!'); await consultarContratosEnVivo(); document.getElementById('secop-result-box').classList.add('hidden'); document.getElementById('search-contrato').value = ''; }
+        if (resData.success) { alert('🎉 ¡CONTRATO INYECTADO Y PIN NOTIFICADO CON ÉXITO AL CORREO!'); await consultarContratosEnVivo(); document.getElementById('secop-result-box').classList.add('hidden'); document.getElementById('search-contrato').value = ''; }
       } catch (error) { alert('❌ Error de comunicación.'); }
     }
   });
 
   async function consultarContratosEnVivo() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/contratos?queryCedula=${encodeURIComponent(loggedSupervisorCedula)}`); 
+      const response = await fetch(`${BACKEND_URL}/api/contratos?queryCedula=${encodeURIComponent(loggedSupervisorCedula)}&queryPin=${encodeURIComponent(loggedSupervisorPin)}`); 
       if (!response.ok) {
         const errData = await response.json(); alert(`❌ ${errData.message || 'Acceso denegado.'}`); return false;
       }
       const resData = await response.json();
       if (resData.success) { listadoMonitoreo = resData.data; poblarTablaSeguimientoFuncionarios(); return true; }
       return false;
-    } catch (e) { alert('❌ Error de red consultando la matriz de contratos.'); return false; }
+    } catch (e) { alert('❌ Error de red consultando la matriz de contratos o credenciales inválidas.'); return false; }
   }
 
   window.reabrirActaSupervisor = async function(idSharePoint) {
