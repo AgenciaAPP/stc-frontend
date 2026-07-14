@@ -543,15 +543,15 @@ input:focus, select:focus, textarea:focus {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: #b91c1c;
+  background-color: #c0392b;
   color: #ffffff;
   border: none;
   padding: 11px 20px;
   border-radius: 10px;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.85rem;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.2);
+  box-shadow: 0 2px 8px rgba(192, 57, 43, 0.15);
   transition: opacity 0.2s ease;
   white-space: nowrap;
   margin-left: 10px;
@@ -573,19 +573,38 @@ input:focus, select:focus, textarea:focus {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: #1a7f4b;
+  background-color: var(--accent-blue);
   color: #ffffff;
   border: none;
   padding: 11px 20px;
   border-radius: 10px;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.85rem;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(26, 127, 75, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.15);
   transition: opacity 0.2s ease;
   white-space: nowrap;
 }
-.btn-pdf-report:hover { opacity: 0.9; }
+.btn-pdf-report:hover { opacity: 0.88; }
+
+.btn-approve-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #268a56;
+  color: #ffffff;
+  border: none;
+  padding: 11px 20px;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(38, 138, 86, 0.15);
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+  margin-left: 10px;
+}
+.btn-approve-action:hover { opacity: 0.88; }
 
 .btn-reopen-acta {
   display: inline-flex;
@@ -596,15 +615,15 @@ input:focus, select:focus, textarea:focus {
   border: none;
   padding: 11px 20px;
   border-radius: 10px;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.85rem;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(184, 134, 11, 0.2);
+  box-shadow: 0 2px 8px rgba(184, 134, 11, 0.15);
   transition: opacity 0.2s ease;
   white-space: nowrap;
   margin-left: 10px;
 }
-.btn-reopen-acta:hover { opacity: 0.9; }
+.btn-reopen-acta:hover { opacity: 0.88; }
 
 .btn-secondary-action {
   display: inline-flex;
@@ -615,7 +634,7 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid var(--border-color);
   padding: 11px 20px;
   border-radius: 10px;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.85rem;
   cursor: pointer;
   white-space: nowrap;
@@ -637,13 +656,13 @@ input:focus, select:focus, textarea:focus {
   border: none;
   padding: 12px 22px;
   border-radius: 12px;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.85rem;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 113, 227, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 113, 227, 0.18);
   transition: opacity 0.2s ease;
 }
-.btn-float-back:hover { opacity: 0.9; }
+.btn-float-back:hover { opacity: 0.88; }
 
 @media (max-width: 768px) {
   .grid-form { grid-template-columns: 1fr; gap: 24px; }
