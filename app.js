@@ -672,8 +672,8 @@ document.addEventListener('DOMContentLoaded', () => {
           
           body { font-family: 'Segoe UI', Arial, sans-serif; color: #000000; line-height: 1.3; font-size: 9px; }
           
-          /* CONTENEDOR FLUIDO EN MEMORIA: Mapeo limpio original */
-          .contenedor-impresion-raiz { width: 100%; display: table; border-collapse: collapse; margin: 0 auto; table-layout: fixed; }
+          /* CAJA SEGURA AJUSTADA: Reducimos el ancho a 98% con margen auto para que los bordes derechos no se corten */
+          .contenedor-impresion-raiz { width: 98%; display: table; border-collapse: collapse; margin: 0 auto; table-layout: fixed; }
           .grupo-encabezado-pdf { display: table-header-group; }
           .grupo-cuerpo-pdf { display: table-row-group; }
           .fila-maestra-pdf { display: table-row; }
@@ -865,7 +865,6 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    // CONFIGURACIÓN AJUSTADA: Reducimos sutilmente el scale a 1.5 para obligar al lienzo a encajar los bordes
     const opcionesConfig = {
       margin:       10,
       filename:     `FO-GITH-060_STC_${currentUserData.contract}_${currentUserData.cedula}.pdf`,
@@ -889,6 +888,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if(btnDescargarPDFGlobal) {
-    btnDescargarPDFGlobal.addEventListener('click', exportarFormatoOficialPDF);
+    pdfGlobal = document.getElementById('btn-descargar-pdf-global');
+    if(pdfGlobal) {
+      pdfGlobal.addEventListener('click', exportarFormatoOficialPDF);
+    }
   }
 });
