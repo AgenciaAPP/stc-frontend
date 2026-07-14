@@ -665,226 +665,219 @@ document.addEventListener('DOMContentLoaded', () => {
     elementoImpresion.style.padding = '2px';
     elementoImpresion.innerHTML = `
       <style>
-          @page { size: letter landscape; margin: 10mm 10mm 15mm 10mm; }
+          @page { size: letter landscape; margin: 38mm 11mm 15mm 11mm; }
           
-          /* RESET DE CONTROL DE BORDES: Forzar cálculo interno estricto e inquebrantable */
+          /* RESET Y CONTROL DE CAJA COMPLETO */
           * { box-sizing: border-box !important; -webkit-box-sizing: border-box !important; }
           
           body { font-family: 'Segoe UI', Arial, sans-serif; color: #000000; line-height: 1.3; font-size: 9px; }
           
-          /* CAJA SEGURA AJUSTADA: Reducimos el ancho a 98% con margen auto para que los bordes derechos no se corten */
-          .contenedor-impresion-raiz { width: 98%; display: table; border-collapse: collapse; margin: 0 auto; table-layout: fixed; }
-          .grupo-encabezado-pdf { display: table-header-group; }
-          .grupo-cuerpo-pdf { display: table-row-group; }
-          .fila-maestra-pdf { display: table-row; }
-          .celda-maestra-pdf { display: table-cell; width: 100%; }
-
-          /* Tabla de Encabezado Original HTML Blindada */
-          .tabla-oficial { width: 100%; border-collapse: collapse; margin-bottom: 12px; table-layout: fixed; }
-          .tabla-oficial td { border: 1px solid #000000; padding: 4px; font-size: 8px; font-weight: bold; text-align: center; vertical-align: middle; }
-          .logo-space { width: 18%; background-color: #FFFFFF; padding: 6px !important; }
-          .logo-img { max-width: 100%; height: auto; max-height: 52px; display: block; margin: 0 auto; }
+          /* CONTENEDOR AJUSTADO A 97.5% CON MARGEN SEGURO PARA IMPEDIR CORTES EN BORDES DERECHOS */
+          .contenedor-impresion-raiz { width: 97.5%; margin: 0 auto; padding-top: 2px; }
+          
+          /* EVITAR QUE LAS FILAS DE TEXTO LARGO SE MOCHEN ENTRE DOS PÁGINAS HACIENDO UN QUIEBRE HORIZONTAL SUCIO */
+          tr { page-break-inside: avoid !important; break-inside: avoid !important; }
           
           /* Estilos de Bloques y Tablas de Datos */
-          .header-bloque { background-color: #F2F2F2; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 9px; padding: 4px; border: 1px solid #000000; margin-top: 10px; margin-bottom: 0px; page-break-inside: avoid; }
+          .header-bloque { background-color: #F2F2F2; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 9px; padding: 4px; border: 1px solid #000000; margin-top: 10px; margin-bottom: 0px; page-break-inside: avoid !important; break-inside: avoid !important; }
           table.datos-tabla { width: 100%; border-collapse: collapse; margin-bottom: 0px; table-layout: fixed; }
           table.datos-tabla td, table.datos-tabla th { border: 1px solid #000000; padding: 4px; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; word-break: break-all !important; }
           table.datos-tabla th { background-color: #F2F2F2; font-weight: bold; text-align: center; font-size: 8px; }
           .label-fija { font-weight: bold; background-color: #F2F2F2; width: 15%; }
-          .nota-pie { border: 1px solid #000000; padding: 6px; font-size: 8px; font-weight: bold; margin-top: 15px; text-align: justify; page-break-inside: avoid; }
-          .salto-pagina { page-break-before: always; }
+          .nota-pie { border: 1px solid #000000; padding: 6px; font-size: 8px; font-weight: bold; margin-top: 15px; text-align: justify; page-break-inside: avoid !important; break-inside: avoid !important; }
       </style>
 
       <div class="contenedor-impresion-raiz">
-          <!-- 1. GRUPO ENCABEZADO: Se repetirá automáticamente en la parte superior de cada página -->
-          <div class="grupo-encabezado-pdf">
-              <div class="fila-maestra-pdf">
-                  <div class="celda-maestra-pdf">
-                      <table class="tabla-oficial">
-                          <tr>
-                              <td rowspan="2" class="logo-space">
-                                  <img src="https://raw.githubusercontent.com/AgenciaAPP/Imagenes-Varias/main/logoappencabezado.png" alt="Logo Alcaldía de Medellín - Agencia APP" class="logo-img">
-                              </td>
-                              <td style="font-size: 9px; width: 57%; text-align:center; padding: 6px 4px;">
-                                  PROCESO<br>GESTIÓN INTEGRAL DEL TALENTO HUMANO
-                              </td>
-                              <td style="width: 25%; font-weight: normal; text-align: left; font-size: 7.5px; padding-left: 6px;">
-                                  <strong>Código:</strong> FO-GITH-060<br>
-                                  <hr style="margin: 3px 0; border: 0; border-top: 1px solid #000;">
-                                  <strong>Versión:</strong> 1
-                              </td>
-                          </tr>
-                          <tr>
-                              <td style="font-size: 9px; text-align:center; padding: 6px 4px;">
-                                  FORMATO<br>TRANSFERENCIA DE CONOCIMIENTO GENERADO EN EL MARCO DE CONTRATOS CON PERSONAS NATURALES O JURÍDICAS
-                              </td>
-                              <td style="font-weight: normal; text-align: left; font-size: 7.5px; padding-left: 6px;">
-                                  <strong>Fecha de entrada en vigencia:</strong> 08/05/2026
-                              </td>
-                          </tr>
-                      </table>
-                  </div>
-              </div>
-          </div>
+          
+          <!-- SE REMOVIÓ EL ENCABEZADO FIJO HTML DE AQUÍ PORQUE AHORA SE ESTAMPA DE FORMA REPETITIVA MEDIANTE VECTORES JSpdf -->
 
-          <!-- 2. GRUPO CUERPO -->
-          <div class="grupo-cuerpo-pdf">
-              <div class="fila-maestra-pdf">
-                  <div class="celda-maestra-pdf">
-                      
-                      <table class="datos-tabla">
-                          <tr>
-                              <td class="label-fija" style="width: 15%;">Contrato No.</td>
-                              <td style="font-weight: bold; width: 35%; color: #1e3a8a;">${currentUserData.contract || '---'}</td>
-                              <td class="label-fija" style="width: 15%;">Supervisor</td>
-                              <td style="width: 35%;">${currentUserData.supervisor || '---'}</td>
-                          </tr>
-                          <tr>
-                              <td class="label-fija">Objeto contractual</td>
-                              <td colspan="3" style="text-align: justify;">${currentUserData.objeto || '---'}</td>
-                          </tr>
-                          <tr>
-                              <td class="label-fija">Fecha de inicio del contrato</td>
-                              <td>---</td>
-                              <td class="label-fija">Dependencia (Dirección o Subdirección)</td>
-                              <td>${currentUserData.dependencia || '---'}</td>
-                          </tr>
-                          <tr>
-                              <td class="label-fija">Contratista</td>
-                              <td>${currentUserData.nombre || '---'}</td>
-                              <td class="label-fija">Fecha de diligenciamiento</td>
-                              <td>${fechaHoy}</td>
-                          </tr>
-                          <tr>
-                              <td class="label-fija">NIT/CC</td>
-                              <td colspan="3">${currentUserData.cedula || '---'}</td>
-                          </tr>
-                      </table>
+          <table class="datos-tabla">
+              <tr>
+                  <td class="label-fija" style="width: 15%;">Contrato No.</td>
+                  <td style="font-weight: bold; width: 35%; color: #1e3a8a;">${currentUserData.contract || '---'}</td>
+                  <td class="label-fija" style="width: 15%;">Supervisor</td>
+                  <td style="width: 35%;">${currentUserData.supervisor || '---'}</td>
+              </tr>
+              <tr>
+                  <td class="label-fija">Objeto contractual</td>
+                  <td colspan="3" style="text-align: justify;">${currentUserData.objeto || '---'}</td>
+              </tr>
+              <tr>
+                  <td class="label-fija">Fecha de inicio del contrato</td>
+                  <td>---</td>
+                  <td class="label-fija">Dependencia (Dirección o Subdirección)</td>
+                  <td>${currentUserData.dependencia || '---'}</td>
+              </tr>
+              <tr>
+                  <td class="label-fija">Contratista</td>
+                  <td>${currentUserData.nombre || '---'}</td>
+                  <td class="label-fija">Fecha de diligenciamiento</td>
+                  <td>${fechaHoy}</td>
+              </tr>
+              <tr>
+                  <td class="label-fija">NIT/CC</td>
+                  <td colspan="3">${currentUserData.cedula || '---'}</td>
+              </tr>
+          </table>
 
-                      <div class="header-bloque">Acciones de Transferencia de Conocimiento del Contratista</div>
-                      <table class="datos-tabla">
-                          <thead>
-                              <tr>
-                                  <th style="width:20%;">Proceso clave</th>
-                                  <th style="width:7%;">Prioridad</th>
-                                  <th style="width:15%;">Productos entrega</th>
-                                  <th style="width:15%;">Acción transferencia</th>
-                                  <th style="width:20%;">Evidencias / Ejecución</th>
-                                  <th style="width:8%;">Fecha</th>
-                                  <th style="width:15%;">Ruta Repositorio</th>
-                              </tr>
-                          </thead>
-                          <tbody>${htmlRowsAcciones}</tbody>
-                      </table>
+          <div class="header-bloque">Acciones de Transferencia de Conocimiento del Contratista</div>
+          <table class="datos-tabla">
+              <thead>
+                  <tr>
+                      <th style="width:20%;">Proceso clave</th>
+                      <th style="width:7%;">Prioridad</th>
+                      <th style="width:15%;">Productos entrega</th>
+                      <th style="width:15%;">Acción transferencia</th>
+                      <th style="width:20%;">Evidencias / Ejecución</th>
+                      <th style="width:8%;">Fecha</th>
+                      <th style="width:15%;">Ruta Repositorio</th>
+                  </tr>
+              </thead>
+              <tbody>${htmlRowsAcciones}</tbody>
+          </table>
 
-                      <div class="header-bloque">Asuntos Pendientes o en Trámite</div>
-                      <table class="datos-tabla">
-                          <thead>
-                              <tr>
-                                  <th style="width: 25%;">Asunto pendiente o en trámite</th>
-                                  <th style="width: 12%;">Estado Actual</th>
-                                  <th style="width: 20%;">Entidad / Dependencia</th>
-                                  <th style="width: 31%;">Acciones pendientes por realizar</th>
-                                  <th style="width: 12%;">Fecha Límite</th>
-                              </tr>
-                          </thead>
-                          <tbody>${htmlRowsAsuntos}</tbody>
-                      </table>
+          <div class="header-bloque">Asuntos Pendientes o en Trámite</div>
+          <table class="datos-tabla">
+              <thead>
+                  <tr>
+                      <th style="width: 25%;">Asunto pendiente o en trámite</th>
+                      <th style="width: 12%;">Estado Actual</th>
+                      <th style="width: 20%;">Entidad / Dependencia</th>
+                      <th style="width: 31%;">Acciones pendientes por realizar</th>
+                      <th style="width: 12%;">Fecha Límite</th>
+                  </tr>
+              </thead>
+              <tbody>${htmlRowsAsuntos}</tbody>
+          </table>
 
-                      <div class="header-bloque">Accesos a Sistemas / Aplicativos</div>
-                      <table class="datos-tabla">
-                          <thead>
-                              <tr>
-                                  <th style="width: 25%;">Sistema / aplicativo</th>
-                                  <th style="width: 20%;">Usuario</th>
-                                  <th style="width: 20%;">Contraseña</th>
-                                  <th style="width: 35%;">Observaciones</th>
-                              </tr>
-                          </thead>
-                          <tbody>${htmlRowsSistemas}</tbody>
-                      </table>
+          <div class="header-bloque">Accesos a Sistemas / Aplicativos</div>
+          <table class="datos-tabla">
+              <thead>
+                  <tr>
+                      <th style="width: 25%;">Sistema / aplicativo</th>
+                      <th style="width: 20%;">Usuario</th>
+                      <th style="width: 20%;">Contraseña</th>
+                      <th style="width: 35%;">Observaciones</th>
+                  </tr>
+              </thead>
+              <tbody>${htmlRowsSistemas}</tbody>
+          </table>
 
-                      <div class="header-bloque">Directorio de Contactos Claves Relacionados con el Alcance del Contrato</div>
-                      <table class="datos-tabla">
-                          <thead>
-                              <tr>
-                                  <th style="width: 20%;">Nombre</th>
-                                  <th style="width: 12%;">Teléfono</th>
-                                  <th style="width: 18%;">Email</th>
-                                  <th style="width: 15%;">Tipo de contacto</th>
-                                  <th style="width: 15%;">Entidad / dependencia</th>
-                                  <th style="width: 20%;">Recomendaciones</th>
-                              </tr>
-                          </thead>
-                          <tbody>${htmlRowsDirectorio}</tbody>
-                      </table>
+          <div class="header-bloque">Directorio de Contactos Claves Relacionados con el Alcance del Contrato</div>
+          <table class="datos-tabla">
+              <thead>
+                  <tr>
+                      <th style="width: 20%;">Nombre</th>
+                      <th style="width: 12%;">Teléfono</th>
+                      <th style="width: 18%;">Email</th>
+                      <th style="width: 15%;">Tipo de contacto</th>
+                      <th style="width: 15%;">Entidad / dependencia</th>
+                      <th style="width: 20%;">Recomendaciones</th>
+                  </tr>
+              </thead>
+              <tbody>${htmlRowsDirectorio}</tbody>
+          </table>
 
-                      <div class="header-bloque">Lineamientos Técnicos, Normativos u Operativos Esenciales</div>
-                      <table class="datos-tabla">
-                          <tr><td style="padding: 6px; text-align: justify; min-height: 45px; white-space: pre-line;">${document.getElementById('lineamientos').value || 'Ninguno registrado.'}</td></tr>
-                      </table>
+          <div class="header-bloque">Lineamientos Técnicos, Normativos u Operativos Esenciales</div>
+          <table class="datos-tabla">
+              <tr><td style="padding: 6px; text-align: justify; min-height: 45px; white-space: pre-line;">${document.getElementById('lineamientos').value || 'Ninguno registrado.'}</td></tr>
+          </table>
 
-                      <div class="salto-pagina"></div>
+          <!-- ELIMINADO EL DIV SALTO-PAGINA SEPARADOR AGRESIVO PARA PERMITIR QUE RECOMENDACIONES Y FIRMAS COMPACTEN EL ESPACIO VACÍO DE LA HOJA 2 -->
 
-                      <div class="header-bloque">Recomendaciones y Observaciones</div>
-                      <table class="datos-tabla">
-                          <tr><td style="padding: 6px; text-align: justify; min-height: 60px; white-space: pre-line;">${document.getElementById('recomendaciones-acciones').value || 'Ninguna recomendación registrada.'}</td></tr>
-                      </table>
+          <div class="header-bloque">Recomendaciones y Observaciones</div>
+          <table class="datos-tabla">
+              <tr><td style="padding: 6px; text-align: justify; min-height: 60px; white-space: pre-line;">${document.getElementById('recomendaciones-acciones').value || 'Ninguna recomendación registrada.'}</td></tr>
+          </table>
 
-                      <table class="datos-tabla" style="margin-top: 40px; border: none; width:100%; page-break-inside: avoid;">
-                          <tr style="border: none;">
-                              <td style="width: 50%; border: none; padding-top: 35px; font-size:9px;">Firma contratista: ___________________________</td>
-                              <td style="width: 50%; border: none; padding-top: 35px; font-size:9px;">C.C./NIT: ___________________________</td>
-                          </tr>
-                          <tr style="border: none;">
-                              <td colspan="2" style="border: none; padding-top: 4px; font-weight: bold; font-size:9px;">Nombre del Contratista: ${currentUserData.nombre.toUpperCase()}</td>
-                          </tr>
-                          <tr style="border: none;">
-                              <td style="width: 50%; border: none; padding-top: 35px; font-size:9px;">Firma supervisor: ___________________________</td>
-                              <td style="width: 50%; border: none; padding-top: 35px; font-size:9px;">C.C. ___________________________</td>
-                          </tr>
-                          <tr style="border: none;">
-                              <td colspan="2" style="border: none; padding-top: 4px; font-weight: bold; font-size:9px;">Nombre del Supervisor del Contrato: ${currentUserData.supervisor.toUpperCase()}</td>
-                          </tr>
-                          <tr style="border: none;">
-                              <td style="width: 50%; border: none; padding-top: 35px; font-size:9px;">Firma del servidor Público del nivel directivo: ___________________________</td>
-                              <td style="width: 50%; border: none; padding-top: 35px; font-size:9px;">C.C. ___________________________</td>
-                          </tr>
-                          <tr style="border: none;">
-                              <td colspan="2" style="border: none; padding-top: 4px; font-weight: bold; font-size:9px;">Nombre del servidor Público del nivel directivo: ____________________________________________________</td>
-                          </tr>
-                      </table>
+          <table class="datos-tabla" style="margin-top: 30px; border: none; width:100%; page-break-inside: avoid !important; break-inside: avoid !important;">
+              <tr style="border: none;">
+                  <td style="width: 50%; border: none; padding-top: 25px; font-size:9px;">Firma contratista: ___________________________</td>
+                  <td style="width: 50%; border: none; padding-top: 25px; font-size:9px;">C.C./NIT: ___________________________</td>
+              </tr>
+              <tr style="border: none;">
+                  <td colspan="2" style="border: none; padding-top: 4px; font-weight: bold; font-size:9px;">Nombre del Contratista: ${currentUserData.nombre.toUpperCase()}</td>
+              </tr>
+              <tr style="border: none;">
+                  <td style="width: 50%; border: none; padding-top: 25px; font-size:9px;">Firma supervisor: ___________________________</td>
+                  <td style="width: 50%; border: none; padding-top: 25px; font-size:9px;">C.C. ___________________________</td>
+              </tr>
+              <tr style="border: none;">
+                  <td colspan="2" style="border: none; padding-top: 4px; font-weight: bold; font-size:9px;">Nombre del Supervisor del Contrato: ${currentUserData.supervisor.toUpperCase()}</td>
+              </tr>
+              <tr style="border: none;">
+                  <td style="width: 50%; border: none; padding-top: 25px; font-size:9px;">Firma del servidor Público del nivel directivo: ___________________________</td>
+                  <td style="width: 50%; border: none; padding-top: 25px; font-size:9px;">C.C. ___________________________</td>
+              </tr>
+              <tr style="border: none;">
+                  <td colspan="2" style="border: none; padding-top: 4px; font-weight: bold; font-size:9px;">Nombre del servidor Público del nivel directivo: ____________________________________________________</td>
+              </tr>
+          </table>
 
-                      <div class="nota-pie">
-                          Nota: Este formato debidamente diligenciado debe ser remitido por el supervisor junto con las evidencias de la transferencia del conocimiento . Las evidencias de las acciones de transferencia deberán ser almacenadas en la carpeta asignada por el supervisor la cual deberá ser almacenada en el OneDrive.
-                      </div>
-
-                  </div>
-              </div>
+          <div class="nota-pie">
+              Nota: Este formato debidamente diligenciado debe ser remitido por el supervisor junto con las evidencias de la transferencia del conocimiento . Las evidencias de las acciones de transferencia deberán ser almacenadas en la carpeta asignada por el supervisor la cual deberá ser almacenada en el OneDrive.
           </div>
       </div>
     `;
 
+    // CONFIGURACIÓN AVANZADA DE RECUADRO DE CAPTURA CON MARGEN ARRIBA DE 34mm PARA PROTEGER EL HEADER VECTORIAL REPETITIVO
     const opcionesConfig = {
-      margin:       10,
+      margin:       [34, 10, 15, 10],
+      filename:     `FO-GITH-060_STC_${currentUserData.contract}_${currentUserData.cedula}.pdf`,
       filename:     `FO-GITH-060_STC_${currentUserData.contract}_${currentUserData.cedula}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 1.5, useCORS: true, logging: false },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
       jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' }
     };
 
-    html2pdf().set(opcionesConfig).from(elementoImpresion).toPdf().get('pdf').then(function(pdf) {
-      const totalPaginas = pdf.internal.getNumberOfPages();
-      
-      for (let i = 1; i <= totalPaginas; i++) {
-        pdf.setPage(i);
-        pdf.setFont("Helvetica", "Normal");
-        pdf.setFontSize(8);
-        pdf.setFillColor(0, 0, 0);
+    // Pre-cargar el logo institucional nítido desde raw.githubusercontent sin problemas de CORS
+    const logoImg = new Image();
+    logoImg.crossOrigin = "Anonymous";
+    logoImg.src = "https://raw.githubusercontent.com/AgenciaAPP/Imagenes-Varias/main/logoappencabezado.png";
+
+    logoImg.onload = function() {
+      html2pdf().set(opcionesConfig).from(elementoImpresion).toPdf().get('pdf').then(function(pdf) {
+        const totalPaginas = pdf.internal.getNumberOfPages();
         
-        pdf.text(`Página ${i} de ${totalPaginas}`, 259, 207, { align: "right" });
-      }
-    }).save();
+        for (let i = 1; i <= totalPaginas; i++) {
+          pdf.setPage(i);
+          
+          // --- RENDERIZADO DEL ENCABEZADO OFICIAL REPETITIVO NATIVO (Formato FO-GITH-060) ---
+          pdf.setFillColor(255, 255, 255);
+          pdf.rect(10.5, 6, 258, 22, 'F'); // Fondo limpio para la cabecera
+          
+          pdf.setDrawColor(0, 0, 0);
+          pdf.setLineWidth(0.23);
+          pdf.rect(10.5, 6, 258, 22);   // Contorno exterior negro
+          pdf.line(57.5, 6, 57.5, 28);   // Límite derecho del cuadro del logo
+          pdf.line(204.5, 6, 204.5, 28); // Límite izquierdo del cuadro de metadatos
+          pdf.line(57.5, 17, 258.5, 17); // Línea horizontal divisoria central
+
+          // Inyectar el logo nítido de la Agencia APP de forma milimétrica en la primera celda
+          pdf.addImage(logoImg, 'PNG', 12.5, 7.5, 42, 19);
+
+          // Inyectar textos del cuerpo central de la cabecera
+          pdf.setFont("Helvetica", "Bold");
+          pdf.setFontSize(8.5);
+          pdf.text("PROCESO", 131, 9.5, { align: "center" });
+          pdf.text("GESTIÓN INTEGRAL DEL TALENTO HUMANO", 131, 13.5, { align: "center" });
+          pdf.text("FORMATO", 131, 21, { align: "center" });
+          pdf.setFontSize(7);
+          pdf.text("TRANSFERENCIA DE CONOCIMIENTO GENERADO EN EL MARCO DE CONTRATOS CON PERSONAS NATURALES O JURÍDICAS", 131, 25, { align: "center" });
+
+          // Inyectar metadatos técnicos en el recuadro derecho
+          pdf.setFontSize(7.5);
+          pdf.text("Código: FO-GITH-060", 207, 10.5);
+          pdf.text("Versión: 1", 207, 14.5);
+          pdf.text("Fecha de entrada en vigencia: 08/05/2026", 207, 23);
+
+          // --- PIE DE PÁGINA: NUMERACIÓN AUTOMÁTICA EQUILIBRADA EN EL MARGEN VERTICAL BAJO ---
+          pdf.setFont("Helvetica", "Normal");
+          pdf.setFontSize(8);
+          pdf.text(`Página ${i} de ${totalPaginas}`, 258.5, 206, { align: "right" });
+        }
+      }).save();
+    };
   }
 
   if(btnDescargarPDFGlobal) {
