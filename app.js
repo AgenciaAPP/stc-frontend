@@ -171,11 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isReadOnlyMode && currentUserRole === 'funcionario') {
       const btnRegresar = document.createElement('button');
       btnRegresar.id = 'btn-regresar-auditoria-flotante';
+      btnRegresar.className = 'btn-float-back';
       btnRegresar.innerText = '⬅️ Volver al Panel de Monitoreo';
-      btnRegresar.style.position = 'fixed'; btnRegresar.style.top = '20px'; btnRegresar.style.right = '20px'; btnRegresar.style.zIndex = '9999';
-      btnRegresar.style.padding = '12px 20px'; btnRegresar.style.backgroundColor = '#0056b3'; btnRegresar.style.color = '#fff';
-      btnRegresar.style.border = 'none'; btnRegresar.style.borderRadius = '5px'; btnRegresar.style.cursor = 'pointer'; btnRegresar.style.fontWeight = 'bold';
-      btnRegresar.style.boxShadow = '0px 4px 6px rgba(0,0,0,0.1)';
 
       btnRegresar.addEventListener('click', (e) => {
         e.preventDefault(); isReadOnlyMode = false; btnRegresar.remove(); switchView(viewFuncionarioDashboard);
@@ -308,8 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if(btnRegresarExistente) btnRegresarExistente.remove();
 
       let btnRegresarContratista = document.createElement('button');
-      btnRegresarContratista.id = 'btn-regresar-dinamico-contratista'; btnRegresarContratista.type = 'button'; btnRegresarContratista.innerText = '⬅️ Volver al Tablero';
-      btnRegresarContratista.style.padding = '10px 20px'; btnRegresarContratista.style.backgroundColor = '#6c757d'; btnRegresarContratista.style.color = '#fff'; btnRegresarContratista.style.border = 'none'; btnRegresarContratista.style.borderRadius = '4px'; btnRegresarContratista.style.fontWeight = 'bold'; btnRegresarContratista.style.cursor = 'pointer'; btnRegresarContratista.style.marginLeft = '10px';
+      btnRegresarContratista.id = 'btn-regresar-dinamico-contratista'; btnRegresarContratista.type = 'button'; btnRegresarContratista.className = 'btn-secondary-action'; btnRegresarContratista.innerText = '⬅️ Volver al Tablero';
       btnRegresarContratista.onclick = function() { btnRegresarContratista.remove(); switchView(viewContratistaDashboard); };
       btnSaveContainer.appendChild(btnRegresarContratista);
     } else {
@@ -633,8 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if(btnReabrirExistente) btnReabrirExistente.remove();
           
           let btnReabrir = document.createElement('button');
-          btnReabrir.id = 'btn-reabrir-dinamico-supervisor'; btnReabrir.type = 'button'; btnReabrir.innerText = '🔓 Abrir Acta para Correcciones';
-          btnReabrir.style.padding = '10px 20px'; btnReabrir.style.backgroundColor = '#ffc107'; btnReabrir.style.color = '#000'; btnReabrir.style.border = 'none'; btnReabrir.style.borderRadius = '4px'; btnReabrir.style.fontWeight = 'bold'; btnReabrir.style.cursor = 'pointer'; btnReabrir.style.marginLeft = '10px';
+          btnReabrir.id = 'btn-reabrir-dinamico-supervisor'; btnReabrir.type = 'button'; btnReabrir.className = 'btn-reopen-acta'; btnReabrir.innerText = '🔓 Abrir Acta para Correcciones';
           btnReabrir.onclick = function() { reabrirActaSupervisor(actaSeleccionada.idSharePoint); };
           btnSaveContainer.appendChild(btnReabrir);
         }
