@@ -411,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.contratoTemporalValidado = { cedula: data.cedula, nombre: data.nombre, contract: contratoInput, objeto: data.objeto, nombreSupervisor: data.nombreSupervisor, cedulaSupervisor: data.cedulaSupervisor, fechaInicio: data.fechaFirma };
         resultBox.classList.remove('hidden');
       } else { alert(`❌ ${data.message || 'Contrato no encontrado.'}`); }
-    } catch (error) { alert('❌ Error de comunicación.'); } finally { loader.classList.remove('hidden'); }
+    } catch (error) { alert('❌ Error de comunicación.'); } finally { loader.classList.add('hidden'); }
   });
 
   document.getElementById('btn-confirmar-habilitacion').addEventListener('click', async () => {
@@ -420,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!correoIngresado) { alert('⚠️ Por favor ingresa el correo de notificación del contratista.'); return; }
 
       const p = { 
-        contrato: window.contratoTemporalValidated.contract || window.contratoTemporalValidado.contract, 
+        contrato: window.contratoTemporalValidado.contract, 
         contratista: window.contratoTemporalValidado.nombre, 
         cedula: window.contratoTemporalValidado.cedula, 
         objeto: window.contratoTemporalValidado.objeto, 
@@ -662,18 +662,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const elementoImpresion = document.createElement('div');
-    elementoImpresion.style.padding = '2px';
+    // ESTILOS DE BLINDAJE: Posicionamiento absoluto y ocultamiento seguro fuera de la pantalla visible
+    elementoImpresion.style.position = 'absolute';
+    elementoImpresion.style.left = '-9999px';
+    elementoImpresion.style.top = '-9999px';
+    elementoImpresion.style.padding = '0px';
     elementoImpresion.innerHTML = `
       <style>
           @page { size: letter landscape; margin: 10mm 10mm 15mm 10mm; }
           
-          /* RESET DE CONTROL DE BORDES: Forzar cálculo interno estricto */
-          * { box-sizing: border-box; -webkit-box-sizing: border-box; }
+          /* RESET DE CONTROL DE BORDES: Forzar cálculo interno estricto e inquebrantable */
+          * { box-sizing: border-box !important; -webkit-box-sizing: border-box !important; }
           
           body { font-family: 'Segoe UI', Arial, sans-serif; color: #000000; line-height: 1.3; font-size: 9px; }
           
-          /* ANCHO FIJO ABSOLUTO COMPLETO: Obliga al lienzo html2canvas a cerrar perfectamente los bordes a 1040px */
-          .contenedor-impresion-raiz { width: 1040px; display: table; border-collapse: collapse; margin: 0 auto; table-layout: fixed; }
+          /* ANCHO ABSOLUTO INTERNO: Obliga a todas las tablas a ceñirse a 980px exactos dejando margen de aire */
+          .contenedor-impresion-raiz { width: 980px; display: table; border-collapse: collapse; margin: 0 auto; table-layout: fixed; }
           .grupo-encabezado-pdf { display: table-header-group; }
           .grupo-cuerpo-pdf { display: table-row-group; }
           .fila-maestra-pdf { display: table-row; }
@@ -688,7 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
           /* Estilos de Bloques y Tablas de Datos */
           .header-bloque { background-color: #F2F2F2; font-weight: bold; text-align: center; text-transform: uppercase; font-size: 9px; padding: 4px; border: 1px solid #000000; margin-top: 10px; margin-bottom: 0px; page-break-inside: avoid; }
           table.datos-tabla { width: 100%; border-collapse: collapse; margin-bottom: 0px; table-layout: fixed; }
-          table.datos-tabla td, table.datos-tabla th { border: 1px solid #000000; padding: 4px; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; }
+          table.datos-tabla td, table.datos-tabla th { border: 1px solid #000000; padding: 4px; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; word-break: break-all !important; }
           table.datos-tabla th { background-color: #F2F2F2; font-weight: bold; text-align: center; font-size: 8px; }
           .label-fija { font-weight: bold; background-color: #F2F2F2; width: 15%; }
           .nota-pie { border: 1px solid #000000; padding: 6px; font-size: 8px; font-weight: bold; margin-top: 15px; text-align: justify; page-break-inside: avoid; }
@@ -696,7 +700,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </style>
 
       <div class="contenedor-impresion-raiz">
-          <!-- 1. GRUPO ENCABEZADO: Se repetirá automáticamente en la parte superior de cada página con márgenes perfectos -->
+          <!-- 1. GRUPO ENCABEZADO -->
           <div class="grupo-encabezado-pdf">
               <div class="fila-maestra-pdf">
                   <div class="celda-maestra-pdf">
@@ -865,7 +869,9 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    // CONFIGURACIÓN SÓLIDA SÍNCRONA DE LA LIBRERÍA
+    // INYECCIÓN FÍSICA TEMPORAL: Resuelve el cálculo de dimensiones de html2canvas al instante
+    document.body.appendChild(elementoImpresion);
+
     const opcionesConfig = {
       margin:       10,
       filename:     `FO-GITH-060_STC_${currentUserData.contract}_${currentUserData.cedula}.pdf`,
@@ -874,7 +880,6 @@ document.addEventListener('DOMContentLoaded', () => {
       jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' }
     };
 
-    // PROCESAMIENTO COMPLETO ASÍNCRONO SEGURO DE LA DESCARGA Y PAGINACIÓN
     html2pdf().set(opcionesConfig).from(elementoImpresion).toPdf().get('pdf').then(function(pdf) {
       const totalPaginas = pdf.internal.getNumberOfPages();
       
@@ -884,13 +889,15 @@ document.addEventListener('DOMContentLoaded', () => {
         pdf.setFontSize(8);
         pdf.setFillColor(0, 0, 0);
         
-        // Estampa la numeración dinámica sin alterar el flujo DOM
         pdf.text(`Página ${i} de ${totalPaginas}`, 259, 207, { align: "right" });
       }
+    }).then(function() {
+      // LIMPIEZA POST-IMPRESIÓN: Remueve el clon del DOM de forma segura
+      elementoImpresion.remove();
     }).save();
   }
 
   if(btnDescargarPDFGlobal) {
     btnDescargarPDFGlobal.addEventListener('click', exportarFormatoOficialPDF);
   }
-});
+});v
