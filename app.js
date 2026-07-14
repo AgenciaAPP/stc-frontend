@@ -30,6 +30,92 @@ function formatFechaDDMMYYYY(fechaISO) {
   return `${dia}/${mes}/${anio}`;
 }
 
+// ==========================================
+// HELPER: PRECARGAR UNA IMAGEN REMOTA COMO DATA URL (NECESARIO PARA jsPDF.addImage)
+// ==========================================
+function cargarImagenComoDataURL(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+// ==========================================
+// HELPER: DIBUJAR EL ENCABEZADO INSTITUCIONAL FO-GITH-060 EN LA PÁGINA ACTUAL DEL PDF
+// ==========================================
+function dibujarEncabezadoInstitucional(pdf, logoDataUrl) {
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const marginX = 10;
+  const startY = 6;
+  const headerWidth = pageWidth - (marginX * 2);
+  const rowHeight = 12;
+  const headerHeight = rowHeight * 2;
+
+  const col1Width = headerWidth * 0.18;
+  const col2Width = headerWidth * 0.57;
+  const col3Width = headerWidth * 0.25;
+
+  const col1X = marginX;
+  const col2X = col1X + col1Width;
+  const col3X = col2X + col2Width;
+
+  pdf.setDrawColor(0, 0, 0);
+  pdf.setLineWidth(0.2);
+
+  // Contenedor exterior
+  pdf.rect(marginX, startY, headerWidth, headerHeight);
+  // Separadores verticales entre columnas
+  pdf.line(col2X, startY, col2X, startY + headerHeight);
+  pdf.line(col3X, startY, col3X, startY + headerHeight);
+  // Separador horizontal entre fila 1 y fila 2 (columnas 2 y 3)
+  pdf.line(col2X, startY + rowHeight, pageWidth - marginX, startY + rowHeight);
+  // Separador horizontal dentro de la columna 3, fila 1 (Código / Versión)
+  pdf.line(col3X, startY + rowHeight / 2, pageWidth - marginX, startY + rowHeight / 2);
+
+  // Logo institucional (columna 1, ocupa ambas filas)
+  if (logoDataUrl) {
+    const logoMaxHeight = headerHeight - 4;
+    const logoMaxWidth = col1Width - 6;
+    try {
+      pdf.addImage(logoDataUrl, 'PNG', col1X + 3, startY + (headerHeight - logoMaxHeight) / 2, logoMaxWidth, logoMaxHeight, undefined, 'FAST');
+    } catch (e) { /* si falla el logo, el encabezado igual se dibuja sin imagen */ }
+  }
+
+  // Columna 2 - Fila 1: PROCESO / GESTIÓN INTEGRAL DEL TALENTO HUMANO
+  pdf.setFont('Helvetica', 'bold');
+  pdf.setFontSize(7.5);
+  pdf.text('PROCESO', col2X + col2Width / 2, startY + 4.5, { align: 'center' });
+  pdf.text('GESTIÓN INTEGRAL DEL TALENTO HUMANO', col2X + col2Width / 2, startY + 8.5, { align: 'center' });
+
+  // Columna 2 - Fila 2: FORMATO / TRANSFERENCIA DE CONOCIMIENTO...
+  pdf.text('FORMATO', col2X + col2Width / 2, startY + rowHeight + 4, { align: 'center' });
+  const textoFormato = pdf.splitTextToSize('TRANSFERENCIA DE CONOCIMIENTO GENERADO EN EL MARCO DE CONTRATOS CON PERSONAS NATURALES O JURÍDICAS', col2Width - 6);
+  pdf.text(textoFormato, col2X + col2Width / 2, startY + rowHeight + 7.5, { align: 'center' });
+
+  // Columna 3 - Fila 1: Código / Versión
+  pdf.setFont('Helvetica', 'normal');
+  pdf.setFontSize(6.5);
+  pdf.text('Código: FO-GITH-060', col3X + 2, startY + 3.5);
+  pdf.text('Versión: 1', col3X + 2, startY + (rowHeight / 2) + 3.5);
+
+  // Columna 3 - Fila 2: Fecha de entrada en vigencia
+  pdf.text('Fecha de entrada en vigencia: 08/05/2026', col3X + 2, startY + rowHeight + 6);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   
   const viewWelcome = document.getElementById('view-welcome');
@@ -608,6 +694,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fechaHoy = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
+    // Precarga del logo institucional como Data URL, para poder dibujarlo con jsPDF en cada página
+    const logoDataUrl = await cargarImagenComoDataURL('https://raw.githubusercontent.com/AgenciaAPP/Imagenes-Varias/main/logoappencabezado.png').catch(() => null);
+
     let htmlRowsAcciones = '';
     if(listadoAcciones.length === 0) {
       htmlRowsAcciones = `<tr><td colspan="7" style="border: 1px solid #000; padding: 4px; text-align:center; color:#555;">Ninguna acción de transferencia registrada.</td></tr>`;
@@ -710,38 +799,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </style>
 
       <table class="contenedor-impresion-raiz">
-          <!-- 1. GRUPO ENCABEZADO: Duplicado de forma perfecta y fluida por el navegador en cada hoja -->
-          <thead>
-              <tr>
-                  <td>
-                      <table class="tabla-oficial">
-                          <tr>
-                              <td rowspan="2" class="logo-space">
-                                  <img src="https://raw.githubusercontent.com/AgenciaAPP/Imagenes-Varias/main/logoappencabezado.png" alt="Logo Alcaldía de Medellín - Agencia APP" class="logo-img">
-                              </td>
-                              <td style="font-size: 9px; width: 57%; text-align:center; padding: 6px 4px;">
-                                  PROCESO<br>GESTIÓN INTEGRAL DEL TALENTO HUMANO
-                              </td>
-                              <td style="width: 25%; font-weight: normal; text-align: left; font-size: 7.5px; padding-left: 6px; vertical-align: middle;">
-                                  <strong>Código:</strong> FO-GITH-060<br>
-                                  <hr style="margin: 3px 0; border: 0; border-top: 1px solid #000;">
-                                  <strong>Versión:</strong> 1
-                              </td>
-                          </tr>
-                          <tr>
-                              <td style="font-size: 9px; text-align:center; padding: 6px 4px;">
-                                  FORMATO<br>TRANSFERENCIA DE CONOCIMIENTO GENERADO EN EL MARCO DE CONTRATOS CON PERSONAS NATURALES O JURÍDICAS
-                              </td>
-                              <td style="font-weight: normal; text-align: left; font-size: 7.5px; padding-left: 6px; vertical-align: middle;">
-                                  <strong>Fecha de entrada en vigencia:</strong> 08/05/2026
-                              </td>
-                          </tr>
-                      </table>
-                  </td>
-              </tr>
-          </thead>
-
-          <!-- 2. GRUPO CUERPO: Ingesta dinámica compacta -->
+          <!-- El encabezado institucional ya NO se incluye aquí: se dibuja con jsPDF en cada página (ver dibujarEncabezadoInstitucional) -->
           <tbody>
               <tr>
                   <td>
@@ -876,7 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
 
     const opcionesConfig = {
-      margin:       10,
+      margin:       [34, 10, 15, 10], // [arriba, izquierda, abajo, derecha] — el margen superior reserva el espacio del encabezado en TODAS las páginas
       filename:     `FO-GITH-060_STC_${currentUserData.contract}_${currentUserData.cedula}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 1.5, useCORS: true, logging: false },
@@ -888,10 +946,14 @@ document.addEventListener('DOMContentLoaded', () => {
       
       for (let i = 1; i <= totalPaginas; i++) {
         pdf.setPage(i);
+
+        // Encabezado institucional repetido en cada página
+        dibujarEncabezadoInstitucional(pdf, logoDataUrl);
+
+        // Pie de página
         pdf.setFont("Helvetica", "Normal");
         pdf.setFontSize(8);
         pdf.setFillColor(0, 0, 0);
-        
         pdf.text(`Página ${i} de ${totalPaginas}`, 258.5, 206, { align: "right" });
       }
     }).save();
