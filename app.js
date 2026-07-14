@@ -411,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.contratoTemporalValidado = { cedula: data.cedula, nombre: data.nombre, contract: contratoInput, objeto: data.objeto, nombreSupervisor: data.nombreSupervisor, cedulaSupervisor: data.cedulaSupervisor, fechaInicio: data.fechaFirma };
         resultBox.classList.remove('hidden');
       } else { alert(`❌ ${data.message || 'Contrato no encontrado.'}`); }
-    } catch (error) { alert('❌ Error de comunicación.'); } finally { loader.classList.add('hidden'); }
+    } catch (error) { alert('❌ Error de comunicación.'); } finally { loader.classList.remove('hidden'); }
   });
 
   document.getElementById('btn-confirmar-habilitacion').addEventListener('click', async () => {
@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const response = await fetch(`${BACKEND_URL}/api/habilitar-contrato`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
         const resData = await response.json();
-        if (resData.success) { alert('🎉 ¡CONTRATO INYECTADO Y PIN NOTIFICADO CON ÉXITO AL CORREO!'); await consultarContratosEnVivo(); document.getElementById('secop-result-box').classList.add('hidden'); document.getElementById('search-contrato').value = ''; }
+        if (resData.success) { alert('🎉 ¡CONTRATO INYECTADO Y PIN NOTIFICADO CON ÉXITO AL CORREO!'); await consultarContratos EnVivo(); document.getElementById('secop-result-box').classList.add('hidden'); document.getElementById('search-contrato').value = ''; }
       } catch (error) { alert('❌ Error de comunicación.'); }
     }
   });
@@ -662,28 +662,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const elementoImpresion = document.createElement('div');
-    // ESTILOS DE BLINDAJE: Posicionamiento absoluto y ocultamiento seguro fuera de la pantalla visible
-    elementoImpresion.style.position = 'absolute';
-    elementoImpresion.style.left = '-9999px';
-    elementoImpresion.style.top = '-9999px';
-    elementoImpresion.style.padding = '0px';
+    elementoImpresion.style.padding = '2px';
     elementoImpresion.innerHTML = `
       <style>
           @page { size: letter landscape; margin: 10mm 10mm 15mm 10mm; }
           
-          /* RESET DE CONTROL DE BORDES: Forzar cálculo interno estricto e inquebrantable */
+          /* RESET DE CONTROL DE BORDES: Forzar cálculo interno estricto */
           * { box-sizing: border-box !important; -webkit-box-sizing: border-box !important; }
           
           body { font-family: 'Segoe UI', Arial, sans-serif; color: #000000; line-height: 1.3; font-size: 9px; }
           
-          /* ANCHO ABSOLUTO INTERNO: Obliga a todas las tablas a ceñirse a 980px exactos dejando margen de aire */
-          .contenedor-impresion-raiz { width: 980px; display: table; border-collapse: collapse; margin: 0 auto; table-layout: fixed; }
+          /* CONTENEDOR SEGURO REDUCIDO: Se fija a 1000px y se le da un padding de holgura a la derecha de 25px */
+          .contenedor-impresion-raiz { width: 1000px; display: table; border-collapse: collapse; margin: 0 auto; table-layout: fixed; padding-right: 25px; }
           .grupo-encabezado-pdf { display: table-header-group; }
           .grupo-cuerpo-pdf { display: table-row-group; }
           .fila-maestra-pdf { display: table-row; }
           .celda-maestra-pdf { display: table-cell; width: 100%; }
 
-          /* Tabla de Encabezado Original HTML Blindada */
+          /* Tabla de Encabezado Original HTML con margen controlado */
           .tabla-oficial { width: 100%; border-collapse: collapse; margin-bottom: 12px; table-layout: fixed; }
           .tabla-oficial td { border: 1px solid #000000; padding: 4px; font-size: 8px; font-weight: bold; text-align: center; vertical-align: middle; }
           .logo-space { width: 18%; background-color: #FFFFFF; padding: 6px !important; }
@@ -700,7 +696,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </style>
 
       <div class="contenedor-impresion-raiz">
-          <!-- 1. GRUPO ENCABEZADO -->
+          <!-- 1. GRUPO ENCABEZADO: Se repetirá automáticamente en la parte superior de cada página con márgenes perfectos -->
           <div class="grupo-encabezado-pdf">
               <div class="fila-maestra-pdf">
                   <div class="celda-maestra-pdf">
@@ -869,9 +865,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    // INYECCIÓN FÍSICA TEMPORAL: Resuelve el cálculo de dimensiones de html2canvas al instante
-    document.body.appendChild(elementoImpresion);
-
+    // CONFIGURACIÓN CENTRAL DE LA LIBRERÍA HTML2PDF
     const opcionesConfig = {
       margin:       10,
       filename:     `FO-GITH-060_STC_${currentUserData.contract}_${currentUserData.cedula}.pdf`,
@@ -880,6 +874,7 @@ document.addEventListener('DOMContentLoaded', () => {
       jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' }
     };
 
+    // PROCESAMIENTO COMPLETO ASÍNCRONO SEGURO DE LA DESCARGA Y PAGINACIÓN
     html2pdf().set(opcionesConfig).from(elementoImpresion).toPdf().get('pdf').then(function(pdf) {
       const totalPaginas = pdf.internal.getNumberOfPages();
       
@@ -889,15 +884,13 @@ document.addEventListener('DOMContentLoaded', () => {
         pdf.setFontSize(8);
         pdf.setFillColor(0, 0, 0);
         
+        // Estampa la numeración dinámica sin alterar el flujo DOM
         pdf.text(`Página ${i} de ${totalPaginas}`, 259, 207, { align: "right" });
       }
-    }).then(function() {
-      // LIMPIEZA POST-IMPRESIÓN: Remueve el clon del DOM de forma segura
-      elementoImpresion.remove();
     }).save();
   }
 
   if(btnDescargarPDFGlobal) {
     btnDescargarPDFGlobal.addEventListener('click', exportarFormatoOficialPDF);
   }
-});v
+});
