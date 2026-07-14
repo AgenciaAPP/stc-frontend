@@ -693,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           if(estadoActa === 'FINALIZADO') {
             let btnAprobar = document.createElement('button');
-            btnAprobar.id = 'btn-aprobar-dinamico-supervisor'; btnAprobar.type = 'button'; btnAprobar.className = 'btn-pdf-report'; btnAprobar.innerText = '✅ Aprobar Acta';
+            btnAprobar.id = 'btn-aprobar-dinamico-supervisor'; btnAprobar.type = 'button'; btnAprobar.className = 'btn-approve-action'; btnAprobar.innerText = '✅ Aprobar Acta';
             btnAprobar.onclick = function() { aprobarActaSupervisor(actaSeleccionada.idSharePoint); };
             btnSaveContainer.appendChild(btnAprobar);
 
