@@ -21,6 +21,17 @@ let editIndexDirectorio = -1;
 // ==========================================
 // HELPER: FORMATEAR FECHA ISO (YYYY-MM-DD) A DD/MM/YYYY PARA VISUALIZACIÓN
 // ==========================================
+// ==========================================
+// HELPER: OBTENER ETIQUETA Y CLASE DE BADGE SEGÚN EL ESTADO DEL ACTA
+// ==========================================
+function obtenerBadgeEstado(estadoRaw) {
+  const estado = String(estadoRaw || '').toUpperCase();
+  if (estado === 'APROBADO') return { label: 'APROBADO', cls: 'badge-success' };
+  if (estado === 'FINALIZADO') return { label: 'PENDIENTE DE REVISIÓN', cls: 'badge-info' };
+  if (estado === 'EN DILIGENCIAMIENTO') return { label: 'EN DILIGENCIAMIENTO', cls: 'badge-alert' };
+  return { label: estado || 'SIN DILIGENCIAR', cls: 'badge-alert' };
+}
+
 function formatFechaDDMMYYYY(fechaISO) {
   if (!fechaISO) return '';
   const soloFecha = String(fechaISO).split('T')[0];
@@ -277,8 +288,18 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('dash-objeto-contrato').innerText = currentUserData.objeto;
           
           const labelEstado = document.getElementById('dash-estado-acta');
-          labelEstado.innerText = currentUserData.estado.toUpperCase();
-          labelEstado.className = currentUserData.estado.toUpperCase() === 'FINALIZADO' ? "badge badge-success" : "badge badge-alert";
+          const infoBadge = obtenerBadgeEstado(currentUserData.estado);
+          labelEstado.innerText = infoBadge.label;
+          labelEstado.className = `badge ${infoBadge.cls}`;
+
+          const rechazoBox = document.getElementById('rechazo-alert-box');
+          const rechazoTexto = document.getElementById('rechazo-motivo-texto');
+          if (currentUserData.estado.toUpperCase() === 'EN DILIGENCIAMIENTO' && currentUserData.motivoRechazo && currentUserData.motivoRechazo.trim() !== '') {
+            rechazoTexto.innerText = currentUserData.motivoRechazo;
+            rechazoBox.classList.remove('hidden');
+          } else {
+            rechazoBox.classList.add('hidden');
+          }
           
           switchView(viewContratistaDashboard);
         } else {
@@ -293,11 +314,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnEmpezar.addEventListener('click', () => {
-    const yaFinalizado = currentUserData && currentUserData.estado.toUpperCase() === 'FINALIZADO';
-    isReadOnlyMode = yaFinalizado; 
-    ajustarModoLecturaFormulario(yaFinalizado);
+    const estadoActual = currentUserData ? currentUserData.estado.toUpperCase() : '';
+    const bloqueado = estadoActual === 'FINALIZADO' || estadoActual === 'APROBADO';
+    isReadOnlyMode = bloqueado; 
+    ajustarModoLecturaFormulario(bloqueado);
 
-    if(yaFinalizado) {
+    if(bloqueado) {
       if(btnDescargarPDFGlobal) btnDescargarPDFGlobal.classList.remove('hidden');
 
       let btnSaveContainer = document.getElementById('btn-save-preliminary').parentElement;
@@ -557,6 +579,39 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { alert("❌ Error reabriendo el acta en el servidor."); }
   };
 
+  window.aprobarActaSupervisor = async function(idSharePoint) {
+    if(!confirm("¿Confirmas la APROBACIÓN de esta Acta? Se notificará al contratista por correo.")) return;
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/aprobar-acta`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idSharePoint }) });
+      const resData = await response.json();
+      if(resData.success) {
+        alert("✅ ¡Acta aprobada con éxito! El contratista fue notificado.");
+        let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante'); if (btnFlotante) btnFlotante.remove();
+        isReadOnlyMode = false; await consultarContratosEnVivo(); switchView(viewFuncionarioDashboard);
+      } else {
+        alert(`❌ ${resData.message || 'No se pudo aprobar el acta.'}`);
+      }
+    } catch (e) { alert("❌ Error aprobando el acta en el servidor."); }
+  };
+
+  window.rechazarActaSupervisor = async function(idSharePoint) {
+    const motivo = prompt("Escribe el motivo del rechazo (obligatorio). El contratista lo verá y podrá corregir su acta antes de reenviarla:");
+    if (motivo === null) return; // el supervisor canceló
+    if (!motivo.trim()) { alert("⚠️ Debes escribir un motivo para poder rechazar el acta."); return; }
+    if (!confirm("¿Confirmas el RECHAZO de esta Acta? Se le devolverá al contratista para corrección y se le notificará por correo.")) return;
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/rechazar-acta`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idSharePoint, motivo: motivo.trim() }) });
+      const resData = await response.json();
+      if(resData.success) {
+        alert("🔁 Acta rechazada y devuelta al contratista con el motivo indicado.");
+        let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante'); if (btnFlotante) btnFlotante.remove();
+        isReadOnlyMode = false; await consultarContratosEnVivo(); switchView(viewFuncionarioDashboard);
+      } else {
+        alert(`❌ ${resData.message || 'No se pudo rechazar el acta.'}`);
+      }
+    } catch (e) { alert("❌ Error rechazando el acta en el servidor."); }
+  };
+
   async function enviarActaASharePoint(isFinalSubmit) {
     const payload = {
       idSharePoint: currentUserData.idSharePoint, 
@@ -607,7 +662,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     listadoMonitoreo.forEach((reg, index) => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td><strong>${reg.name || 'Sin nombre'}</strong></td><td>${reg.contract}</td><td>${reg.boss || 'Sin asignar'}</td><td><span class="badge ${reg.status === 'FINALIZADO' ? 'badge-success' : 'badge-alert'}">${reg.status}</span></td><td><button class="btn-action-view" data-index="${index}">👁️ Ver</button></td>`;
+      const infoBadge = obtenerBadgeEstado(reg.status);
+      tr.innerHTML = `<td><strong>${reg.name || 'Sin nombre'}</strong></td><td>${reg.contract}</td><td>${reg.boss || 'Sin asignar'}</td><td><span class="badge ${infoBadge.cls}">${infoBadge.label}</span></td><td><button class="btn-action-view" data-index="${index}">👁️ Ver</button></td>`;
       tbody.appendChild(tr);
     });
 
@@ -617,21 +673,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         limpiarCamposAuditoria(); isReadOnlyMode = true; ajustarModoLecturaFormulario(true); inyectarBotonRegresoAuditoria();
 
-        if(actaSeleccionada.status === 'FINALIZADO') {
+        const estadoActa = String(actaSeleccionada.status || '').toUpperCase();
+
+        if(estadoActa === 'FINALIZADO' || estadoActa === 'APROBADO') {
           if(btnDescargarPDFGlobal) btnDescargarPDFGlobal.classList.remove('hidden');
         } else {
           if(btnDescargarPDFGlobal) btnDescargarPDFGlobal.classList.add('hidden');
         }
 
-        if(actaSeleccionada.status === 'FINALIZADO' && currentUserRole === 'funcionario') {
+        if(currentUserRole === 'funcionario') {
           let btnSaveContainer = document.getElementById('btn-save-preliminary').parentElement;
-          let btnReabrirExistente = document.getElementById('btn-reabrir-dinamico-supervisor');
-          if(btnReabrirExistente) btnReabrirExistente.remove();
-          
-          let btnReabrir = document.createElement('button');
-          btnReabrir.id = 'btn-reabrir-dinamico-supervisor'; btnReabrir.type = 'button'; btnReabrir.className = 'btn-reopen-acta'; btnReabrir.innerText = '🔓 Abrir Acta para Correcciones';
-          btnReabrir.onclick = function() { reabrirActaSupervisor(actaSeleccionada.idSharePoint); };
-          btnSaveContainer.appendChild(btnReabrir);
+          ['btn-reabrir-dinamico-supervisor', 'btn-aprobar-dinamico-supervisor', 'btn-rechazar-dinamico-supervisor'].forEach(id => {
+            let el = document.getElementById(id); if(el) el.remove();
+          });
+
+          if(estadoActa === 'FINALIZADO') {
+            let btnAprobar = document.createElement('button');
+            btnAprobar.id = 'btn-aprobar-dinamico-supervisor'; btnAprobar.type = 'button'; btnAprobar.className = 'btn-pdf-report'; btnAprobar.innerText = '✅ Aprobar Acta';
+            btnAprobar.onclick = function() { aprobarActaSupervisor(actaSeleccionada.idSharePoint); };
+            btnSaveContainer.appendChild(btnAprobar);
+
+            let btnRechazar = document.createElement('button');
+            btnRechazar.id = 'btn-rechazar-dinamico-supervisor'; btnRechazar.type = 'button'; btnRechazar.className = 'btn-danger-action'; btnRechazar.innerText = '❌ Rechazar Acta';
+            btnRechazar.onclick = function() { rechazarActaSupervisor(actaSeleccionada.idSharePoint); };
+            btnSaveContainer.appendChild(btnRechazar);
+          } else if(estadoActa === 'APROBADO') {
+            let btnReabrir = document.createElement('button');
+            btnReabrir.id = 'btn-reabrir-dinamico-supervisor'; btnReabrir.type = 'button'; btnReabrir.className = 'btn-reopen-acta'; btnReabrir.innerText = '🔓 Abrir Acta para Correcciones';
+            btnReabrir.onclick = function() { reabrirActaSupervisor(actaSeleccionada.idSharePoint); };
+            btnSaveContainer.appendChild(btnReabrir);
+          }
         }
 
         currentUserData = {
@@ -644,7 +715,8 @@ document.addEventListener('DOMContentLoaded', () => {
           estado: actaSeleccionada.status,
           lineamientos: actaSeleccionada.lineamientos,
           recomendaciones: actaSeleccionada.recomendaciones,
-          fechaInicio: actaSeleccionada.fechaInicio
+          fechaInicio: actaSeleccionada.fechaInicio,
+          motivoRechazo: actaSeleccionada.motivoRechazo
         };
 
         document.getElementById('cedula').value = actaSeleccionada.cedula || '';
