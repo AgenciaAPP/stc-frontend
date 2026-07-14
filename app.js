@@ -205,6 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante'); if (btnFlotante) btnFlotante.remove();
     let btnReabrirExistente = document.getElementById('btn-reabrir-dinamico-supervisor'); if(btnReabrirExistente) btnReabrirExistente.remove();
     let btnRegresarContratista = document.getElementById('btn-regresar-dinamico-contratista'); if(btnRegresarContratista) btnRegresarContratista.remove();
+    let btnAprobarExistente = document.getElementById('btn-aprobar-dinamico-supervisor'); if(btnAprobarExistente) btnAprobarExistente.remove();
+    let btnRechazarExistente = document.getElementById('btn-rechazar-dinamico-supervisor'); if(btnRechazarExistente) btnRechazarExistente.remove();
     
     if (isReadOnlyMode && currentUserRole === 'funcionario') { isReadOnlyMode = false; switchView(viewFuncionarioDashboard); } 
     else if (currentUserRole === 'contratista' && currentUserData !== null) { switchView(viewContratistaDashboard); }
@@ -217,6 +219,8 @@ document.addEventListener('DOMContentLoaded', () => {
       let btnFlotante = document.getElementById('btn-regresar-auditoria-flotante'); if (btnFlotante) btnFlotante.remove();
       let btnReabrirExistente = document.getElementById('btn-reabrir-dinamico-supervisor'); if(btnReabrirExistente) btnReabrirExistente.remove();
       let btnRegresarContratista = document.getElementById('btn-regresar-dinamico-contratista'); if(btnRegresarContratista) btnRegresarContratista.remove();
+      let btnAprobarExistente = document.getElementById('btn-aprobar-dinamico-supervisor'); if(btnAprobarExistente) btnAprobarExistente.remove();
+      let btnRechazarExistente = document.getElementById('btn-rechazar-dinamico-supervisor'); if(btnRechazarExistente) btnRechazarExistente.remove();
       switchView(viewWelcome);
     });
   });
@@ -681,7 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if(btnDescargarPDFGlobal) btnDescargarPDFGlobal.classList.add('hidden');
         }
 
-        if(currentUserRole === 'funcionario') {
+        if(currentUserRole === 'funcionario' && loggedSupervisorCedula !== '123') {
           let btnSaveContainer = document.getElementById('btn-save-preliminary').parentElement;
           ['btn-reabrir-dinamico-supervisor', 'btn-aprobar-dinamico-supervisor', 'btn-rechazar-dinamico-supervisor'].forEach(id => {
             let el = document.getElementById(id); if(el) el.remove();
