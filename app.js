@@ -18,6 +18,18 @@ let editIndexAsunto = -1;
 let editIndexSistema = -1;
 let editIndexDirectorio = -1;
 
+// ==========================================
+// HELPER: FORMATEAR FECHA ISO (YYYY-MM-DD) A DD/MM/YYYY PARA VISUALIZACIÓN
+// ==========================================
+function formatFechaDDMMYYYY(fechaISO) {
+  if (!fechaISO) return '';
+  const soloFecha = String(fechaISO).split('T')[0];
+  const partes = soloFecha.split('-');
+  if (partes.length !== 3) return fechaISO;
+  const [anio, mes, dia] = partes;
+  return `${dia}/${mes}/${anio}`;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   
   const viewWelcome = document.getElementById('view-welcome');
@@ -165,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
           currentUserData = {
             idSharePoint: resData.idSharePoint, cedula: cedula, nombre: resData.nombre, contract: resData.contract, objeto: resData.objeto,
             supervisor: resData.supervisor, estado: resData.estado, correo: resData.correo, dependencia: resData.dependencia,
-            lineamientos: resData.lineamientos, recomendaciones: resData.recomendaciones
+            lineamientos: resData.lineamientos, recomendaciones: resData.recomendaciones, fechaInicio: resData.fechaInicio
           };
 
           const respHijos = await fetch(`${BACKEND_URL}/api/obtener-detalles-hijos?cedula=${encodeURIComponent(cedula)}`);
@@ -550,7 +562,8 @@ document.addEventListener('DOMContentLoaded', () => {
           dependencia: actaSeleccionada.dependencia,
           estado: actaSeleccionada.status,
           lineamientos: actaSeleccionada.lineamientos,
-          recomendaciones: actaSeleccionada.recomendaciones
+          recomendaciones: actaSeleccionada.recomendaciones,
+          fechaInicio: actaSeleccionada.fechaInicio
         };
 
         document.getElementById('cedula').value = actaSeleccionada.cedula || '';
@@ -745,7 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
                           </tr>
                           <tr>
                               <td class="label-fija">Fecha de inicio del contrato</td>
-                              <td>---</td>
+                              <td>${formatFechaDDMMYYYY(currentUserData.fechaInicio) || '---'}</td>
                               <td class="label-fija">Dependencia (Dirección o Subdirección)</td>
                               <td>${currentUserData.dependencia || '---'}</td>
                           </tr>
