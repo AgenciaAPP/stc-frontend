@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const response = await fetch(`${BACKEND_URL}/api/habilitar-contrato`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
         const resData = await response.json();
-        if (resData.success) { alert('🎉 ¡CONTRATO INYECTADO Y PIN NOTIFICADO CON ÉXITO AL CORREO!'); await consultarContratos EnVivo(); document.getElementById('secop-result-box').classList.add('hidden'); document.getElementById('search-contrato').value = ''; }
+        if (resData.success) { alert('🎉 ¡CONTRATO INYECTADO Y PIN NOTIFICADO CON ÉXITO AL CORREO!'); await consultarContratosEnVivo(); document.getElementById('secop-result-box').classList.add('hidden'); document.getElementById('search-contrato').value = ''; }
       } catch (error) { alert('❌ Error de comunicación.'); }
     }
   });
@@ -667,19 +667,19 @@ document.addEventListener('DOMContentLoaded', () => {
       <style>
           @page { size: letter landscape; margin: 10mm 10mm 15mm 10mm; }
           
-          /* RESET DE CONTROL DE BORDES: Forzar cálculo interno estricto */
+          /* RESET DE CONTROL DE BORDES: Forzar cálculo interno estricto e inquebrantable */
           * { box-sizing: border-box !important; -webkit-box-sizing: border-box !important; }
           
           body { font-family: 'Segoe UI', Arial, sans-serif; color: #000000; line-height: 1.3; font-size: 9px; }
           
-          /* CONTENEDOR SEGURO REDUCIDO: Se fija a 1000px y se le da un padding de holgura a la derecha de 25px */
-          .contenedor-impresion-raiz { width: 1000px; display: table; border-collapse: collapse; margin: 0 auto; table-layout: fixed; padding-right: 25px; }
+          /* CONTENEDOR FLUIDO EN MEMORIA: Mapeo limpio original */
+          .contenedor-impresion-raiz { width: 100%; display: table; border-collapse: collapse; margin: 0 auto; table-layout: fixed; }
           .grupo-encabezado-pdf { display: table-header-group; }
           .grupo-cuerpo-pdf { display: table-row-group; }
           .fila-maestra-pdf { display: table-row; }
           .celda-maestra-pdf { display: table-cell; width: 100%; }
 
-          /* Tabla de Encabezado Original HTML con margen controlado */
+          /* Tabla de Encabezado Original HTML Blindada */
           .tabla-oficial { width: 100%; border-collapse: collapse; margin-bottom: 12px; table-layout: fixed; }
           .tabla-oficial td { border: 1px solid #000000; padding: 4px; font-size: 8px; font-weight: bold; text-align: center; vertical-align: middle; }
           .logo-space { width: 18%; background-color: #FFFFFF; padding: 6px !important; }
@@ -696,7 +696,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </style>
 
       <div class="contenedor-impresion-raiz">
-          <!-- 1. GRUPO ENCABEZADO: Se repetirá automáticamente en la parte superior de cada página con márgenes perfectos -->
+          <!-- 1. GRUPO ENCABEZADO: Se repetirá automáticamente en la parte superior de cada página -->
           <div class="grupo-encabezado-pdf">
               <div class="fila-maestra-pdf">
                   <div class="celda-maestra-pdf">
@@ -865,16 +865,15 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    // CONFIGURACIÓN CENTRAL DE LA LIBRERÍA HTML2PDF
+    // CONFIGURACIÓN AJUSTADA: Reducimos sutilmente el scale a 1.5 para obligar al lienzo a encajar los bordes
     const opcionesConfig = {
       margin:       10,
       filename:     `FO-GITH-060_STC_${currentUserData.contract}_${currentUserData.cedula}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, logging: false },
+      html2canvas:  { scale: 1.5, useCORS: true, logging: false },
       jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' }
     };
 
-    // PROCESAMIENTO COMPLETO ASÍNCRONO SEGURO DE LA DESCARGA Y PAGINACIÓN
     html2pdf().set(opcionesConfig).from(elementoImpresion).toPdf().get('pdf').then(function(pdf) {
       const totalPaginas = pdf.internal.getNumberOfPages();
       
@@ -884,7 +883,6 @@ document.addEventListener('DOMContentLoaded', () => {
         pdf.setFontSize(8);
         pdf.setFillColor(0, 0, 0);
         
-        // Estampa la numeración dinámica sin alterar el flujo DOM
         pdf.text(`Página ${i} de ${totalPaginas}`, 259, 207, { align: "right" });
       }
     }).save();
