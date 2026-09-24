@@ -553,7 +553,12 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const response = await fetch(`${BACKEND_URL}/api/habilitar-contrato`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
         const resData = await response.json();
+        if (response.status === 409) {
+          alert(`⚠️ ${resData.message || 'Ya existe un registro activo para esta combinación cédula + contrato. No se creó un duplicado.'}`);
+          return;
+        }
         if (resData.success) { alert('🎉 ¡CONTRATO INYECTADO Y PIN NOTIFICADO CON ÉXITO AL CORREO!'); await consultarContratosEnVivo(); document.getElementById('secop-result-box').classList.add('hidden'); document.getElementById('search-contrato').value = ''; }
+        else { alert(`❌ ${resData.message || 'No se pudo habilitar el contrato.'}`); }
       } catch (error) { alert('❌ Error de comunicación.'); }
     }
   });
